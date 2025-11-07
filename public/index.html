@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+<title>Consulta de Estoque</title>
+<link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
+
+
+  
+  <!-- restante do head -->
+
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Segoe UI", Roboto, Arial, sans-serif; background:#f4f4f4; color:#222; display:flex; flex-direction:column; min-height:100vh;}
+  header { background:#121111; color:white; width:100%; padding:18px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.2); font-size:1.7rem; font-weight:500; letter-spacing:1px;}
+  #sidebar {position:fixed; left:0; top:70px; bottom:0; width:220px; background:#fff; border-right:1px solid #ccc; box-shadow:2px 0 6px rgba(0,0,0,0.05); padding:15px 10px; overflow-y:auto;}
+  #sidebar h2 {font-size:15px; color:#121111; margin:5px 0 10px 15px; text-transform:uppercase; letter-spacing:1px;}
+  #categorias { list-style:none; padding:0; margin:0;}
+  #categorias li { margin:4px 0;}
+  #categorias a { display:flex; align-items:center; gap:8px; padding:10px 14px; color:#222; text-decoration:none; border-radius:8px; transition:all 0.25s; position:relative;}
+  #categorias a:hover { background:#121111; color:white;}
+  #categorias a.ativo { background:#121111; color:white; font-weight:500;}
+  #categorias a.ativo::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:#e0e0e0; border-radius:0 4px 4px 0;}
+  main { margin-left:240px; flex:1; display:flex; flex-direction:column; align-items:center;}
+  #busca-area { margin:35px auto 20px; width:90%; max-width:600px; display:flex; gap:10px; justify-content:center;}
+  input { flex:1; padding:12px 15px; border:1px solid #aaa; border-radius:8px; font-size:16px; transition:box-shadow 0.2s;}
+  input:focus { border-color:#121111; box-shadow:0 0 5px #121111; outline:none;}
+  #produtos { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px; width:90%; max-width:1200px; padding-bottom:40px;}
+  .card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 3px 8px rgba(0,0,0,0.1); transition:transform 0.3s, box-shadow 0.3s; display:flex; flex-direction:column;}
+  .card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15);}
+  .card img { width:100%; height:180px; object-fit:cover; background:#e0e0e0; cursor:pointer;}
+  .info { padding:15px; }
+  .info h3 { margin:0 0 8px; font-size:17px; color:#121111;}
+  .info p { margin:5px 0; font-size:14px; color:#000; font-weight:500;}
+  #loading { font-size:16px; color:#121111; margin-top:15px; text-align:center;}
+  .erro { color:red; font-weight:bold; text-align:center; margin-top:15px;}
+  #modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column; padding:20px;}
+  #modal img { max-width:90%; max-height:60%; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.6);}
+  #modal span { position:absolute; top:25px; right:40px; color:white; font-size:32px; font-weight:bold; cursor:pointer;}
+  #modal span:hover { color:#f44336;}
+  #modalDesc { color:white; text-align:center; margin-top:15px; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px;}
+  @media (max-width:768px) { #sidebar { display:none;} main { margin-left:0;} }
+</style>
+</head>
+<body>
+<header>Consulta de Estoque</header>
+
+<aside id="sidebar">
+  <h2>Categorias</h2>
+  <ul id="categorias"></ul>
+</aside>
+
+<main>
+  <div id="busca-area">
+    <input id="busca" placeholder="Buscar produto..." oninput="buscar()" autofocus />
+  </div>
+
+  <div id="loading"></div>
+  <div id="erro" class="erro"></div>
+  <div id="produtos"></div>
+</main>
+
+<!-- Modal imagem -->
+<div id="modal" onclick="fecharModal()">
+  <span>&times;</span>
+  <img id="modalImg" src="" alt="Imagem ampliada">
+  <div id="modalDesc"></div>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzyQYS_83e_W9mA5UCQpAfEfT_K_jn0HxyxgrLEQdX-dNRgZw_tTjy4ljZmOi3K-8wo/exec";
+let todosProdutos = [];
+let categoriaAtual = "";
+
+async function carregarDados() {
+  document.getElementById("loading").textContent = "⏳ Carregando produtos...";
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    todosProdutos = data.rows || [];
+    preencherCategorias();
+    mostrar(todosProdutos);
+  } catch(e) {
+    document.getElementById("erro").textContent = "❌ Erro ao carregar os dados.";
+    console.error(e);
+  } finally {
+    document.getElementById("loading").textContent = "";
+  }
+}
+
+function preencherCategorias() {
+  const ul = document.getElementById("categorias");
+  ul.innerHTML = "";
+  const categorias = [...new Set(todosProdutos.map(p => p.CATEGORIA).filter(Boolean))].sort();
+  const liTodos = document.createElement("li");
+  liTodos.innerHTML = `<a href="#" class="ativo" onclick="filtrarPorCategoria('')">Todas</a>`;
+  ul.appendChild(liTodos);
+  categorias.forEach(cat => {
+    const li = document.createElement("li");
+    li.innerHTML = `<a href="#" onclick="filtrarPorCategoria('${cat}')">${cat}</a>`;
+    ul.appendChild(li);
+  });
+}
+
+function filtrarPorCategoria(cat) {
+  categoriaAtual = cat;
+  document.querySelectorAll("#categorias a").forEach(a => a.classList.remove("ativo"));
+  const link = [...document.querySelectorAll("#categorias a")].find(a => a.textContent === (cat || "Todas"));
+  if(link) link.classList.add("ativo");
+  buscar();
+}
+
+function buscar() {
+  const termo = document.getElementById('busca').value.toLowerCase().trim();
+  const filtrados = todosProdutos.filter(p =>
+    (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+    ((p.PRODUTO && p.PRODUTO.toLowerCase().includes(termo)) ||
+     (p.CATEGORIA && p.CATEGORIA.toLowerCase().includes(termo)))
+  );
+  mostrar(filtrados);
+}
+
+function mostrar(produtos) {
+  const div = document.getElementById("produtos");
+  div.innerHTML = "";
+  document.getElementById("erro").textContent = "";
+
+  if(!produtos || produtos.length === 0) {
+    div.innerHTML = "<p style='text-align:center;'>Nenhum produto encontrado.</p>";
+    return;
+  }
+
+  produtos.forEach(p => {
+    const imagem = p["IMAGEM APP"] || "";
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${imagem}" alt="imagem do produto" onclick='abrirModal(${JSON.stringify(p)})'>
+      <div class="info">
+        <h3>${p.PRODUTO}</h3>
+        <p><b>Categoria:</b> ${p.CATEGORIA || ''}</p>
+        <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
+        <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
+      </div>
+    `;
+    div.appendChild(card);
+  });
+}
+
+function abrirModal(produto){
+  const modal = document.getElementById("modal");
+  const img = document.getElementById("modalImg");
+  img.src = produto["IMAGEM APP"] || "";
+  const desc = document.getElementById("modalDesc");
+  desc.innerHTML = `
+    <h2>${produto.PRODUTO || ''}</h2>
+    <p><b>Categoria:</b> ${produto.CATEGORIA || ''}</p>
+    <p><b>Quantidade:</b> ${produto.QUANTIDADE || '0'}</p>
+    <p><b>Caixa:</b> ${produto.CAIXA || ''}</p>
+  `;
+  modal.style.display = "flex";
+}
+
+function fecharModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+window.onload = carregarDados;
+</script>
+</body>
+</html>

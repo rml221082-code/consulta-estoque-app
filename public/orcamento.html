@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orçamento</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; }
+    input { padding: 5px; width: 200px; }
+    button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+<h1>Orçamento</h1>
+
+<div>
+  <label for="produto">Produto:</label>
+  <input type="text" id="produto" placeholder="Digite o produto">
+  <button id="buscarBtn">Buscar</button>
+</div>
+
+<table id="tabelaOrcamento">
+  <thead>
+    <tr>
+      <th>Produto</th>
+      <th>Quantidade</th>
+      <th>Preço Unitário</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="4">Digite um produto e clique em Buscar</td></tr>
+  </tbody>
+</table>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzyQYS_83e_W9mA5UCQpAfEfT_K_jn0HxyxgrLEQdX-dNRgZw_tTjy4ljZmOi3K-8wo/exec";
+
+async function buscarProduto() {
+  const produto = document.getElementById("produto").value.trim();
+  if (!produto) return alert("Digite um produto.");
+
+  try {
+    const res = await fetch(`${API_URL}?produto=${encodeURIComponent(produto)}`);
+    const text = await res.text();
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+      console.warn("Não é JSON válido:", text);
+      return;
+    }
+
+    let arrayData = [];
+
+    // Se for array, usa direto
+    if (Array.isArray(data)) arrayData = data;
+
+    // Se for objeto, transformamos em array de objetos
+    else if (typeof data === "object") {
+      arrayData = Object.keys(data).map(key => {
+        const value = data[key];
+        // se value é objeto com quantidade e preço
+        if (typeof value === "object") {
+          return {
+            produto: key,
+            quantidade: Number(value.Qtd || value.quantidade || 0),
+            preco_unitario: Number(value.Valor || value.preco_unitario || 0)
+          };
+        } else {
+          // se value é número ou string, só produto
+          return {
+            produto: key,
+            quantidade: 1,
+            preco_unitario: Number(value) || 0
+          };
+        }
+      });
+    } else {
+      alert("Formato da API não suportado");
+      console.log("Retorno da API:", data);
+      return;
+    }
+
+    const tbody = document.querySelector("#tabelaOrcamento tbody");
+    tbody.innerHTML = "";
+
+    if (arrayData.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4">Nenhum resultado encontrado.</td></tr>`;
+      return;
+    }
+
+    arrayData.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item.produto}</td>
+        <td>${item.quantidade}</td>
+        <td>${item.preco_unitario.toFixed(2)}</td>
+        <td>${(item.quantidade * item.preco_unitario).toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch(err) {
+    console.error("Erro ao consultar API:", err);
+    alert("Erro ao consultar a API. Veja o console.");
+  }
+}
+
+document.getElementById("buscarBtn").addEventListener("click", buscarProduto);
+</script>
+</body>
+</html>
