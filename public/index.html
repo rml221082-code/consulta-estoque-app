@@ -30,8 +30,8 @@
   .card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15);}
   .card img { width:100%; height:180px; object-fit:cover; background:#e0e0e0; cursor:pointer;}
   .info { padding:15px; }
-  .info h3 { margin:0 0 8px; font-size:17px; color:#121111;}
-  .info p { margin:5px 0; font-size:14px; color:#000; font-weight:500;}
+  .info h3 { margin:0 0 8px; font-size:18px; color:#121111;}
+  .info p { margin:5px 0; font-size:16px; color:#000; font-weight:500;}
   #loading { font-size:16px; color:#121111; margin-top:15px; text-align:center;}
   .erro { color:red; font-weight:bold; text-align:center; margin-top:15px;}
   #modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column; padding:20px;}
@@ -119,7 +119,7 @@ function buscar() {
   );
   mostrar(filtrados);
 }
-
+ 
 function mostrar(produtos) {
   const div = document.getElementById("produtos");
   div.innerHTML = "";
@@ -141,6 +141,11 @@ function mostrar(produtos) {
         <p><b>Categoria:</b> ${p.CATEGORIA || ''}</p>
         <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
         <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
+        <p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString('pt-BR', {
+  style: 'currency',
+  currency: 'BRL'
+})}</p>
+
       </div>
     `;
     div.appendChild(card);
@@ -154,9 +159,13 @@ function abrirModal(produto){
   const desc = document.getElementById("modalDesc");
   desc.innerHTML = `
     <h2>${produto.PRODUTO || ''}</h2>
-    <p><b>Categoria:</b> ${produto.CATEGORIA || ''}</p>
-    <p><b>Quantidade:</b> ${produto.QUANTIDADE || '0'}</p>
-    <p><b>Caixa:</b> ${produto.CAIXA || ''}</p>
+    <h2><p><b>Categoria:</b> ${produto.CATEGORIA || ''}</p></h2>
+    <h2><p><b>Quantidade:</b> ${produto.QUANTIDADE || '0'}</p></h2>
+    <h2><p><b>Caixa:</b> ${produto.CAIXA || ''}</p></h2>
+    <h2><p><b>Valor:</b> ${Number(produto.COMPRA || 0).toLocaleString('pt-BR', {
+  style: 'currency',
+  currency: 'BRL'
+})}</p></h2>
   `;
   modal.style.display = "flex";
 }
