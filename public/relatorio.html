@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório de Consumo</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.form-container {
+  max-width: 1000px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+th {
+  background: #2f80ed;
+  color: #fff;
+}
+
+tr:nth-child(even) {
+  background: #f2f2f2;
+}
+
+tr:hover {
+  background: #eaf1ff;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 Relatório de Consumo por Veículo</h1>
+
+<div class="form-container">
+  <table id="tabelaRelatorio">
+    <thead>
+      <tr>
+        <th>Veículo</th>
+        <th>Mês/Ano</th>
+        <th>Total KM</th>
+        <th>Total Litros</th>
+        <th>Consumo Médio (KM/L)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td colspan="5">Carregando...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const URL = "https://script.google.com/macros/s/AKfycbwMMKgxZ_wmnUAx_BfIaYt9qkUERfQugpbDSFv9AbLaCHibcGg88XA7JTNkrFqRIFDS/exec";
+
+fetch(URL + "?relatorio=1")
+
+  .then(r => r.json())
+  .then(dados => {
+    const tbody = document.querySelector("#tabelaRelatorio tbody");
+    tbody.innerHTML = "";
+
+    if (!dados.length) {
+      tbody.innerHTML = `<tr><td colspan="5">Nenhum dado encontrado</td></tr>`;
+      return;
+    }
+
+    dados.forEach(l => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${l.veiculo}</td>
+          <td>${l.mesAno}</td>
+          <td>${l.totalKm}</td>
+          <td>${l.totalLitros}</td>
+          <td>${l.consumoMedio}</td>
+        </tr>
+      `;
+    });
+  })
+  .catch(() => {
+    document.querySelector("#tabelaRelatorio tbody").innerHTML =
+      `<tr><td colspan="5">Erro ao carregar relatório</td></tr>`;
+  });
+</script>
+
+
+</body>
+</html>

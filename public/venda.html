@@ -1,342 +1,618 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Venda de Produtos</title>
-<link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+    <link rel="preconnect" href="https://script.google.com">
+<link rel="dns-prefetch" href="https://script.google.com">
 
-<style>
-  * { box-sizing: border-box; }
-  body { margin:0; font-family:"Segoe UI", Roboto, Arial, sans-serif; background:#f4f4f4; color:#222; display:flex; flex-direction:column; min-height:100vh;}
+  <meta charset="UTF-8">
+  <title>Venda de Produtos</title>
+  <link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
 
-  header {
-    background:#121111; color:white; width:100%; padding:18px;
-    text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.2);
-    font-size:1.7rem; font-weight:500; letter-spacing:1px;
-    position:relative;
-  }
+  <style>
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Segoe UI", Roboto, Arial, sans-serif; background:#f4f4f4; color:#222; display:flex; flex-direction:column; min-height:100vh;}
 
-  /* Carrinho no topo */
+    header {
+      background:#121111; color:white; width:100%; padding:18px;
+      text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.2);
+      font-size:1.7rem; font-weight:500; letter-spacing:1px;
+      position:relative;
+    }
+
+    /* Carrinho no topo */
   #carrinhoBtn {
-    position:absolute; right:25px; top:15px;
-    background:#fff; color:#121111; border:none;
-    padding:10px 18px; border-radius:10px;
-    cursor:pointer; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,0.25);
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    z-index: 5000;
+
+    background: #fff;
+    color: #121111;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
 
-  #sidebar {
-    position:fixed; left:0; top:70px; bottom:0; width:220px;
-    background:#fff; border-right:1px solid #ccc;
-    box-shadow:2px 0 6px rgba(0,0,0,0.05);
-    padding:15px 10px; overflow-y:auto;
-  }
 
-  #sidebar h2 { font-size:15px; margin:5px 0 10px 15px; text-transform:uppercase; }
+    #sidebar {
+      position:fixed; left:0; top:70px; bottom:0; width:220px;
+      background:#fff; border-right:1px solid #ccc;
+      box-shadow:2px 0 6px rgba(0,0,0,0.05);
+      padding:15px 10px; overflow-y:auto;
+    }
 
-  #categorias { list-style:none; padding:0; margin:0; }
-  #categorias li { margin:4px 0; }
-  #categorias a {
-    display:block; padding:10px 14px;
-    color:#222; text-decoration:none; border-radius:8px;
-    transition:0.25s; position:relative;
-  }
+    #sidebar h2 { font-size:15px; margin:5px 0 10px 15px; text-transform:uppercase; }
 
-  #categorias a:hover { background:#121111; color:white; }
-  #categorias a.ativo {
-    background:#121111; color:white;
-    font-weight:500; border-left:4px solid #e0e0e0;
-  }
+    #categorias { list-style:none; padding:0; margin:0; }
+    #categorias li { margin:4px 0; }
+    #categorias a {
+      display:block; padding:10px 14px;
+      color:#222; text-decoration:none; border-radius:8px;
+      transition:0.25s; position:relative;
+    }
 
-  main {
-    margin-left:240px; flex:1;
-    display:flex; flex-direction:column; align-items:center;
-  }
+    #categorias a:hover { background:#121111; color:white; }
+    #categorias a.ativo {
+      background:#121111; color:white;
+      font-weight:500; border-left:4px solid #e0e0e0;
+    }
 
-  #busca-area { margin:35px auto 20px; width:90%; max-width:600px; display:flex; gap:10px; }
-  input {
-    flex:1; padding:12px 15px; border:1px solid #aaa; border-radius:8px;
-    font-size:16px; transition:0.2s;
-  }
-  input:focus { border-color:#121111; box-shadow:0 0 5px #121111; }
+    main {
+      margin-left:240px; flex:1;
+      display:flex; flex-direction:column; align-items:center;
+    }
 
-  #produtos {
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
-    gap:20px; width:90%; max-width:1200px; padding-bottom:40px;
-  }
+    #busca-area { margin:35px auto 20px; width:90%; max-width:600px; display:flex; gap:10px; }
+    input {
+      flex:1; padding:12px 15px; border:1px solid #aaa; border-radius:8px;
+      font-size:16px; transition:0.2s;
+    }
+    input:focus { border-color:#121111; box-shadow:0 0 5px #121111; }
 
-  .card {
-    background:#fff; border-radius:14px;
-    box-shadow:0 3px 8px rgba(0,0,0,0.1);
-    overflow:hidden; display:flex; flex-direction:column;
-    transition:0.3s;
-  }
-  .card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
+    #produtos {
+      display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+      gap:20px; width:90%; max-width:1200px; padding-bottom:40px;
+    }
 
-  .card img { width:100%; height:180px; object-fit:cover; background:#e0e0e0; cursor:pointer; }
-  .info { padding:15px; }
-  .info h3 { margin:0 0 8px; font-size:17px; color:#121111; }
-  .info p { margin:5px 0; font-size:14px; }
+    .card {
+      background:#fff; border-radius:14px;
+      box-shadow:0 3px 8px rgba(0,0,0,0.1);
+      overflow:hidden; display:flex; flex-direction:column;
+      transition:0.3s;
+    }
+    .card:hover { transform:translateY(-5px); box-shadow:0 6px 15px rgba(0,0,0,0.15); }
 
-  .btn-add {
-    margin-top:auto; padding:12px;
-    background:#121111; color:white;
-    border:none; cursor:pointer; border-radius:0 0 14px 14px;
-    font-size:16px; font-weight:bold;
-  }
+    .card img { width:100%; height:180px; object-fit:cover; background:#e0e0e0; cursor:pointer; }
+    .info { padding:15px; }
+    .info h3 { margin:0 0 8px; font-size:17px; color:#121111; }
+    .info p { margin:5px 0; font-size:14px; }
 
-  #modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column; padding:20px;}
-  #modal img { max-width:90%; max-height:60%; border-radius:10px; }
-  #modal span { position:absolute; top:25px; right:40px; color:white; font-size:32px; cursor:pointer; }
-  #modalDesc { color:white; text-align:center; margin-top:15px; }
+    .btn-add {
+      margin-top:auto; padding:12px;
+      background:#121111; color:white;
+      border:none; cursor:pointer; border-radius:0 0 14px 14px;
+      font-size:16px; font-weight:bold;
+    }
 
-  /* Carrinho */
-  #modalCarrinho {
-    display:none; position:fixed; top:0; left:0;
-    width:100%; height:100%; background:rgba(0,0,0,0.75);
-    justify-content:center; align-items:center;
-  }
+    #modal { display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; flex-direction:column; padding:20px;}
+    #modal img { max-width:90%; max-height:60%; border-radius:10px; }
+    #modal span { position:absolute; top:25px; right:40px; color:white; font-size:32px; cursor:pointer; }
+    #modalDesc { color:white; text-align:center; margin-top:15px; }
+
+    /* Carrinho */
+    #modalCarrinho {
+      display:none; position:fixed; top:0; left:0;
+      width:100%; height:100%; background:rgba(0,0,0,0.75);
+      justify-content:center; align-items:center;
+    }
 
   #boxCarrinho {
-    width:90%; max-width:450px; background:#fff;
-    padding:20px; border-radius:12px;
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;        /* LIMITA A ALTURA DO MODAL */
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+
+    display: flex;
+    flex-direction: column;
   }
 
-  #listaCarrinho p { font-size:15px; margin:8px 0; }
 
-  #fecharCarrinho {
-    background:#121111; color:white; padding:12px; border:none;
-    width:100%; margin-top:15px; border-radius:8px; font-size:17px;
+    #listaCarrinho p { font-size:15px; margin:8px 0; }
+
+    #fecharCarrinho {
+      background:#121111; color:white; padding:12px; border:none;
+      width:100%; margin-top:15px; border-radius:8px; font-size:17px;
+    }
+
+    @media (max-width:768px) { #sidebar { display:none;} main { margin-left:0;} }
+    #listaCarrinho {
+    max-height: 600px;       /* altura máxima do conteúdo */
+    overflow-y: auto;        /* barra de rolagem vertical */
+    padding-right: 5px;
   }
 
-  @media (max-width:768px) { #sidebar { display:none;} main { margin-left:0;} }
-</style>
-</head>
+  /* Estilo da barra (opcional – Chrome/Edge) */
+  #listaCarrinho::-webkit-scrollbar {
+    width: 6px;
+  }
 
-<body>
+  #listaCarrinho::-webkit-scrollbar-thumb {
+    background: #121111;
+    border-radius: 4px;
+  }
 
-<header>
-  Venda de Produtos
-  <button id="carrinhoBtn" onclick="abrirCarrinho()">🛒 Carrinho (<span id='qtdCarrinho'>0</span>)</button>
-</header>
+  #listaCarrinho::-webkit-scrollbar-track {
+    background: #e0e0e0;
+  }
+  .item-carrinho {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+  }
 
-<aside id="sidebar">
-  <h2>Categorias</h2>
-  <ul id="categorias"></ul>
-</aside>
+  .item-carrinho img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
 
-<main>
-  <div id="busca-area">
-    <input id="busca" placeholder="Buscar produto..." oninput="buscar()" autofocus />
+  .item-carrinho .dados {
+    flex: 1;
+    font-size: 14px;
+  }
+
+  .item-carrinho button {
+    background: none;
+    border: none;
+    color: #c00;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  </style>
+  </head>
+
+  <body>
+
+  <header>
+    Venda de Produtos
+    <button id="carrinhoBtn" onclick="abrirCarrinho()">🛒 Carrinho (<span id='qtdCarrinho'>0</span>)</button>
+  </header>
+
+  <aside id="sidebar">
+    <h2>Categorias</h2>
+    <ul id="categorias"></ul>
+  </aside>
+
+  <main>
+    <div id="busca-area">
+      <input id="busca" placeholder="Buscar produto..." oninput="buscar()" autofocus />
+    </div>
+
+    <div id="loading"></div>
+    <div id="erro" class="erro"></div>
+    <div id="produtos"></div>
+  </main>
+
+  <!-- Modal Imagem -->
+  <div id="modal" onclick="fecharModal()">
+    <span onclick="event.stopPropagation(); fecharModal()">&times;</span>
+    <img id="modalImg" onclick="event.stopPropagation()">
+    <div id="modalDesc" onclick="event.stopPropagation()"></div>
   </div>
 
-  <div id="loading"></div>
-  <div id="erro" class="erro"></div>
-  <div id="produtos"></div>
-</main>
 
-<!-- Modal Imagem -->
-<div id="modal" onclick="fecharModal()">
-  <span>&times;</span>
-  <img id="modalImg">
-  <div id="modalDesc"></div>
+
+  <!-- Modal Carrinho -->
+  <div id="modalCarrinho">
+    <div id="boxCarrinho">
+      <h2>Carrinho</h2>
+      <div id="idVenda" style="
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #121111;
+">
+  ID da Venda: —
 </div>
 
-<!-- Modal Carrinho -->
-<div id="modalCarrinho">
-  <div id="boxCarrinho">
-    <h2>Carrinho</h2>
-    <div id="listaCarrinho"></div>
-    <button id="fecharCarrinho" onclick="fecharCarrinho()">Fechar</button>
+
+      <div id="listaCarrinho"></div>
+
+      <!-- 🔴 ESTE ELEMENTO ESTAVA FALTANDO -->
+      <div id="totalCarrinho" style="
+        margin-top: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: right;
+      ">
+        Total: R$ 0,00
+      </div>
+
+      <button id="fecharCarrinho" onclick="fecharCarrinho()">Fechar</button>
+      
+      <button
+          onclick="finalizarVenda()"
+          style="
+              margin-top: 15px;
+              padding: 14px 30px;
+              background: #0d6efd;
+              border: none;
+              color: white;
+              cursor: pointer;
+              border-radius: 8px;
+              font-size: 17px;
+              font-weight: bold;
+              width: 100%;
+              transition: 0.2s;
+          "
+          onmouseover="this.style.background='#0b5ed7'"
+          onmouseout="this.style.background='#0d6efd'"
+      >
+          FINALIZAR VENDA
+      </button>
+    </div>
   </div>
-</div>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzyQYS_83e_W9mA5UCQpAfEfT_K_jn0HxyxgrLEQdX-dNRgZw_tTjy4ljZmOi3K-8wo/exec";
 
-let todosProdutos = [];
-let categoriaAtual = "";
-let carrinho = [];
+  <script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbxkOd5Ec52eZJgGF_s-EQEI8cNPvZJ1IyHi0c4_1TCfTNwlF_4tg79dTZ4yzPhKutd_/exec";
 
-async function carregarDados() {
+  let paginaAtual = 1;
+const limite = 50;
+let carregando = false;
+
+
+  let todosProdutos = [];
+  let categoriaAtual = "";
+  let carrinho = [];
+  let proximoIdVenda = 0;
+let produtosVisiveis = [];
+
+async function carregarDados(reset = false) {
+  if (carregando) return;
+  carregando = true;
+
+  if (reset) {
+    paginaAtual = 1;
+    todosProdutos = [];
+    produtosVisiveis = [];
+    document.getElementById("produtos").innerHTML = "";
+  }
+
   document.getElementById("loading").textContent = "⏳ Carregando produtos...";
 
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}?page=${paginaAtual}&limit=${limite}`);
     const data = await res.json();
-    todosProdutos = data.rows || [];
+
+    todosProdutos.push(...(data.rows || []));
+    produtosVisiveis = data.rows || [];
+
+    proximoIdVenda = (Number(data.ultimoIdVenda) || 0) + 1;
 
     preencherCategorias();
-    mostrar(todosProdutos);
+    mostrar(produtosVisiveis); // 🔥 SÓ A PÁGINA
 
-  } catch(e) {
-    document.getElementById("erro").textContent = "❌ Erro ao carregar.";
+    if ((paginaAtual * limite) < data.total) {
+      paginaAtual++;
+    }
+
+  } catch (e) {
+    console.error(e);
+    document.getElementById("erro").textContent = "Erro ao carregar produtos.";
   }
 
   document.getElementById("loading").textContent = "";
+  carregando = false;
 }
 
+let categoriasCriadas = false;
+
 function preencherCategorias() {
+  if (categoriasCriadas) return;
+
   const ul = document.getElementById("categorias");
   ul.innerHTML = "";
-  const categorias = [...new Set(todosProdutos.map(p => p.CATEGORIA).filter(Boolean))].sort();
+
+  const categorias = [...new Set(
+    todosProdutos.map(p => p.CATEGORIA).filter(Boolean)
+  )].sort();
 
   ul.innerHTML += `<li><a href="#" class="ativo" onclick="filtrarPorCategoria('')">Todas</a></li>`;
 
   categorias.forEach(cat => {
     ul.innerHTML += `<li><a href="#" onclick="filtrarPorCategoria('${cat}')">${cat}</a></li>`;
   });
+
+  categoriasCriadas = true;
 }
+function preencherCategorias() {
+    const ul = document.getElementById("categorias");
+    ul.innerHTML = "";
+    const categorias = [...new Set(todosProdutos.map(p => p.CATEGORIA).filter(Boolean))].sort();
 
-function filtrarPorCategoria(cat) {
-  categoriaAtual = cat;
+    ul.innerHTML += `<li><a href="#" class="ativo" onclick="filtrarPorCategoria('')">Todas</a></li>`;
 
-  document.querySelectorAll("#categorias a").forEach(a => a.classList.remove("ativo"));
+    categorias.forEach(cat => {
+      ul.innerHTML += `<li><a href="#" onclick="filtrarPorCategoria('${cat}')">${cat}</a></li>`;
+    });
+  }
 
-  const link = [...document.querySelectorAll("#categorias a")].find(a => a.textContent === (cat || "Todas"));
-  if (link) link.classList.add("ativo");
+  function filtrarPorCategoria(cat) {
+    categoriaAtual = cat;
 
-  buscar();
-}
+    document.querySelectorAll("#categorias a").forEach(a => a.classList.remove("ativo"));
 
-function buscar() {
-  const termo = document.getElementById("busca").value.toLowerCase();
+    const link = [...document.querySelectorAll("#categorias a")].find(a => a.textContent === (cat || "Todas"));
+    if (link) link.classList.add("ativo");
 
-  const filtrados = todosProdutos.filter(p =>
-    (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-    ((p.PRODUTO || "").toLowerCase().includes(termo))
-  );
+    buscar();
+  }
 
-  mostrar(filtrados);
-}
+  function buscar() {
+    const termo = document.getElementById("busca").value.toLowerCase();
 
-function mostrar(lista) {
+  const filtrados = produtosVisiveis.filter(p =>
+  (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+  ((p.PRODUTO || "").toLowerCase().includes(termo))
+);
+
+
+    mostrar(filtrados);
+  }
+
+ function mostrar(lista) {
   const div = document.getElementById("produtos");
   div.innerHTML = "";
+
+  const fragment = document.createDocumentFragment();
 
   lista.forEach(p => {
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <img src="${p['IMAGEM APP']}" onclick='abrirModal(${JSON.stringify(p)})'>
+      <img loading="lazy" src="${p['IMAGEM APP'] || 'https://via.placeholder.com/250'}"
+           onclick='abrirModal(${JSON.stringify(p)})'>
       <div class="info">
         <h3>${p.PRODUTO}</h3>
         <p><b>Categoria:</b> ${p.CATEGORIA}</p>
-        <p><b>Caixa:</b> ${p.CAIXA || ""}</p>
+        <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
+        <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
+        <p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        })}</p>
       </div>
-
       <button class="btn-add" onclick='addCarrinho(${JSON.stringify(p)})'>
         ➕ Adicionar
       </button>
     `;
 
-    div.appendChild(card);
+    fragment.appendChild(card);
   });
+
+  div.appendChild(fragment);
 }
 
 function abrirModal(p) {
+  const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
+
   document.getElementById("modalImg").src = p["IMAGEM APP"];
+
   document.getElementById("modalDesc").innerHTML = `
     <h2>${p.PRODUTO}</h2>
+
+    <p><b>ID Produto:</b> ${p.ID_PRODUTO || "—"}</p>
     <p><b>Categoria:</b> ${p.CATEGORIA}</p>
+    <p><b>Categoria + Produto:</b> ${chave}</p>
+    <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
     <p><b>Caixa:</b> ${p.CAIXA || ""}</p>
+
+    <h2>
+      <p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString(
+        'pt-BR',
+        { style: 'currency', currency: 'BRL' }
+      )}</p>
+    </h2>
   `;
+
   document.getElementById("modal").style.display = "flex";
 }
 
-function fecharModal() {
-  document.getElementById("modal").style.display = "none";
-}
+  function fecharModal() {
+    document.getElementById("modal").style.display = "none";
+  }
 
-function addCarrinho(prod) {
-  carrinho.push(prod);
-  atualizarIcone();
-}
+  function addCarrinho(prod) {
+    carrinho.push({
+      ...prod,
+      qtdVenda: 1 // ✅ cria a quantidade real da venda
+    });
+    atualizarIcone();
+  }
+  function atualizarIcone() {
+    document.getElementById("qtdCarrinho").textContent = carrinho.length;
+  }
 
-function atualizarIcone() {
-  document.getElementById("qtdCarrinho").textContent = carrinho.length;
-}
+  function abrirCarrinho() {
+      document.getElementById("idVenda").innerHTML =
+    "ID da Venda: <b>" + (proximoIdVenda || "—") + "</b>";
 
-function abrirCarrinho() {
-  const lista = document.getElementById("listaCarrinho");
-  lista.innerHTML = "";
+    const lista = document.getElementById("listaCarrinho");
+    const totalEl = document.getElementById("totalCarrinho");
 
-  if (carrinho.length === 0) {
-    lista.innerHTML = "<p>Carrinho vazio.</p>";
-  } else {
-    carrinho.forEach((p, i) => {
+    lista.innerHTML = "";
+    let total = 0;
+
+    if (carrinho.length === 0) {
+      lista.innerHTML = "<p>Carrinho vazio.</p>";
+      totalEl.innerHTML = "Total: R$ 0,00";
+    } else {
+      carrinho.forEach((p, i) => {
+        const valor = Number(p.COMPRA || 0);
+        const subtotal = valor * p.qtdVenda;
+        total += subtotal;
+
+
       lista.innerHTML += `
-        <p>${p.PRODUTO}
-           <button onclick="remover(${i})">❌</button>
-        </p>`;
+    <div class="item-carrinho">
+      
+      <img src="${p['IMAGEM APP'] || 'https://via.placeholder.com/60'}">
+
+      <div class="dados">
+        <div><b>${p.PRODUTO || ''}</b></div>
+        <div>${p.CATEGORIA || ''}</div>
+        <div>${p.CAIXA || ''}</div>
+        <div>
+    <input 
+  type="number"
+  min="0.01"
+  step="0.01"
+  value="${p.qtdVenda}"
+  onchange="alterarQtd(${i}, this.value)"
+  style="width:100px"
+>
+
+  </div>
+  <div>
+    ${(valor * p.qtdVenda).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+  </div>
+
+      </div>
+
+      <button onclick="remover(${i})">❌</button>
+    </div>
+    <hr>
+  `;
+
+      });
+
+      totalEl.innerHTML = `
+        <b>Total:</b> ${total.toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        })}
+      `;
+    }
+
+    document.getElementById("modalCarrinho").style.display = "flex";
+  }
+
+  function remover(i) {
+    carrinho.splice(i, 1);
+    atualizarIcone();
+    abrirCarrinho();
+  }
+
+  function fecharCarrinho() {
+    document.getElementById("modalCarrinho").style.display = "none";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+  carregarDados(true);
+});
+
+  </script>
+  <div style="
+      width: 100%;
+      max-width: 420px;
+      margin: 40px auto;
+      padding: 25px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-family: Arial, sans-serif;
+      text-align: center;
+  ">
+
+  
+
+      <button
+          onclick="finalizarVenda()"
+          style="
+              margin-top: 15px;
+              padding: 14px 30px;
+              background: #0d6efd;
+              border: none;
+              color: white;
+              cursor: pointer;
+              border-radius: 8px;
+              font-size: 17px;
+              font-weight: bold;
+              width: 100%;
+              transition: 0.2s;
+          "
+          onmouseover="this.style.background='#0b5ed7'"
+          onmouseout="this.style.background='#0d6efd'"
+      >
+          FINALIZAR VENDA
+      </button>
+  </div>
+
+  <script>
+ function finalizarVenda() {
+  if(carrinho.length === 0){
+    alert("Carrinho vazio!");
+    return;
+  }
+
+  if(!confirm("Deseja realmente finalizar a venda?")) return;
+
+  let totalVenda = 0;
+
+  const itens = carrinho.map(p => {
+    const valor = Number(p.COMPRA || 0) * (p.qtdVenda || 1);
+    totalVenda += valor;
+
+    return {
+      categoria: p.CATEGORIA || "",
+      produto: p.PRODUTO || "",
+      valorUnitario: Number(p.COMPRA || 0),
+      quantidade: p.qtdVenda
+    };
+  });
+
+
+
+
+  fetch(API_URL, {
+  method: "POST",
+  mode: "no-cors",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    action: "salvarVenda",
+    idVenda: proximoIdVenda,
+    totalVenda: totalVenda,
+    itens
+  })
+})
+
+    .then(() => {
+      alert("✅ Venda registrada na aba SAÍDA (sem ler resposta do servidor).");
+      carrinho = [];
+      atualizarIcone();
+      fecharCarrinho();
+    })
+    .catch(err => {
+      console.error(err);
+      alert("❌ Erro ao salvar venda");
     });
   }
 
-  document.getElementById("modalCarrinho").style.display = "flex";
-}
+  </script>
 
-function remover(i) {
-  carrinho.splice(i, 1);
-  atualizarIcone();
-  abrirCarrinho();
-}
 
-function fecharCarrinho() {
-  document.getElementById("modalCarrinho").style.display = "none";
-}
 
-window.onload = carregarDados;
-</script>
-<div style="
-    width: 100%;
-    max-width: 420px;
-    margin: 40px auto;
-    padding: 25px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    font-family: Arial, sans-serif;
-    text-align: center;
-">
-
-    <h2 style="margin-top: 0; color: #222;">Finalizar Venda</h2>
-
-    <p style="font-size: 15px; color: #444; line-height: 1.5;">
-        Ao confirmar, a venda será registrada na planilha,
-        PDFs gerados, envio por Email/WhatsApp (se marcado)
-        e o carrinho será limpo.
-    </p>
-
-    <button
-        onclick="finalizarVenda()"
-        style="
-            margin-top: 15px;
-            padding: 14px 30px;
-            background: #0d6efd;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 17px;
-            font-weight: bold;
-            width: 100%;
-            transition: 0.2s;
-        "
-        onmouseover="this.style.background='#0b5ed7'"
-        onmouseout="this.style.background='#0d6efd'"
-    >
-        FINALIZAR VENDA
-    </button>
-</div>
-
-<script>
-function finalizarVenda() {
-  if (confirm("Deseja realmente finalizar a venda?")) {
-      google.script.run.VENDA();
-      alert("Venda finalizada!");
-  }
-}
-</script>
-
-</body>
-</html>
+  </body>
+  </html>

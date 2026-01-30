@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Veículo</title>
+
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .empresa {
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background: #fff;
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 6px;
+    }
+
+    .form-containerbotao {
+      background: #fff;
+      max-width: 250px;
+      margin: auto;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .grupo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .botoes {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-salvar {
+      background: #2f80ed;
+      color: #fff;
+    }
+
+    .btn-limpar {
+      background: #ccc;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Controle de Veículo</h1>
+
+<div class="form-containerbotao">
+  <div class="botoes" style="justify-content:center">
+    <a href="https://consulta-estoque-app.web.app/veiculo.html">
+      <button class="btn-salvar">Voltar para Veículos</button>
+    </a>
+  </div>
+</div>
+
+<div class="form-container">
+  <form id="formControleVeiculo">
+
+    <!-- Motorista / Veículo -->
+    <div class="grupo">
+      <div>
+        <label>Motorista</label>
+        <select name="motorista" required>
+          <option value="">Selecione</option>
+          <option>Altair</option>
+          <option>Daniel</option>
+          <option>Duarte</option>
+          <option>Guilherme</option>
+          <option>Josué</option>
+          <option>Juliana</option>
+          <option>Júlio</option>
+          <option>Mayara</option>
+          <option>Robson</option>
+          <option>Samuel</option>
+        </select>
+      </div>
+<div>
+        <label>Entrada/Saída</label>
+        <select name="entradaSaida" required>
+          <option value="">Selecione</option>
+          <option>Entrada</option>
+          <option>Saída</option>
+      
+        </select>
+      </div>
+      <div>
+        <label>Veículo</label>
+        <select name="veiculo" required>
+          <option value="">Selecione</option>
+          <option>Saveiro</option>
+          <option>Ford ka</option>
+          <option>Fiorino</option>
+          <option>Fox</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Destino</label>
+        <input type="text" name="destino" required>
+      </div>
+    </div>
+
+    <!-- KM / Abastecimento -->
+    <div class="grupo">
+      <div>
+        <label>KM</label>
+        <input type="number" name="km" required>
+      </div>
+
+      <div>
+        <label>Abastecimento</label>
+        <select name="abastecimento" required>
+          <option value="">Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Litros</label>
+        <input type="number" step="0.01" name="litros">
+      </div>
+    </div>
+
+    <!-- Observações -->
+    <div>
+      <label>Observações</label>
+      <textarea name="obs"></textarea>
+    </div>
+
+    <!-- Botões -->
+    <div class="botoes">
+      <button type="reset" class="btn-limpar">Limpar</button>
+      <button type="submit" class="btn-salvar">Salvar</button>
+    </div>
+
+  </form>
+<div style="margin-top:30px;">
+
+  <h2>Últimos Registros</h2>
+
+  <div class="tabela-container tabela-nova">
+    <table id="tabelaControle">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Motorista</th>
+          <th>Entrada/Saída</th>
+          <th>Veículo</th>
+          <th>Destino</th>
+          <th>KM</th>
+          <th>Abastecimento</th>
+          <th>Litros</th>
+          <th>Obs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="9" style="text-align:center">
+            Carregando...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+</div>
+
+<script>
+const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbwMMKgxZ_wmnUAx_BfIaYt9qkUERfQugpbDSFv9AbLaCHibcGg88XA7JTNkrFqRIFDS/exec";
+
+document.getElementById("formControleVeiculo").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  formData.append("action", "controleVeiculo");
+
+  fetch(URL_WEBAPP, {
+    method: "POST",
+    body: formData
+  })
+  .then(r => r.text())
+  .then(() => {
+    alert("Registro salvo com sucesso!");
+    this.reset();
+  })
+  .catch(err => {
+    alert("Erro ao salvar");
+    console.error(err);
+  });
+});
+</script>
+<script>
+function carregarUltimosControle() {
+  fetch(URL_WEBAPP + "?action=listarControle")
+    .then(r => r.json())
+    .then(dados => {
+      const tbody = document.querySelector("#tabelaControle tbody");
+      tbody.innerHTML = "";
+
+      if (!dados.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align:center">
+              Nenhum registro encontrado
+            </td>
+          </tr>`;
+        return;
+      }
+
+      dados.slice(-10).reverse().forEach(l => {
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${l.dataHora}</td>
+            <td>${l.motorista}</td>
+            <td>${l.entradaSaida}</td>
+            <td>${l.veiculo}</td>
+            <td>${l.destino}</td>
+            <td>${l.km}</td>
+            <td>${l.abastecimento}</td>
+            <td>${l.litros}</td>
+            <td>${l.obs || ""}</td>
+          </tr>
+        `;
+      });
+    })
+    .catch(() => {
+      document.querySelector("#tabelaControle tbody").innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align:center">
+            Erro ao carregar dados
+          </td>
+        </tr>`;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", carregarUltimosControle);
+</script>
+<style>
+/* ===== ESTILO NOVO APENAS PARA "ÚLTIMOS REGISTROS" ===== */
+.tabela-nova table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+
+.tabela-nova th {
+  background: #1f6feb;
+  color: #fff;
+  padding: 12px;
+  border: 1px solid #ccc;
+  font-weight: bold;
+  text-align: center;
+}
+
+.tabela-nova td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.tabela-nova tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.tabela-nova tbody tr:hover {
+  background: #e6f0ff;
+}
+</style>
+
+</body>
+</html>

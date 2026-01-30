@@ -1,42 +1,58 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 20px;
-  background: #f8f9fa;
-  color: #333;
+/* ===== ESTILO NOVO APENAS PARA "ÚLTIMOS REGISTROS" ===== */
+
+.tabela-nova th {
+  background: red !important;
 }
 
-h1 {
+.form-container .tabela-nova th {
+  background: #1f6feb;
+  color: #fff;
+  padding: 12px;
+  border: 1px solid #ccc;
+  font-weight: bold;
   text-align: center;
 }
 
-#filtro {
-  width: 60%;
+.form-container .tabela-nova td {
   padding: 10px;
-  margin-right: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
 }
 
-#btnBuscar {
-  padding: 10px 15px;
-  cursor: pointer;
+.form-container .tabela-nova tbody tr:nth-child(even) {
+  background: #f9fafb;
 }
 
-#resultado {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 15px;
+.form-container .tabela-nova tbody tr:hover {
+  background: #e6f0ff;
 }
-
-.produto-item {
-  background: white;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.produto-img {
+/* ===== ESTILO NOVO APENAS PARA "ÚLTIMAS MANUTENÇÕES" ===== */
+.tabela-nova table {
   width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 10px;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+
+.tabela-nova th {
+  background: #1f6feb;
+  color: #fff;
+  padding: 12px;
+  border: 1px solid #ccc;
+  font-weight: bold;
+  text-align: center;
+}
+
+.tabela-nova td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.tabela-nova tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.tabela-nova tbody tr:hover {
+  background: #e6f0ff;
 }
