@@ -1,9 +1,6 @@
   <!DOCTYPE html>
   <html lang="pt-BR">
   <head>
-    <link rel="preconnect" href="https://script.google.com">
-<link rel="dns-prefetch" href="https://script.google.com">
-
   <meta charset="UTF-8">
   <title>Venda de Produtos</title>
   <link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
@@ -239,7 +236,25 @@
       </div>
 
       <button id="fecharCarrinho" onclick="fecharCarrinho()">Fechar</button>
-      
+      <button id="btnOrcamento" onclick="gerarOrcamento()"
+        style="
+              margin-top: 15px;
+              padding: 14px 30px;
+              background: #fd150d;
+              border: none;
+              color: white;
+              cursor: pointer;
+              border-radius: 8px;
+              font-size: 17px;
+              font-weight: bold;
+              width: 100%;
+              transition: 0.2s;
+          "
+          onmouseover="this.style.background='#fd0d0db4'"
+          onmouseout="this.style.background='#fd150d'"
+      >
+  🧾 Gerar Orçamento
+</button>
       <button
           onclick="finalizarVenda()"
           style="
@@ -265,7 +280,7 @@
 
 
   <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxkOd5Ec52eZJgGF_s-EQEI8cNPvZJ1IyHi0c4_1TCfTNwlF_4tg79dTZ4yzPhKutd_/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyP6tq-OcS0i3kblEkMaFedlkNggj-76FoY93qfu8Ln_7X5SPDPFiQTREiqJsgEmP1D/exec";
 
   let paginaAtual = 1;
 const limite = 50;
@@ -276,67 +291,46 @@ let carregando = false;
   let categoriaAtual = "";
   let carrinho = [];
   let proximoIdVenda = 0;
-let produtosVisiveis = [];
 
-async function carregarDados(reset = false) {
-  if (carregando) return;
-  carregando = true;
 
-  if (reset) {
-    paginaAtual = 1;
-    todosProdutos = [];
-    produtosVisiveis = [];
-    document.getElementById("produtos").innerHTML = "";
-  }
+ async function carregarDados(reset = false) {
+    if (carregando) return;
+    carregando = true;
 
-  document.getElementById("loading").textContent = "⏳ Carregando produtos...";
-
-  try {
-    const res = await fetch(`${API_URL}?page=${paginaAtual}&limit=${limite}`);
-    const data = await res.json();
-
-    todosProdutos.push(...(data.rows || []));
-    produtosVisiveis = data.rows || [];
-
-    proximoIdVenda = (Number(data.ultimoIdVenda) || 0) + 1;
-
-    preencherCategorias();
-    mostrar(produtosVisiveis); // 🔥 SÓ A PÁGINA
-
-    if ((paginaAtual * limite) < data.total) {
-      paginaAtual++;
+    if (reset) {
+      paginaAtual = 1;
+      todosProdutos = [];
+      document.getElementById("produtos").innerHTML = "";
     }
 
-  } catch (e) {
-    console.error(e);
-    document.getElementById("erro").textContent = "Erro ao carregar produtos.";
+    document.getElementById("loading").textContent = "⏳ Carregando produtos...";
+
+    try {
+      const res = await fetch(
+        `${API_URL}?page=${paginaAtual}&limit=${limite}`
+      );
+      const data = await res.json();
+
+      todosProdutos.push(...(data.rows || []));
+      proximoIdVenda = (Number(data.ultimoIdVenda) || 0) + 1;
+
+      preencherCategorias();
+      mostrar(todosProdutos);
+
+      // ✅ avança página se ainda tiver mais
+      if ((paginaAtual * limite) < data.total) {
+        paginaAtual++;
+      }
+
+    } catch (e) {
+      console.error(e);
+      document.getElementById("erro").textContent = "Erro ao carregar produtos.";
+    }
+
+    document.getElementById("loading").textContent = "";
+    carregando = false;
   }
-
-  document.getElementById("loading").textContent = "";
-  carregando = false;
-}
-
-let categoriasCriadas = false;
-
-function preencherCategorias() {
-  if (categoriasCriadas) return;
-
-  const ul = document.getElementById("categorias");
-  ul.innerHTML = "";
-
-  const categorias = [...new Set(
-    todosProdutos.map(p => p.CATEGORIA).filter(Boolean)
-  )].sort();
-
-  ul.innerHTML += `<li><a href="#" class="ativo" onclick="filtrarPorCategoria('')">Todas</a></li>`;
-
-  categorias.forEach(cat => {
-    ul.innerHTML += `<li><a href="#" onclick="filtrarPorCategoria('${cat}')">${cat}</a></li>`;
-  });
-
-  categoriasCriadas = true;
-}
-function preencherCategorias() {
+  function preencherCategorias() {
     const ul = document.getElementById("categorias");
     ul.innerHTML = "";
     const categorias = [...new Set(todosProdutos.map(p => p.CATEGORIA).filter(Boolean))].sort();
@@ -358,52 +352,52 @@ function preencherCategorias() {
 
     buscar();
   }
+function dinheiro(valor) {
+  return Number(valor || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+}
 
   function buscar() {
     const termo = document.getElementById("busca").value.toLowerCase();
 
-  const filtrados = produtosVisiveis.filter(p =>
-  (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-  ((p.PRODUTO || "").toLowerCase().includes(termo))
-);
-
+    const filtrados = todosProdutos.filter(p =>
+      (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+      ((p.PRODUTO || "").toLowerCase().includes(termo))
+    );
 
     mostrar(filtrados);
   }
 
- function mostrar(lista) {
-  const div = document.getElementById("produtos");
-  div.innerHTML = "";
+  function mostrar(lista) {
+    const div = document.getElementById("produtos");
+    div.innerHTML = "";
 
-  const fragment = document.createDocumentFragment();
+    lista.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "card";
 
-  lista.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "card";
+      card.innerHTML = `
+        <img src="${p['IMAGEM APP']}" onclick='abrirModal(${JSON.stringify(p)})'>
+        <div class="info">
+          <h3>${p.PRODUTO}</h3>
+          <p><b>Categoria:</b> ${p.CATEGORIA}</p>
+          <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
+          <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
+          <p><b>Valor:</b> ${dinheiro(p.VALOR_VENDA)}</p>
 
-    card.innerHTML = `
-      <img loading="lazy" src="${p['IMAGEM APP'] || 'https://via.placeholder.com/250'}"
-           onclick='abrirModal(${JSON.stringify(p)})'>
-      <div class="info">
-        <h3>${p.PRODUTO}</h3>
-        <p><b>Categoria:</b> ${p.CATEGORIA}</p>
-        <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
-        <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
-        <p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        })}</p>
-      </div>
-      <button class="btn-add" onclick='addCarrinho(${JSON.stringify(p)})'>
-        ➕ Adicionar
-      </button>
-    `;
 
-    fragment.appendChild(card);
-  });
+        </div>
 
-  div.appendChild(fragment);
-}
+        <button class="btn-add" onclick='addCarrinho(${JSON.stringify(p)})'>
+          ➕ Adicionar
+        </button>
+      `;
+
+      div.appendChild(card);
+    });
+  }
 
 function abrirModal(p) {
   const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
@@ -420,10 +414,8 @@ function abrirModal(p) {
     <p><b>Caixa:</b> ${p.CAIXA || ""}</p>
 
     <h2>
-      <p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString(
-        'pt-BR',
-        { style: 'currency', currency: 'BRL' }
-      )}</p>
+     <p><b>Valor:</b> ${dinheiro(p.VALOR_VENDA)}</p>
+
     </h2>
   `;
 
@@ -460,7 +452,7 @@ function abrirModal(p) {
       totalEl.innerHTML = "Total: R$ 0,00";
     } else {
       carrinho.forEach((p, i) => {
-        const valor = Number(p.COMPRA || 0);
+        const valor = Number(p.VALOR_VENDA || 0)
         const subtotal = valor * p.qtdVenda;
         total += subtotal;
 
@@ -486,8 +478,9 @@ function abrirModal(p) {
 
   </div>
   <div>
-    ${(valor * p.qtdVenda).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+  ${dinheiro(valor * p.qtdVenda)}
   </div>
+
 
       </div>
 
@@ -498,12 +491,8 @@ function abrirModal(p) {
 
       });
 
-      totalEl.innerHTML = `
-        <b>Total:</b> ${total.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        })}
-      `;
+      totalEl.innerHTML = `<b>Total:</b> ${dinheiro(total)}`;
+
     }
 
     document.getElementById("modalCarrinho").style.display = "flex";
@@ -514,15 +503,122 @@ function abrirModal(p) {
     atualizarIcone();
     abrirCarrinho();
   }
+function calcularTotalCarrinho() {
+  return carrinho.reduce((soma, p) => {
+    return soma + (Number(p.VALOR_VENDA || 0)* Number(p.qtdVenda || 1));
+  }, 0);
+}
+function gerarOrcamento() {
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    return;
+  }
+
+  bloquearBotoes(true);
+  mostrarSpinner(true);
+
+  const dados = {
+    action: "salvarVenda",
+    idVenda: proximoIdVenda,
+    totalVenda: calcularTotalCarrinho(),
+    tipo: "ORÇAMENTO",
+    itens: JSON.stringify(
+      carrinho.map(p => ({
+        categoria: p.CATEGORIA,
+        produto: p.PRODUTO,
+        quantidade: p.qtdVenda,
+        valorUnitario: Number(p.VALOR_VENDA || 0)
+      }))
+    )
+  };
+
+  fetch(API_URL, {
+    method: "POST",
+    body: new URLSearchParams(dados)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.erro) {
+      alert("Erro: " + res.erro);
+      return;
+    }
+
+    if (res.pdf) {
+      window.open(res.pdf, "_blank");
+    }
+
+    alert("Orçamento gerado com sucesso!");
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao gerar orçamento");
+  })
+  .finally(() => {
+    mostrarSpinner(false);
+    bloquearBotoes(false);
+  });
+}
+
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    return;
+  }
+
+  bloquearBotoes(true);
+  mostrarSpinner(true);
+
+  const idVenda = proximoIdVenda;
+
+    fetch(API_URL, {
+
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({
+      action: "salvarVenda",
+      itens: JSON.stringify(carrinho),
+      idVenda: idVenda,
+      totalVenda: calcularTotalCarrinho(),
+      tipo: "ORÇAMENTO"
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.erro) {
+      alert(res.erro);
+    } else {
+      window.open(res.pdf, "_blank");
+      limparCarrinho();
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao gerar orçamento");
+  })
+  .finally(() => {
+    mostrarSpinner(false);
+    bloquearBotoes(false);
+  });
+
+
+ 
+function bloquearBotoes(status) {
+  document.getElementById("btnFinalizarVenda").disabled = status;
+  document.getElementById("btnOrcamento").disabled = status;
+}
+
+
 
   function fecharCarrinho() {
     document.getElementById("modalCarrinho").style.display = "none";
   }
+function mostrarSpinner(show) {
+  document.getElementById("spinnerVenda").style.display =
+    show ? "flex" : "none";
+}
 
-  document.addEventListener("DOMContentLoaded", () => {
-  carregarDados(true);
-});
-
+  window.onload = carregarDados;
   </script>
   <div style="
       width: 100%;
@@ -538,81 +634,118 @@ function abrirModal(p) {
 
   
 
-      <button
-          onclick="finalizarVenda()"
-          style="
-              margin-top: 15px;
-              padding: 14px 30px;
-              background: #0d6efd;
-              border: none;
-              color: white;
-              cursor: pointer;
-              border-radius: 8px;
-              font-size: 17px;
-              font-weight: bold;
-              width: 100%;
-              transition: 0.2s;
-          "
-          onmouseover="this.style.background='#0b5ed7'"
-          onmouseout="this.style.background='#0d6efd'"
-      >
-          FINALIZAR VENDA
-      </button>
+
+      
   </div>
 
-  <script>
- function finalizarVenda() {
-  if(carrinho.length === 0){
-    alert("Carrinho vazio!");
+<script>
+let vendaEmProcesso = false;
+</script>
+<script>
+  
+function alterarQtd(index, valor) {
+  const qtd = Number(valor);
+  if (qtd <= 0 || isNaN(qtd)) return;
+
+  carrinho[index].qtdVenda = qtd;
+  abrirCarrinho();
+}
+</script>
+
+  
+<script>
+function finalizarVenda() {
+
+  if (vendaEmProcesso) return; // 🔒 bloqueia duplo clique
+  vendaEmProcesso = true;
+
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    vendaEmProcesso = false;
     return;
   }
 
-  if(!confirm("Deseja realmente finalizar a venda?")) return;
+  mostrarSpinner(true);
 
-  let totalVenda = 0;
+  const totalVenda = calcularTotalCarrinho();
 
-  const itens = carrinho.map(p => {
-    const valor = Number(p.COMPRA || 0) * (p.qtdVenda || 1);
-    totalVenda += valor;
-
-    return {
-      categoria: p.CATEGORIA || "",
-      produto: p.PRODUTO || "",
-      valorUnitario: Number(p.COMPRA || 0),
-      quantidade: p.qtdVenda
-    };
-  });
-
-
-
-
-  fetch(API_URL, {
-  method: "POST",
-  mode: "no-cors",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
+  const dados = {
     action: "salvarVenda",
     idVenda: proximoIdVenda,
     totalVenda: totalVenda,
-    itens
+    tipo: "VENDA",
+    itens: JSON.stringify(carrinho),
+
+    
+  };
+
+  fetch(API_URL, {
+    method: "POST",
+    body: new URLSearchParams(dados)
   })
-})
+  .then(r => r.json())
+  .then(res => {
 
-    .then(() => {
-      alert("✅ Venda registrada na aba SAÍDA (sem ler resposta do servidor).");
-      carrinho = [];
-      atualizarIcone();
-      fecharCarrinho();
-    })
-    .catch(err => {
-      console.error(err);
-      alert("❌ Erro ao salvar venda");
-    });
-  }
+    if (res.erro) {
+      alert("Erro: " + res.erro);
+      return;
+    }
 
-  </script>
+    carrinho = [];
+    atualizarIcone();
+    fecharCarrinho();
+    proximoIdVenda++;
+
+    if (res.pdf) {
+      window.open(res.pdf, "_blank");
+    }
+
+    alert("Venda finalizada com sucesso!");
+
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao salvar venda");
+  })
+  .finally(() => {
+    vendaEmProcesso = false;
+    mostrarSpinner(false);
+  });
+}
+</script>
 
 
+<div id="spinnerVenda" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  color:#fff;
+  font-size:18px;
+">
+  <div class="loader"></div>
+  <p>Processando venda...</p>
+</div>
+
+<style>
+.loader {
+  width: 55px;
+  height: 55px;
+  border: 6px solid #ccc;
+  border-top: 6px solid #0d6efd;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 15px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+</style>
 
   </body>
   </html>
