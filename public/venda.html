@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
   <html lang="pt-BR">
   <head>
   <meta charset="UTF-8">
@@ -240,7 +240,7 @@
         style="
               margin-top: 15px;
               padding: 14px 30px;
-              background: #fd150d;
+              background: #fd0d0db4;
               border: none;
               color: white;
               cursor: pointer;
@@ -256,6 +256,7 @@
   🧾 Gerar Orçamento
 </button>
       <button
+          id="btnFinalizarVenda"
           onclick="finalizarVenda()"
           style="
               margin-top: 15px;
@@ -280,7 +281,7 @@
 
 
   <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyP6tq-OcS0i3kblEkMaFedlkNggj-76FoY93qfu8Ln_7X5SPDPFiQTREiqJsgEmP1D/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzQDH8xv1FnkEzjO0npc3FzlFDmHUZgI2G0Fzm5KHdWowsRbrfU3FZO9VdGPJTMTaE0/exec";
 
   let paginaAtual = 1;
 const limite = 50;
@@ -508,98 +509,7 @@ function calcularTotalCarrinho() {
     return soma + (Number(p.VALOR_VENDA || 0)* Number(p.qtdVenda || 1));
   }, 0);
 }
-function gerarOrcamento() {
-  if (carrinho.length === 0) {
-    alert("Carrinho vazio");
-    return;
-  }
 
-  bloquearBotoes(true);
-  mostrarSpinner(true);
-
-  const dados = {
-    action: "salvarVenda",
-    idVenda: proximoIdVenda,
-    totalVenda: calcularTotalCarrinho(),
-    tipo: "ORÇAMENTO",
-    itens: JSON.stringify(
-      carrinho.map(p => ({
-        categoria: p.CATEGORIA,
-        produto: p.PRODUTO,
-        quantidade: p.qtdVenda,
-        valorUnitario: Number(p.VALOR_VENDA || 0)
-      }))
-    )
-  };
-
-  fetch(API_URL, {
-    method: "POST",
-    body: new URLSearchParams(dados)
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (res.erro) {
-      alert("Erro: " + res.erro);
-      return;
-    }
-
-    if (res.pdf) {
-      window.open(res.pdf, "_blank");
-    }
-
-    alert("Orçamento gerado com sucesso!");
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Erro ao gerar orçamento");
-  })
-  .finally(() => {
-    mostrarSpinner(false);
-    bloquearBotoes(false);
-  });
-}
-
-  if (carrinho.length === 0) {
-    alert("Carrinho vazio");
-    return;
-  }
-
-  bloquearBotoes(true);
-  mostrarSpinner(true);
-
-  const idVenda = proximoIdVenda;
-
-    fetch(API_URL, {
-
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams({
-      action: "salvarVenda",
-      itens: JSON.stringify(carrinho),
-      idVenda: idVenda,
-      totalVenda: calcularTotalCarrinho(),
-      tipo: "ORÇAMENTO"
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (res.erro) {
-      alert(res.erro);
-    } else {
-      window.open(res.pdf, "_blank");
-      limparCarrinho();
-    }
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Erro ao gerar orçamento");
-  })
-  .finally(() => {
-    mostrarSpinner(false);
-    bloquearBotoes(false);
-  });
 
 
  
@@ -713,6 +623,64 @@ function finalizarVenda() {
   });
 }
 </script>
+<script>
+function gerarOrcamento() {
+
+  if (vendaEmProcesso) return;
+  vendaEmProcesso = true;
+
+  if (carrinho.length === 0) {
+    alert("Carrinho vazio");
+    vendaEmProcesso = false;
+    return;
+  }
+
+  mostrarSpinner(true);
+
+  const totalVenda = calcularTotalCarrinho();
+
+  const dados = {
+    action: "salvarVenda",
+    idVenda: proximoIdVenda,
+    totalVenda: totalVenda,
+    tipo: "ORÇAMENTO",
+    itens: JSON.stringify(carrinho)
+  };
+
+  fetch(API_URL, {
+    method: "POST",
+    body: new URLSearchParams(dados)
+  })
+  .then(r => r.json())
+  .then(res => {
+
+    if (res.erro) {
+      alert("Erro: " + res.erro);
+      return;
+    }
+
+    if (res.pdf) {
+      window.open(res.pdf, "_blank");
+    }
+
+    // ✅ Limpa carrinho, fecha modal e atualiza ID
+    carrinho = [];
+    atualizarIcone();
+    fecharCarrinho();
+    proximoIdVenda++;
+
+    alert("Orçamento gerado com sucesso!");
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro ao gerar orçamento");
+  })
+  .finally(() => {
+    vendaEmProcesso = false;
+    mostrarSpinner(false);
+  });
+}
+</script>
 
 
 <div id="spinnerVenda" style="
@@ -728,7 +696,7 @@ function finalizarVenda() {
   font-size:18px;
 ">
   <div class="loader"></div>
-  <p>Processando venda...</p>
+  <p>Processando...</p>
 </div>
 
 <style>
