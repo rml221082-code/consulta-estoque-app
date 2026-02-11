@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Entrada de Serviço</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.checklist {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+button {
+  margin-top: 25px;
+  padding: 12px;
+  width: 100%;
+  font-size: 16px;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>Entrada de Serviço</h1>
+
+<form id="formServico">
+
+<label>Status</label>
+<select id="status">
+  <option>ENTRADA</option>
+  <option>ORÇAMENTO</option>
+  <option>AGUARDANDO</option>
+  <option>APROVADO</option>
+</select>
+
+<label>Nº Nota Fiscal</label>
+<input type="text" id="nota">
+
+<label>Cliente</label>
+<input type="text" id="cliente">
+
+<label>Empresa</label>
+<input type="text" id="empresa">
+
+<label>Descrição do Serviço</label>
+<textarea id="descricao"></textarea>
+
+<label>Checklist</label>
+<div class="checklist">
+  <label><input type="checkbox" value="Vazamento"> Vazamento</label>
+  <label><input type="checkbox" value="Conferido"> Conferido</label>
+  <label><input type="checkbox" value="Testado"> Testado</label>
+</div>
+
+<label>Fotos (até 10)</label>
+<input type="file" id="fotos" multiple accept="image/*">
+
+<button type="button" onclick="salvarServico()">Salvar Serviço</button>
+
+</form>
+</div>
+
+<script>
+function salvarServico() {
+
+  const fotos = document.getElementById("fotos").files;
+  if (fotos.length > 10) {
+    alert("Máximo de 10 fotos permitido.");
+    return;
+  }
+
+  const checklist = [...document.querySelectorAll('.checklist input:checked')]
+    .map(c => c.value)
+    .join(", ");
+
+  const formData = new FormData();
+  formData.append("action", "salvarservico");
+  formData.append("status", document.getElementById("status").value);
+  formData.append("nota", document.getElementById("nota").value);
+  formData.append("cliente", document.getElementById("cliente").value);
+  formData.append("empresa", document.getElementById("empresa").value);
+  formData.append("descricao", document.getElementById("descricao").value);
+  formData.append("checklist", checklist);
+
+  for (let i = 0; i < fotos.length && i < 10; i++) {
+    formData.append("foto" + i, fotos[i]);
+  }
+
+  fetch("https://script.google.com/macros/s/AKfycbw6K6pJC1tMUv62JJ0a6RqqMjb9IjypOMiii2i91wtaJ6mcgdriVHnP_qeXeNzU1nzX/exec", {
+    method: "POST",
+    body: formData
+  })
+  .then(r => r.json())
+  .then(r => {
+    if (r.success) {
+      alert("Serviço salvo com ID " + r.idServico);
+      document.getElementById("formServico").reset();
+    } else {
+      alert("Erro: " + r.erro);
+    }
+  })
+  .catch(err => alert("Erro de conexão"));
+}
+</script>
+
+</body>
+</html>

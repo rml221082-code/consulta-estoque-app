@@ -1,471 +1,471 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Entrada de Produtos</title>
-<link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+  <meta charset="UTF-8">
+  <title>Entrada de Produtos</title>
+  <link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
 
-<style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f4f4f4;
-}
+  <style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4f4f4;
+  }
 
-/* HEADER */
-header {
-  background: #121111;
-  color: #fff;
-  padding: 18px;
-  text-align: center;
-  font-size: 1.6rem;
-  position: relative;
-}
+  /* HEADER */
+  header {
+    background: #1b5500;
+    color: #fff;
+    padding: 18px;
+    text-align: center;
+    font-size: 1.6rem;
+    position: relative;
+  }
 
-#carrinhoBtn {
-  position: absolute;
-  right: 20px;
-  top: 15px;
-  background: #0d6efd;
-  border: none;
-  padding: 10px 16px;
-  color: #fff;
-  border-radius: 6px;
-  cursor: pointer;
-}
+  #carrinhoBtn {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    background: #ffffff;
+    border: none;
+    padding: 10px 16px;
+    color: #000000;
+    border-radius: 6px;
+    cursor: pointer;
+  }
 
-/* SIDEBAR */
-#sidebar {
-  position: fixed;
-  left: 0;
-  top: 70px;
-  bottom: 0;
-  width: 220px;
-  background: #fff;
-  border-right: 1px solid #ccc;
-  padding: 15px;
-}
+  /* SIDEBAR */
+  #sidebar {
+    position: fixed;
+    left: 0;
+    top: 70px;
+    bottom: 0;
+    width: 220px;
+    background: #fff;
+    border-right: 1px solid #ccc;
+    padding: 15px;
+  }
 
-#categorias a {
-  display: block;
-  padding: 10px;
-  margin-bottom: 4px;
-  text-decoration: none;
-  color: #222;
-  border-radius: 6px;
-}
+  #categorias a {
+    display: block;
+    padding: 10px;
+    margin-bottom: 4px;
+    text-decoration: none;
+    color: #222;
+    border-radius: 6px;
+  }
 
-#categorias a:hover,
-#categorias a.ativo {
-  background: #121111;
-  color: #fff;
-}
+  #categorias a:hover,
+  #categorias a.ativo {
+    background: #1b5500;
+    color: #fff;
+  }
 
-/* MAIN */
-main {
-  margin-left: 240px;
-  padding: 30px;
-}
+  /* MAIN */
+  main {
+    margin-left: 240px;
+    padding: 30px;
+  }
 
-#produtos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-}
+  #produtos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
 
-/* CARD */
-.card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0,0,0,.1);
-  overflow: hidden;
-}
+  /* CARD */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,.1);
+    overflow: hidden;
+  }
 
-.card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
+  .card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
 
-.card .info {
-  padding: 12px;
-}
+  .card .info {
+    padding: 12px;
+  }
 
-.btn-add {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background: #121111;
-  color: #fff;
-  cursor: pointer;
-}
+  .btn-add {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: #121111;
+    color: #fff;
+    cursor: pointer;
+  }
 
-/* MODAL CARRINHO */
-#modalCarrinho {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.7);
-  justify-content: center;
-  align-items: center;
-}
+  /* MODAL CARRINHO */
+  #modalCarrinho {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    justify-content: center;
+    align-items: center;
+  }
 
-#boxCarrinho {
-  background: #fff;
-  width: 95%;
-  max-width: 900px;
-  padding: 20px;
-  border-radius: 10px;
-}
+  #boxCarrinho {
+    background: #fff;
+    width: 95%;
+    max-width: 900px;
+    padding: 20px;
+    border-radius: 10px;
+  }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
 
-th, td {
-  border: 1px solid #ccc;
-  padding: 6px;
-  text-align: center;
-}
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px;
+    text-align: center;
+  }
 
-th {
-  background: #eee;
-}
+  th {
+    background: #eee;
+  }
 
-input[type=number] {
-  width: 90px;
-}
+  input[type=number] {
+    width: 90px;
+  }
 
-.total-geral {
-  margin-top: 10px;
-  text-align: right;
-  font-size: 18px;
-  font-weight: bold;
-}
+  .total-geral {
+    margin-top: 10px;
+    text-align: right;
+    font-size: 18px;
+    font-weight: bold;
+  }
 
-button {
-  cursor: pointer;
-}
-</style>
-</head>
+  button {
+    cursor: pointer;
+  }
+  </style>
+  </head>
 
-<body>
+  <body>
 
-<header>
-  Entrada de Produtos
-  <button id="carrinhoBtn" onclick="abrirCarrinho()">📥 Carrinho (<span id="qtdCarrinho">0</span>)</button>
-</header>
+  <header>
+    Entrada de Produtos
+    <button id="carrinhoBtn" onclick="abrirCarrinho()">📥 Carrinho (<span id="qtdCarrinho">0</span>)</button>
+  </header>
 
-<aside id="sidebar">
-  <h3>Categorias</h3>
-  <div id="categorias"></div>
-</aside>
+  <aside id="sidebar">
+    <h3>Categorias</h3>
+    <div id="categorias"></div>
+  </aside>
 
-<main>
-  <div id="produtos"></div>
-</main>
+  <main>
+    <div id="produtos"></div>
+  </main>
 
-<!-- MODAL CARRINHO -->
-<div id="modalCarrinho">
-  <div id="boxCarrinho">
-    <h2>Carrinho de Entrada</h2>
+  <!-- MODAL CARRINHO -->
+  <div id="modalCarrinho">
+    <div id="boxCarrinho">
+      <h2>Carrinho de Entrada</h2>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Produto</th>
-          <th>Qtd</th>
-          <th>Valor Compra</th>
-          <th>IPI %</th>
-          <th>ICMS %</th>
-          <th>VENDA %</th>
-          <th>Total</th>
-          <th>Ação</th>
-        </tr>
-      </thead>
-      <tbody id="listaCarrinho"></tbody>
-    </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Produto</th>
+            <th>Qtd</th>
+            <th>Valor Compra</th>
+            <th>IPI %</th>
+            <th>ICMS %</th>
+            <th>VENDA %</th>
+            <th>Total</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="listaCarrinho"></tbody>
+      </table>
 
-    <div class="total-geral">
-      Total Geral: <span id="totalGeral">R$ 0,00</span>
-    </div>
-
-    <br>
-    <button onclick="fecharCarrinho()">Fechar</button>
-    <button onclick="salvarEntrada()" style="background:#0d6efd;color:#fff;padding:10px 20px;border:none;">
-      SALVAR ENTRADA
-    </button>
-  </div>
-</div>
-
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbwAxeY_0fHVUBP04i9CukpmjIKHVUE9I8OEYeOidYR-nmZuRNcF9AjnVkjkKT5FSwuN/exec";
-
-let produtos = [];
-let carrinho = [];
-
-/* ======= CARREGAR PRODUTOS ======= */
-
-/* ======= RENDERIZA PRODUTOS ======= */
-
-function renderizarProdutos(lista = produtos) {
-  const div = document.getElementById("produtos");
-  div.innerHTML = "";
-
-  const fragment = document.createDocumentFragment();
-
-  lista.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <img src="${
-        p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http")
-          ? p['IMAGEM APP']
-          : 'https://via.placeholder.com/300?text=Sem+Imagem'
-      }">
-
-      <div class="info">
-        <b>${p.PRODUTO}</b><br>
-        Categoria: ${p.CATEGORIA || "-"}<br>
-        Estoque: ${p.QUANTIDADE || 0}<br>
-        Compra: ${Number(p.VALOR_COMPRA || 0)
-          .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+      <div class="total-geral">
+        Total Geral: <span id="totalGeral">R$ 0,00</span>
       </div>
 
-      <button class="btn-add">➕ Adicionar</button>
-    `;
+      <br>
+      <button onclick="fecharCarrinho()">Fechar</button>
+      <button onclick="salvarEntrada()" style="background:#0d6efd;color:#fff;padding:10px 20px;border:none;">
+        SALVAR ENTRADA
+      </button>
+    </div>
+  </div>
 
-    card.querySelector(".btn-add")
-      .addEventListener("click", () => addCarrinhoPorId(p.ID_PRODUTO));
+  <script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbzWMRZnWElPTNFzekkitB7A57e9wH08Dgffmf1z_GInFuKJ49rr3aCSVV72uMHXvWlM/exec";
 
-    fragment.appendChild(card);
-  });
-
-  div.appendChild(fragment);
-}
-
-/* ======= CARRINHO ======= */
-
-function addCarrinho(p) {
-  const existente = carrinho.find(i => i.ID_PRODUTO === p.ID_PRODUTO);
-
-  if (existente) {
-    existente.qtd += 1;
-  } else {
-    carrinho.push({
-      ID_PRODUTO: p.ID_PRODUTO,
-      PRODUTO: p.PRODUTO,
-      CATEGORIA: p.CATEGORIA,
-      qtd: 1,
-      valorCompra: Number(p.VALOR_COMPRA) || 0,
-      ipi: 0,
-      icms: 0,
-      venda: 70,
-      total: Number(p.VALOR_COMPRA) || 0
-    });
-  }
-
-  atualizarIcone();
-}
-
-function atualizarIcone() {
-  document.getElementById("qtdCarrinho").innerText = carrinho.length;
-}
-
-function abrirCarrinho() {
-  atualizarCarrinho();
-  document.getElementById("modalCarrinho").style.display = "flex";
-}
-
-function fecharCarrinho() {
-  document.getElementById("modalCarrinho").style.display = "none";
-}
-
-function atualizarCarrinho() {
-  const tbody = document.getElementById("listaCarrinho");
-  tbody.innerHTML = "";
-  let totalGeral = 0;
-
-  carrinho.forEach((i, idx) => {
-    const valorFinal =
-      i.valorCompra +
-      (i.valorCompra * i.ipi / 100) +
-      (i.valorCompra * i.icms / 100) +
-      (i.valorCompra * i.venda / 100);
-
-    i.total = valorFinal * i.qtd;
-    totalGeral += i.total;
-
-    tbody.innerHTML += `
-      <tr>
-        <td>${i.PRODUTO}</td>
-       <td>
-        <input type="number" min="1" value="${i.qtd}" oninput="carrinho[${idx}].qtd=Number(this.value)||1; agendarAtualizacao()"></td>
-        <td><input type="number" value="${i.valorCompra}" onchange="carrinho[${idx}].valorCompra=Number(this.value)||0; atualizarCarrinho()"></td>
-        <td><input type="number" value="${i.ipi}" onchange="carrinho[${idx}].ipi=Number(this.value)||0; atualizarCarrinho()"></td>
-        <td><input type="number" value="${i.icms}" onchange="carrinho[${idx}].icms=Number(this.value)||0; atualizarCarrinho()"></td>
-        <td><input type="number" value="${i.venda}" onchange="carrinho[${idx}].venda=Number(this.value)||0; atualizarCarrinho()"></td>
-        <td>${i.total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
-        <td><button onclick="carrinho.splice(${idx},1); atualizarCarrinho(); atualizarIcone()">❌</button></td>
-      </tr>
-    `;
-  });
-
-  document.getElementById("totalGeral").innerText =
-    totalGeral.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-}
+  let produtos = [];
+  let carrinho = [];
 
 
 
+  /* ======= RENDERIZA PRODUTOS ======= */
 
-</script>
-<script>
-function renderizarCategorias() {
-  const div = document.getElementById("categorias");
-  div.innerHTML = "";
+  function renderizarProdutos(lista = produtos) {
+    const div = document.getElementById("produtos");
+    div.innerHTML = "";
 
-  const categorias = [...new Set(
-    produtos
-      .map(p => (p.CATEGORIA || "").trim())
-      .filter(c => c !== "")
-  )];
+    const fragment = document.createDocumentFragment();
 
-  // 👉 Todas
-  const todas = document.createElement("a");
-  todas.href = "#";
-  todas.textContent = "Todas";
-  todas.className = "ativo";
-  todas.onclick = e => {
-    e.preventDefault();
-    filtrarCategoria(null, todas);
-  };
-  div.appendChild(todas);
+    lista.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "card";
 
-  // 👉 Categorias reais
-  categorias.forEach(cat => {
-    const a = document.createElement("a");
-    a.href = "#";
-    a.textContent = cat;
-    a.onclick = e => {
-      e.preventDefault();
-      filtrarCategoria(cat, a);
-    };
-    div.appendChild(a);
-  });
-}
+      card.innerHTML = `
+        <img src="${
+          p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http")
+            ? p['IMAGEM APP']
+            : 'https://via.placeholder.com/300?text=Sem+Imagem'
+        }">
 
-function filtrarCategoria(cat, el) {
-  document
-    .querySelectorAll("#categorias a")
-    .forEach(a => a.classList.remove("ativo"));
+        <div class="info">
+          <b>${p.PRODUTO}</b><br>
+          Categoria: ${p.CATEGORIA || "-"}<br>
+          Estoque: ${p.QUANTIDADE || 0}<br>
+          Compra: ${Number(p.VALOR_COMPRA || 0)
+            .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+        </div>
 
-  if (el) el.classList.add("ativo");
+        <button class="btn-add">➕ Adicionar</button>
+      `;
 
-  if (!cat) {
-    renderizarProdutos();
-    return;
-  }
+      card.querySelector(".btn-add")
+        .addEventListener("click", () => addCarrinhoPorId(p.ID_PRODUTO));
 
-  const filtrados = produtos.filter(p => p.CATEGORIA === cat);
-renderizarProdutos(filtrados);
-
-}
-</script>
-
-
-<script>
-async function salvarEntrada() {
-  if (carrinho.length === 0) {
-    alert("Carrinho vazio");
-    return;
-  }
-
-  const itens = carrinho.map(i => ({
-  ID_PRODUTO: i.ID_PRODUTO,
-  CATEGORIA: i.CATEGORIA,
-  PRODUTO: i.PRODUTO,
-  QTD: i.qtd,
-  VALOR_COMPRA: i.valorCompra,
-  VALOR_VENDA: i.total,   // 👈 TOTAL FINAL
-  IPI: i.ipi,
-  ICMS: i.icms,
-  VENDA: i.venda
-}));
-
-
-  const form = new URLSearchParams();
-  form.append("action", "salvarEntrada");
-  form.append("itens", JSON.stringify(itens));
-
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: form
+      fragment.appendChild(card);
     });
 
-    const data = await res.json();
+    div.appendChild(fragment);
+  }
 
-    if (data.success) {
-      alert("Entrada salva com sucesso!");
-      carrinho = [];
-      atualizarCarrinho();
-      atualizarIcone();
-      fecharCarrinho();
+  /* ======= CARRINHO ======= */
+
+  function addCarrinho(p) {
+    const existente = carrinho.find(i => i.ID_PRODUTO === p.ID_PRODUTO);
+
+    if (existente) {
+      existente.qtd += 1;
     } else {
-      alert("Erro: " + data.erro);
+      carrinho.push({
+        ID_PRODUTO: p.ID_PRODUTO,
+        PRODUTO: p.PRODUTO,
+        CATEGORIA: p.CATEGORIA,
+        qtd: 1,
+        valorCompra: Number(p.VALOR_COMPRA) || 0,
+        ipi: 0,
+        icms: 0,
+        venda: 70,
+        total: Number(p.VALOR_COMPRA) || 0
+      });
     }
 
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao salvar entrada");
+    atualizarIcone();
   }
-}
-</script>
-<script>
-async function carregarProdutos() {
-  try {
-    const url = API_URL + "?action=listarProdutos";
 
-    const res = await fetch(url);
-    const data = await res.json();
+  function atualizarIcone() {
+    document.getElementById("qtdCarrinho").innerText = carrinho.length;
+  }
 
-    if (!data.rows || !Array.isArray(data.rows)) {
-      throw new Error("Resposta inválida da API");
+  function abrirCarrinho() {
+    atualizarCarrinho();
+    document.getElementById("modalCarrinho").style.display = "flex";
+  }
+
+  function fecharCarrinho() {
+    document.getElementById("modalCarrinho").style.display = "none";
+  }
+
+  function atualizarCarrinho() {
+    const tbody = document.getElementById("listaCarrinho");
+    tbody.innerHTML = "";
+    let totalGeral = 0;
+
+    carrinho.forEach((i, idx) => {
+      const valorFinal =
+        i.valorCompra +
+        (i.valorCompra * i.ipi / 100) +
+        (i.valorCompra * i.icms / 100) +
+        (i.valorCompra * i.venda / 100);
+
+      i.total = valorFinal * i.qtd;
+      totalGeral += i.total;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${i.PRODUTO}</td>
+        <td>
+          <input type="number" min="1" value="${i.qtd}" oninput="carrinho[${idx}].qtd=Number(this.value)||1; agendarAtualizacao()"></td>
+          <td><input type="number" value="${i.valorCompra}" onchange="carrinho[${idx}].valorCompra=Number(this.value)||0; atualizarCarrinho()"></td>
+          <td><input type="number" value="${i.ipi}" onchange="carrinho[${idx}].ipi=Number(this.value)||0; atualizarCarrinho()"></td>
+          <td><input type="number" value="${i.icms}" onchange="carrinho[${idx}].icms=Number(this.value)||0; atualizarCarrinho()"></td>
+          <td><input type="number" value="${i.venda}" onchange="carrinho[${idx}].venda=Number(this.value)||0; atualizarCarrinho()"></td>
+          <td>${i.total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+          <td><button onclick="carrinho.splice(${idx},1); atualizarCarrinho(); atualizarIcone()">❌</button></td>
+        </tr>
+      `;
+    });
+
+    document.getElementById("totalGeral").innerText =
+      totalGeral.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  }
+
+
+
+
+  </script>
+  <script>
+  function renderizarCategorias() {
+    const div = document.getElementById("categorias");
+    div.innerHTML = "";
+
+    const categorias = [...new Set(
+      produtos
+        .map(p => (p.CATEGORIA || "").trim())
+        .filter(c => c !== "")
+    )];
+
+    // 👉 Todas
+    const todas = document.createElement("a");
+    todas.href = "#";
+    todas.textContent = "Todas";
+    todas.className = "ativo";
+    todas.onclick = e => {
+      e.preventDefault();
+      filtrarCategoria(null, todas);
+    };
+    div.appendChild(todas);
+
+    // 👉 Categorias reais
+    categorias.forEach(cat => {
+      const a = document.createElement("a");
+      a.href = "#";
+      a.textContent = cat;
+      a.onclick = e => {
+        e.preventDefault();
+        filtrarCategoria(cat, a);
+      };
+      div.appendChild(a);
+    });
+  }
+
+  function filtrarCategoria(cat, el) {
+    document
+      .querySelectorAll("#categorias a")
+      .forEach(a => a.classList.remove("ativo"));
+
+    if (el) el.classList.add("ativo");
+
+    if (!cat) {
+      renderizarProdutos();
+      return;
     }
 
-    produtos = data.rows;
-renderizarCategorias();
-renderizarProdutos();
+    const filtrados = produtos.filter(p => p.CATEGORIA === cat);
+  renderizarProdutos(filtrados);
 
-
-  } catch (e) {
-    console.error("Erro ao carregar produtos:", e);
-    alert("Erro ao carregar produtos. Veja o console.");
   }
-}
-</script>
+  </script>
 
 
-<script>
-function addCarrinhoPorId(id) {
-  const produto = produtos.find(p => String(p.ID_PRODUTO) === String(id));
-  if (!produto) return;
-  addCarrinho(produto);
-}
-</script>
-<script>
-let timerCarrinho;
-function agendarAtualizacao() {
-  clearTimeout(timerCarrinho);
-  timerCarrinho = setTimeout(atualizarCarrinho, 200);
-}
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", carregarProdutos);
-</script>
-</body>
-</html>
+  <script>
+  async function salvarEntrada() {
+    if (carrinho.length === 0) {
+      alert("Carrinho vazio");
+      return;
+    }
+
+    const itens = carrinho.map(i => ({
+    ID_PRODUTO: i.ID_PRODUTO,
+    CATEGORIA: i.CATEGORIA,
+    PRODUTO: i.PRODUTO,
+    QTD: i.qtd,
+    VALOR_COMPRA: i.valorCompra,
+    VALOR_VENDA: i.total,   // 👈 TOTAL FINAL
+    IPI: i.ipi,
+    ICMS: i.icms,
+    VENDA: i.venda
+  }));
+
+
+    const form = new URLSearchParams();
+    form.append("action", "salvarEntrada");
+    form.append("itens", JSON.stringify(itens));
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: form
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Entrada salva com sucesso!");
+        carrinho = [];
+        atualizarCarrinho();
+        atualizarIcone();
+        fecharCarrinho();
+      } else {
+        alert("Erro: " + data.erro);
+      }
+
+    } catch (e) {
+      console.error(e);
+      alert("Erro ao salvar entrada");
+    }
+  }
+  </script>
+  <script>
+  async function carregarProdutos() {
+    try {
+      const url = API_URL + "?action=listarProdutos";
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.rows || !Array.isArray(data.rows)) {
+        throw new Error("Resposta inválida da API");
+      }
+
+      produtos = data.rows;
+  renderizarCategorias();
+  renderizarProdutos();
+
+
+    } catch (e) {
+      console.error("Erro ao carregar produtos:", e);
+      alert("Erro ao carregar produtos. Veja o console.");
+    }
+  }
+  </script>
+
+
+  <script>
+  function addCarrinhoPorId(id) {
+    const produto = produtos.find(p => String(p.ID_PRODUTO) === String(id));
+    if (!produto) return;
+    addCarrinho(produto);
+  }
+  </script>
+  <script>
+  let timerCarrinho;
+  function agendarAtualizacao() {
+    clearTimeout(timerCarrinho);
+    timerCarrinho = setTimeout(atualizarCarrinho, 200);
+  }
+  </script>
+  <script>
+  document.addEventListener("DOMContentLoaded", carregarProdutos);
+  </script>
+  </body>
+  </html>
