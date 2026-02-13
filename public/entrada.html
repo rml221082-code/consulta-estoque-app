@@ -34,6 +34,13 @@
     border-radius: 6px;
     cursor: pointer;
   }
+  #busca-area input {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
 
   /* SIDEBAR */
   #sidebar {
@@ -165,8 +172,14 @@
   </aside>
 
   <main>
-    <div id="produtos"></div>
-  </main>
+      <div id="busca-area">
+        <input id="busca" placeholder="Buscar produto..." oninput="buscar()" autofocus />
+      </div>
+
+      <div id="loading"></div>
+      <div id="erro" class="erro"></div>
+      <div id="produtos"></div>
+    </main>
 
   <!-- MODAL CARRINHO -->
   <div id="modalCarrinho">
@@ -200,18 +213,25 @@
       </button>
     </div>
   </div>
+<script>
+function fecharCarrinho() {
+  document.getElementById("modalCarrinho").style.display = "none";
+}
+</script>
 
   <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbzWMRZnWElPTNFzekkitB7A57e9wH08Dgffmf1z_GInFuKJ49rr3aCSVV72uMHXvWlM/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
 
-  let produtos = [];
+  
   let carrinho = [];
-
+  let produtos = [];
+  let produtosBase = [];
+  let categoriaAtual = "";
 
 
   /* ======= RENDERIZA PRODUTOS ======= */
 
-  function renderizarProdutos(lista = produtos) {
+  function renderizarProdutos(lista) {
     const div = document.getElementById("produtos");
     div.innerHTML = "";
 
@@ -281,9 +301,25 @@
     document.getElementById("modalCarrinho").style.display = "flex";
   }
 
-  function fecharCarrinho() {
-    document.getElementById("modalCarrinho").style.display = "none";
+
+    
+  function dinheiro(valor) {
+    return Number(valor || 0).toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
   }
+function buscar() {
+  const termo = document.getElementById("busca").value.toLowerCase();
+
+  const filtrados = produtosBase.filter(p =>
+    (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+    (p.PRODUTO || "").toLowerCase().includes(termo)
+  );
+
+  renderizarProdutos(filtrados);
+}
+
 
   function atualizarCarrinho() {
     const tbody = document.getElementById("listaCarrinho");
@@ -292,13 +328,14 @@
 
     carrinho.forEach((i, idx) => {
       const valorFinal =
+      
         i.valorCompra +
         (i.valorCompra * i.ipi / 100) +
         (i.valorCompra * i.icms / 100) +
         (i.valorCompra * i.venda / 100);
 
-      i.total = valorFinal * i.qtd;
-      totalGeral += i.total;
+      i.total = valorFinal;
+      totalGeral += i.total * i.qtd;
 
       tbody.innerHTML += `
         <tr>
@@ -324,56 +361,36 @@
 
   </script>
   <script>
-  function renderizarCategorias() {
-    const div = document.getElementById("categorias");
-    div.innerHTML = "";
+ function renderizarCategorias() {
+  const div = document.getElementById("categorias");
+  div.innerHTML = "";
 
-    const categorias = [...new Set(
-      produtos
-        .map(p => (p.CATEGORIA || "").trim())
-        .filter(c => c !== "")
-    )];
+  const categorias = [...new Set(
+    produtosBase
+      .map(p => (p.CATEGORIA || "").trim())
+      .filter(Boolean)
+  )].sort();
 
-    // 👉 Todas
-    const todas = document.createElement("a");
-    todas.href = "#";
-    todas.textContent = "Todas";
-    todas.className = "ativo";
-    todas.onclick = e => {
+  criarLinkCategoria("Todas", "");
+
+  categorias.forEach(cat => criarLinkCategoria(cat, cat));
+
+  function criarLinkCategoria(nome, valor) {
+    const a = document.createElement("a");
+    a.href = "#";
+    a.textContent = nome;
+    a.className = valor === categoriaAtual ? "ativo" : "";
+    a.onclick = e => {
       e.preventDefault();
-      filtrarCategoria(null, todas);
+      categoriaAtual = valor;
+      buscar();
     };
-    div.appendChild(todas);
-
-    // 👉 Categorias reais
-    categorias.forEach(cat => {
-      const a = document.createElement("a");
-      a.href = "#";
-      a.textContent = cat;
-      a.onclick = e => {
-        e.preventDefault();
-        filtrarCategoria(cat, a);
-      };
-      div.appendChild(a);
-    });
+    div.appendChild(a);
   }
+}
 
-  function filtrarCategoria(cat, el) {
-    document
-      .querySelectorAll("#categorias a")
-      .forEach(a => a.classList.remove("ativo"));
 
-    if (el) el.classList.add("ativo");
-
-    if (!cat) {
-      renderizarProdutos();
-      return;
-    }
-
-    const filtrados = produtos.filter(p => p.CATEGORIA === cat);
-  renderizarProdutos(filtrados);
-
-  }
+  
   </script>
 
 
@@ -437,9 +454,12 @@
         throw new Error("Resposta inválida da API");
       }
 
-      produtos = data.rows;
-  renderizarCategorias();
-  renderizarProdutos();
+      produtosBase = data.rows;
+produtos = [...produtosBase];
+
+renderizarCategorias();
+renderizarProdutos(produtos);
+
 
 
     } catch (e) {

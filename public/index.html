@@ -68,15 +68,14 @@
 </div>
 
 <script>
-const API_URL =
-"https://script.google.com/macros/s/AKfycbx_p8JdLv-2kkdKD4LCeH0DUoHlamBSeWjLUB8PIMfFoQmOBwTIX17qSVZbqgBN4JyyHA/exec?action=listarprodutos";
+const API_URL = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
 let todosProdutos = [];
 let categoriaAtual = "";
 
 async function carregarDados() {
   document.getElementById("loading").textContent = "⏳ Carregando produtos...";
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(`${API_URL}?action=listarprodutos`);
     const data = await res.json();
     todosProdutos = data.rows || [];
     preencherCategorias();

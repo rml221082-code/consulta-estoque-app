@@ -2,141 +2,318 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Entrada de Serviço</title>
-
+<title>Serviço</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  margin: 0;
-  padding: 20px;
-}
-
-.container {
-  max-width: 900px;
-  margin: auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-label {
-  font-weight: bold;
-  display: block;
-  margin-top: 15px;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-}
-
-.checklist {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-top: 10px;
-}
-
-button {
-  margin-top: 25px;
-  padding: 12px;
-  width: 100%;
-  font-size: 16px;
-  background: #1976d2;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
+  /* RESET básico */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+.checklist label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
   cursor: pointer;
+  font-size: 14px;
 }
-</style>
-</head>
 
+.checklist input[type="checkbox"] {
+  margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  accent-color: #0078d4; /* cor azul */
+}
+
+  body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #f4f6f8;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: auto;
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  }
+
+  h1, h2, h3 {
+    color: #222;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fafafa;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #0078d4;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f0f4f8;
+  }
+
+  tr:hover {
+    background-color: #e0eaf7;
+  }
+
+  input[type="number"],
+  input[type="text"],
+  select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    font-size: 14px;
+    width: 100%;
+    transition: 0.2s;
+  }
+
+  input[type="number"]:focus,
+  input[type="text"]:focus,
+  select:focus {
+    border-color: #0078d4;
+    box-shadow: 0 0 4px rgba(0, 120, 212, 0.3);
+  }
+
+  button {
+    background-color: #0078d4;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background-color: #005a9e;
+  }
+
+  /* Responsivo */
+  @media(max-width: 768px) {
+    .container {
+      padding: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+    }
+  }
+
+</style>
+
+</head>
 <body>
 
 <div class="container">
-<h1>Entrada de Serviço</h1>
+  <div class="form-containerbotao" style="margin-bottom: 20px; display:flex; justify-content:center;">
+    <button type="button" onclick="location.href='https://consulta-estoque-app.web.app/veiculo.html'">
+      Voltar para Veículos
+    </button>
+  </div>
 
-<form id="formServico">
+  <h1>Entrada de Serviço</h1>
 
-<label>Status</label>
-<select id="status">
-  <option>ENTRADA</option>
-  <option>ORÇAMENTO</option>
-  <option>AGUARDANDO</option>
-  <option>APROVADO</option>
-</select>
+  <form id="formServico">
+    <label for="responsavelEntrada">Quem Retirou</label>
+    <select id="responsavelEntrada" name="responsavelEntrada" required>
+      <option value="">Selecione</option>
+      <option>Altair</option>
+      <option>Daniel</option>
+      <option>Duarte</option>
+      <option>Guilherme</option>
+      <option>Josué</option>
+      <option>Juliana</option>
+      <option>Júlio</option>
+      <option>Mayara</option>
+      <option>Robson</option>
+      <option>Samuel</option>
+    </select>
 
-<label>Nº Nota Fiscal</label>
-<input type="text" id="nota">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option>ENTRADA</option>
+      <option>ORÇAMENTO</option>
+      <option>AGUARDANDO</option>
+      <option>APROVADO</option>
+    </select>
 
-<label>Cliente</label>
-<input type="text" id="cliente">
+    <label for="nota">Nº Nota Fiscal</label>
+    <input type="text" id="nota" name="nota">
 
-<label>Empresa</label>
-<input type="text" id="empresa">
+    <label for="cliente">Responsável</label>
+    <input type="text" id="cliente" name="cliente">
 
-<label>Descrição do Serviço</label>
-<textarea id="descricao"></textarea>
+    <label for="empresa">Empresa</label>
+    <input type="text" id="empresa" name="empresa">
 
-<label>Checklist</label>
-<div class="checklist">
-  <label><input type="checkbox" value="Vazamento"> Vazamento</label>
-  <label><input type="checkbox" value="Conferido"> Conferido</label>
-  <label><input type="checkbox" value="Testado"> Testado</label>
+    <label for="descricao">Descrição</label>
+    <input type="text" id="descricao" name="descricao">
+
+    <label>Checklist</label>
+    <div class="checklist">
+      <label><input type="checkbox" value="Urgente"> Urgente</label>
+      <label><input type="checkbox" value="Altair"> Altair</label>
+      <label><input type="checkbox" value="Aguardando"> Aguardando</label>
+      <label><input type="checkbox" value="Orçamento"> Orçamento</label>
+      <label><input type="checkbox" value="Completo"> Completo</label>
+      <label><input type="checkbox" value="Pintura"> Pintura</label>
+      <label><input type="checkbox" value="PinturaIdentificacao"> Pintura Identificação</label>
+    </div>
+
+    <label for="fotos">Fotos (até 20)</label>
+    <input type="file" id="fotos" name="fotos" multiple accept="image/*">
+
+    <div style="margin-top: 15px;">
+      <button type="submit">Salvar Serviço</button>
+    </div>
+  </form>
 </div>
 
-<label>Fotos (até 10)</label>
-<input type="file" id="fotos" multiple accept="image/*">
-
-<button type="button" onclick="salvarServico()">Salvar Serviço</button>
-
-</form>
-</div>
 
 <script>
-function salvarServico() {
+// converte arquivo para Base64
 
-  const fotos = document.getElementById("fotos").files;
-  if (fotos.length > 10) {
-    alert("Máximo de 10 fotos permitido.");
-    return;
+
+document.getElementById("formServico").addEventListener("submit", salvarServico);
+
+async function salvarServico(e) {
+  e.preventDefault();
+
+  const botao = e.target.querySelector("button[type='submit']");
+  botao.disabled = true; // trava o botão
+  const textoOriginal = botao.textContent;
+  botao.textContent = "Processando..."; // mensagem de processamento
+
+  const statusEl    = document.getElementById("status");
+  const notaEl      = document.getElementById("nota");
+  const clienteEl   = document.getElementById("cliente");
+  const empresaEl   = document.getElementById("empresa");
+  const descricaoEl = document.getElementById("descricao");
+  const fotosInput  = document.getElementById("fotos");
+
+if (fotosInput.files.length > 20) {
+  alert("Máximo de 20 fotos permitido.");
+  botao.disabled = false;
+  botao.textContent = textoOriginal;
+  return;
+}
+
+const fotosBase64 = [];
+
+for (const file of fotosInput.files) {
+  if (file.size > 5 * 1024 * 1024) {
+    alert(`Arquivo muito grande: ${file.name}`);
+    continue;
   }
 
-  const checklist = [...document.querySelectorAll('.checklist input:checked')]
-    .map(c => c.value)
-    .join(", ");
+  const base64 = await toBase64Compact(file);
 
-  const formData = new FormData();
-  formData.append("action", "salvarservico");
-  formData.append("status", document.getElementById("status").value);
-  formData.append("nota", document.getElementById("nota").value);
-  formData.append("cliente", document.getElementById("cliente").value);
-  formData.append("empresa", document.getElementById("empresa").value);
-  formData.append("descricao", document.getElementById("descricao").value);
-  formData.append("checklist", checklist);
+  fotosBase64.push({
+    nome: file.name,
+    tipo: file.type,
+    dados: base64
+  });
+}
 
-  for (let i = 0; i < fotos.length && i < 10; i++) {
-    formData.append("foto" + i, fotos[i]);
-  }
 
-  fetch("https://script.google.com/macros/s/AKfycbw6K6pJC1tMUv62JJ0a6RqqMjb9IjypOMiii2i91wtaJ6mcgdriVHnP_qeXeNzU1nzX/exec", {
-    method: "POST",
-    body: formData
-  })
-  .then(r => r.json())
-  .then(r => {
+const checklist = [...document.querySelectorAll('.checklist input:checked')]
+  .map(c => c.value)
+  .join(", ");
+
+const formData = new FormData();
+formData.append('action', 'salvarservico');
+formData.append('status', statusEl.value);
+formData.append('nota', notaEl.value);
+formData.append('cliente', clienteEl.value);
+formData.append('empresa', empresaEl.value);
+formData.append('descricao', descricaoEl.value);
+formData.append('checklist', checklist);
+formData.append('fotos', JSON.stringify(fotosBase64));
+
+
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzP1NLZ3nN2qUF94PmdN9SqY80MCzE-O4F5xaDhCqogecQI-zYeoQyWut4XWMrVL4mguw/exec";
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      body: formData
+    });
+
+    const r = await res.json();
+
     if (r.success) {
-      alert("Serviço salvo com ID " + r.idServico);
+      alert(`Serviço salvo! ID: ${r.idServico}\nPDF: ${r.pdf}\nPasta: ${r.pasta}`);
       document.getElementById("formServico").reset();
     } else {
       alert("Erro: " + r.erro);
     }
-  })
-  .catch(err => alert("Erro de conexão"));
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao salvar serviço");
+  } finally {
+    // reabilita o botão
+    botao.disabled = false;
+    botao.textContent = textoOriginal;
+  }
 }
 </script>
+<script>
+async function toBase64Compact(file, maxSize = 800, quality = 0.6) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = e => {
+      img.onload = () => {
+        let { width, height } = img;
+
+        if (width > height && width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        } else if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        resolve(canvas.toDataURL("image/jpeg", quality).split(",")[1]);
+      };
+      img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+
 
 </body>
 </html>

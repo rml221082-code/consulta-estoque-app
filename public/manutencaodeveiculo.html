@@ -240,14 +240,15 @@ button:hover {
   </div>
 
 <script>
-const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbwMMKgxZ_wmnUAx_BfIaYt9qkUERfQugpbDSFv9AbLaCHibcGg88XA7JTNkrFqRIFDS/exec";
+const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
 
 // ===== SALVAR FORMULÁRIO =====
 document.getElementById("formPreventiva").addEventListener("submit", function(e) {
   e.preventDefault();
 
   const formData = new FormData(this);
-  formData.append("action", "manutencao");
+  formData.append("action", "salvarmanutencao");
+
   fetch(URL_WEBAPP, {
     method: "POST",
     body: formData

@@ -1,5 +1,5 @@
 // Substitua pelo SEU link do Apps Script publicado como Web App
-const API_URL = "https://script.google.com/macros/s/AKfycbzyQYS_83e_W9mA5UCQpAfEfT_K_jn0HxyxgrLEQdX-dNRgZw_tTjy4ljZmOi3K-8wo/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbydhBDFi-g-Bv-YBAG2_iIxbZ7_EE0xmg5jcZXRVnFpCfKQUmnMuuZ4e6Gd55Mome1pHg/exec";
 
 
 const div = document.getElementById("resultado");

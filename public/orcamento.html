@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orçamento</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+
+    .login-box {
+      max-width: 300px;
+      margin: 100px auto;
+      border: 1px solid #ccc;
+      padding: 20px;
+      text-align: center;
+    }
+
+    input { padding: 5px; width: 90%; margin-bottom: 10px; }
+    button { padding: 6px 12px; cursor: pointer; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; }
+
+    #sistema { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-box" id="loginBox">
+  <h2>Login</h2>
+  <input type="text" id="usuario" placeholder="Usuário">
+  <input type="password" id="senha" placeholder="Senha">
+  <button onclick="fazerLogin()">Entrar</button>
+  <p id="loginMsg" style="color:red"></p>
+</div>
+
+<!-- SISTEMA -->
+<div id="sistema">
+  <h1>Orçamento</h1>
+
+  <div>
+    <label>Produto:</label>
+    <input type="text" id="produto">
+    <button id="buscarBtn">Buscar</button>
+  </div>
+
+  <table id="tabelaOrcamento">
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Quantidade</th>
+        <th>Preço Unitário</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="4">Digite um produto e clique em Buscar</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzyQYS_83e_W9mA5UCQpAfEfT_K_jn0HxyxgrLEQdX-dNRgZw_tTjy4ljZmOi3K-8wo/exec";
+
+// LOGIN
+async function fazerLogin() {
+  const usuario = document.getElementById("usuario").value;
+  const senha = document.getElementById("senha").value;
+
+  if (!usuario || !senha) {
+    document.getElementById("loginMsg").innerText = "Preencha usuário e senha";
+    return;
+  }
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      usuario,
+      senha
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.status === "ok") {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("sistema").style.display = "block";
+  } else {
+    document.getElementById("loginMsg").innerText = "Usuário ou senha inválidos";
+  }
+}
+
+// BUSCAR PRODUTO (SEU CÓDIGO)
+async function buscarProduto() {
+  const produto = document.getElementById("produto").value.trim();
+  if (!produto) return alert("Digite um produto.");
+
+  const res = await fetch(`${API_URL}?produto=${encodeURIComponent(produto)}`);
+  const data = await res.json();
+
+  const tbody = document.querySelector("#tabelaOrcamento tbody");
+  tbody.innerHTML = "";
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="4">Nenhum resultado</td></tr>`;
+    return;
+  }
+
+  data.forEach(item => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${item.produto}</td>
+        <td>${item.quantidade}</td>
+        <td>${item.preco_unitario.toFixed(2)}</td>
+        <td>${(item.quantidade * item.preco_unitario).toFixed(2)}</td>
+      </tr>
+    `;
+  });
+}
+
+document.getElementById("buscarBtn").addEventListener("click", buscarProduto);
+</script>
+</body>
+</html>
