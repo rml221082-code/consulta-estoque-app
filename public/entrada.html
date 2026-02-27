@@ -164,6 +164,10 @@
   <header>
     Entrada de Produtos
     <button id="carrinhoBtn" onclick="abrirCarrinho()">📥 Carrinho (<span id="qtdCarrinho">0</span>)</button>
+    <button id="novoProdutoBtn" onclick="abrirNovoProduto()"
+  style="position:absolute; right:150px; top:15px; background:#ffd700; border:none; padding:10px 16px; border-radius:6px;">
+➕ Produto Novo
+</button>
   </header>
 
   <aside id="sidebar">
@@ -189,6 +193,7 @@
       <table>
         <thead>
           <tr>
+            <th>CATEGORIA</th>
             <th>Produto</th>
             <th>Qtd</th>
             <th>Valor Compra</th>
@@ -220,7 +225,7 @@ function fecharCarrinho() {
 </script>
 
   <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzXqnKR8omxlyJTirXDHF_vcVzm4-9demEoj9MJidjYJLSPbMrv4ou19i8CH5rpmBZxxw/exec";
 
   
   let carrinho = [];
@@ -252,6 +257,7 @@ function fecharCarrinho() {
           <b>${p.PRODUTO}</b><br>
           Categoria: ${p.CATEGORIA || "-"}<br>
           Estoque: ${p.QUANTIDADE || 0}<br>
+          Caixa: ${p.CAIXA || ''}<br>
           Compra: ${Number(p.VALOR_COMPRA || 0)
             .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
         </div>
@@ -339,6 +345,7 @@ function buscar() {
 
       tbody.innerHTML += `
         <tr>
+          <td>${i.CATEGORIA}</td>
           <td>${i.PRODUTO}</td>
         <td>
           <input type="number" min="1" value="${i.qtd}" oninput="carrinho[${idx}].qtd=Number(this.value)||1; agendarAtualizacao()"></td>
@@ -485,7 +492,132 @@ renderizarProdutos(produtos);
   }
   </script>
   <script>
-  document.addEventListener("DOMContentLoaded", carregarProdutos);
+
+  document.addEventListener("DOMContentLoaded", () => {
+  carregarProdutos();
+  carregarCategoriasManual();
+});
   </script>
+  <div id="modalNovoProduto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); justify-content:center; align-items:center;">
+  <div style="background:#fff; padding:20px; width:400px; border-radius:10px;">
+    <h3>Novo Produto Manual</h3>
+
+    <label>Categoria</label>
+    <select id="categoriaManual" style="width:100%; padding:8px; margin-bottom:10px;"></select>
+
+    <label>Produto</label>
+    <input id="produtoManual" type="text" placeholder="Nome do produto"
+      style="width:100%; padding:8px; margin-bottom:10px;">
+
+    <label>Valor Compra</label>
+    <input id="valorManual" type="number" value="0"
+      style="width:100%; padding:8px; margin-bottom:10px;">
+
+    <button onclick="adicionarProdutoManual()" style="background:#1b5500;color:#fff;padding:10px;width:100%;border:none;">
+      Adicionar ao Carrinho
+    </button>
+
+    <br><br>
+    <button onclick="fecharNovoProduto()" style="width:100%;">Cancelar</button>
+  </div>
+</div>
+<script>
+function abrirNovoProduto() {
+  document.getElementById("modalNovoProduto").style.display = "flex";
+}
+
+function fecharNovoProduto() {
+  document.getElementById("modalNovoProduto").style.display = "none";
+}
+</script>
+<script>
+async function carregarCategoriasManual() {
+  try {
+    const res = await fetch(API_URL + "?action=listarcategorias");
+    const data = await res.json();
+
+    console.log("Resposta categorias:", data);
+
+    if (!data.success || !Array.isArray(data.rows)) {
+      throw new Error(data.erro || "Formato inválido");
+    }
+
+    const sel = document.getElementById("categoriaManual");
+    sel.innerHTML = "";
+
+    if (!data.rows.length) {
+      const opt = document.createElement("option");
+      opt.textContent = "Sem categorias cadastradas";
+      opt.value = "";
+      sel.appendChild(opt);
+      return;
+    }
+
+    data.rows.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      sel.appendChild(opt);
+    });
+
+  } catch (err) {
+    console.error("Erro ao carregar categorias:", err);
+    alert("Erro ao carregar categorias (ver console)");
+  }
+}
+</script>
+<script>
+async function adicionarProdutoManual() {
+  const categoriaEl = document.getElementById("categoriaManual");
+  const produtoEl = document.getElementById("produtoManual");
+  const valorEl = document.getElementById("valorManual");
+
+  const categoria = categoriaEl.value;
+  const nome = produtoEl.value.trim();
+  const valor = Number(valorEl.value) || 0;
+
+  if (!nome) {
+    alert("Informe o nome do produto");
+    return;
+  }
+
+  try {
+    // 🔹 BUSCA O PRÓXIMO ID NO GAS
+    const res = await fetch(API_URL + "?action=obterProximoIdEntrada");
+    const data = await res.json();
+
+    if (!data.success) {
+      throw new Error(data.erro || "Erro ao obter próximo ID");
+    }
+
+    // 🔹 ADICIONA NO CARRINHO COM ID SEQUENCIAL
+    carrinho.push({
+      ID_PRODUTO: data.proximoId, // ✅ PRÓXIMO ID
+      CATEGORIA: categoria,
+      PRODUTO: nome,
+      qtd: 1,
+      valorCompra: valor,
+      ipi: 0,
+      icms: 0,
+      venda: 70,
+      total: valor
+    });
+
+    atualizarIcone();
+
+    // ✅ LIMPA OS CAMPOS APÓS ENVIAR
+    produtoEl.value = "";
+    valorEl.value = "0";
+    categoriaEl.selectedIndex = 0;
+
+    // fecha o modal
+    fecharNovoProduto();
+
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao gerar ID do produto");
+  }
+}
+</script>
   </body>
   </html>

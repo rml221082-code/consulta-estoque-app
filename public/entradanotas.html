@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Entrada de Notas</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f8;padding:20px}
+.container{max-width:900px;margin:auto;background:#fff;padding:25px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+h1{margin-bottom:20px}
+label{font-weight:600;margin-top:12px;display:block}
+input,select,textarea{width:100%;padding:8px 10px;margin-top:4px;border:1px solid #ccc;border-radius:6px}
+textarea{resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.checkbox{margin-top:10px}
+button{margin-top:20px;background:#0078d4;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer}
+button:hover{background:#005a9e}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Entrada de Notas</h1>
+<form id="formNota">
+
+<label>Empresa</label> <select id="empresa" required>
+
+<option value="">Selecione</option>
+<option>HIDRAUMAN</option>
+<option>HIDRAUFLEX</option>
+</select>
+
+<div class="row">
+<div>
+<label>Data de Compra</label>
+<input type="date" id="dataCompra" required />
+</div>
+<div>
+<label>Nº da Nota</label>
+<input type="text" id="numeroNota" />
+</div>
+</div>
+
+<label>Fornecedor</label> <input type="text" id="fornecedor" />
+
+<div class="row">
+<div>
+<label>Valor Total</label>
+<input type="number" id="valorTotal" step="0.01" />
+</div>
+<div>
+<label>Quantidade de Parcelas</label>
+<input type="number" id="qtdParcelas" />
+</div>
+</div>
+
+<div class="row">
+<div>
+<label>Valor da Parcela</label>
+<input type="number" id="valorParcela" step="0.01" />
+</div>
+<div>
+<label>Vencimento 1ª Parcela</label>
+<input type="date" id="vencimento" />
+</div>
+</div>
+
+<label>Quem solicitou</label> <select id="solicitante">
+
+<option value="">Selecione</option>
+<option>Altair</option>
+<option>Daniel</option>
+<option>Duarte</option>
+<option>Guilherme</option>
+<option>Josué</option>
+<option>Juliana</option>
+<option>Júlio</option>
+<option>Mayara</option>
+<option>Robson</option>
+<option>Samuel</option>
+</select>
+
+<div class="checkbox">
+<label><input type="checkbox" id="emergencial" /> Emergencial</label>
+</div>
+
+<label>Observações</label>
+
+<textarea id="obs" rows="3"></textarea>
+
+<label>Nota Fiscal (PDF)</label> <input type="file" id="pdf" accept="application/pdf" required />
+
+<button type="submit">Salvar Nota</button>
+
+</form>
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwwn-C_vhHpFt1HHHzYrl916GZpaNG5XnNo2z0IyBqc4HzGen4xfJXs6ySx-xp0keViZA/exec";
+
+document.getElementById('formNota').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const file = document.getElementById('pdf').files[0];
+  if(!file){alert('Anexe o PDF');return;}
+
+  const base64 = await toBase64(file);
+
+  const form = new FormData();
+  form.append('action','salvarNotaFiscal');
+  form.append('empresa',empresa.value);
+  form.append('dataCompra',dataCompra.value);
+  form.append('numeroNota',numeroNota.value);
+  form.append('fornecedor',fornecedor.value);
+  form.append('valorTotal',valorTotal.value);
+  form.append('qtdParcelas',qtdParcelas.value);
+  form.append('valorParcela',valorParcela.value);
+  form.append('vencimento',vencimento.value);
+  form.append('solicitante',solicitante.value);
+  form.append('emergencial',emergencial.checked?'SIM':'NAO');
+  form.append('obs',obs.value);
+  form.append('arquivo',JSON.stringify({nome:file.name,tipo:file.type,dados:base64}));
+
+  const res = await fetch(GAS_URL,{method:'POST',body:form});
+  const r = await res.json();
+
+  if(r.success){
+    alert('Nota salva com sucesso');
+    e.target.reset();
+  }else{
+    alert('Erro: '+r.erro);
+  }
+});
+
+function toBase64(file){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result.split(',')[1]);
+    r.readAsDataURL(file);
+  });
+}
+</script>
+
+</body>
+</html>

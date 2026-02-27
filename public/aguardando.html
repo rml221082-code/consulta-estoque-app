@@ -87,7 +87,7 @@ button:hover {
 
 <script>
 /* 🔹 URL ÚNICA E CORRETA DO GAS */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwb15xpYpNoOJRr3jvKXrOz7c7Vmd8s5_zTgBOAEemC-MLDLxOxcuNQcY1C-vXBITEYWQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwBdfqCsPyIiLYNufvKMhxQcxf02FmYpb5w4TcnWWdFkVeX7RvBwDU7p4j-yyyQagx2oQ/exec";
 
 /* 🔹 Carregar orçamentos (JSONP) */
 function carregarOrcamentos() {
@@ -110,7 +110,14 @@ function renderOrcamentos(json) {
     const tr = document.createElement("tr");
 
     const tdPdf = document.createElement("td");
-    tdPdf.innerHTML = `<button onclick="carregarPdfs(${s.id}, this)">📄 PDFs</button>`;
+tdPdf.innerHTML = `
+  <button onclick="carregarPdfs(${s.id}, this)">📄 PDFs</button>
+  <button style="margin-top:6px;background:#28a745"
+          onclick="abrirOrcamento(${s.id}, '${s.nota}')">
+    ➕ ORÇAMENTO
+  </button>
+`;
+
 
     tr.innerHTML = `
       <td>${s.id}</td>
@@ -163,6 +170,101 @@ async function carregarPdfs(id, btn) {
 
 /* 🔹 Inicia */
 carregarOrcamentos();
+</script>
+<div id="modalOrcamento" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:999;
+">
+  <div style="
+    background:#fff;
+    max-width:800px;
+    margin:5% auto;
+    padding:20px;
+    border-radius:10px;
+  ">
+    <h2>🧾 Criar Orçamento</h2>
+
+    <textarea id="textoOrcamento" rows="6" style="width:100%"
+      placeholder="Descreva o orçamento..."></textarea>
+
+    <br><br>
+
+    <label>Fotos do orçamento</label>
+    <input type="file" id="fotosOrcamento" multiple accept="image/*">
+
+    <br><br>
+
+    <button onclick="salvarOrcamento()">💾 Gerar PDF</button>
+    <button onclick="fecharOrcamento()" style="background:#999">Cancelar</button>
+  </div>
+</div>
+<script>
+let ORCAMENTO_ID = null;
+let ORCAMENTO_NOTA = null;
+
+function abrirOrcamento(id, nota) {
+  ORCAMENTO_ID = id;
+  ORCAMENTO_NOTA = nota;
+  document.getElementById("textoOrcamento").value = "";
+  document.getElementById("fotosOrcamento").value = "";
+  document.getElementById("modalOrcamento").style.display = "block";
+}
+
+function fecharOrcamento() {
+  document.getElementById("modalOrcamento").style.display = "none";
+}
+
+async function salvarOrcamento() {
+  const texto = document.getElementById("textoOrcamento").value;
+  const fotos = document.getElementById("fotosOrcamento").files;
+
+  if (!texto.trim()) {
+    alert("Digite o texto do orçamento");
+    return;
+  }
+
+  const fotosBase64 = [];
+  for (const f of fotos) {
+    const b64 = await toBase64(f);
+    fotosBase64.push({
+      nome: f.name,
+      tipo: f.type,
+      dados: b64
+    });
+  }
+
+  const form = new FormData();
+  form.append("action", "salvarorcamento");
+  form.append("id", ORCAMENTO_ID);
+  form.append("nota", ORCAMENTO_NOTA);
+  form.append("texto", texto);
+  form.append("fotos", JSON.stringify(fotosBase64));
+
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    body: form
+  });
+
+  const json = await res.json();
+
+  if (json.success) {
+    window.open(json.pdf, "_blank");
+    fecharOrcamento();
+  } else {
+    alert("Erro: " + json.erro);
+  }
+}
+
+function toBase64(file) {
+  return new Promise(resolve => {
+    const r = new FileReader();
+    r.onload = e => resolve(e.target.result.split(",")[1]);
+    r.readAsDataURL(file);
+  });
+}
 </script>
 
 </body>

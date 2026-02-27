@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Controle Fiscal</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:#f4f6f8;
+  padding:20px
+}
+.container{
+  max-width:1200px;
+  margin:auto;
+  background:#fff;
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 6px 18px rgba(0,0,0,.08)
+}
+h1{margin-bottom:20px}
+
+.row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+  margin-bottom:15px
+}
+
+input,select{
+  width:100%;
+  padding:8px 10px;
+  border:1px solid #ccc;
+  border-radius:6px
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px
+}
+th,td{
+  padding:8px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+  font-size:14px
+}
+th{background:#f0f2f5}
+
+a{
+  color:#0078d4;
+  text-decoration:none;
+  font-weight:600
+}
+a:hover{text-decoration:underline}
+
+.badge{
+  padding:3px 8px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:600
+}
+.sim{background:#ffe1e1;color:#a80000}
+.nao{background:#e1f3ff;color:#005a9e}
+
+.resumo{
+  margin-top:30px;
+  padding-top:20px;
+  border-top:2px solid #eee
+}
+.resumo h2{margin-bottom:10px}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Controle Fiscal</h1>
+
+<!-- 🔍 FILTROS -->
+<div class="row">
+  <select id="fEmpresa">
+    <option value="">Todas Empresas</option>
+  </select>
+
+  <input type="text" id="fFornecedor" placeholder="Fornecedor">
+
+  <select id="fEmergencial">
+    <option value="">Emergencial (Todos)</option>
+    <option value="SIM">SIM</option>
+    <option value="NAO">NÃO</option>
+  </select>
+
+  <input type="date" id="fInicio">
+  <input type="date" id="fFim">
+</div>
+
+<!-- 📋 TABELA -->
+<table>
+<thead>
+<tr>
+  <th>Empresa</th>
+  <th>Data</th>
+  <th>Nota</th>
+  <th>Fornecedor</th>
+  <th>Parcelas</th>
+  <th>Valor Parcela</th>
+  <th>Total</th>
+  <th>Vencimento</th>
+  <th>Emergencial</th>
+  <th>PDF</th>
+</tr>
+</thead>
+<tbody id="lista"></tbody>
+</table>
+
+<!-- 📊 RESUMO -->
+<div class="resumo">
+<h2>Resumo por Empresa</h2>
+
+<div class="row">
+  <input type="date" id="dataResumo">
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>Empresa</th>
+  <th>Total</th>
+</tr>
+</thead>
+<tbody id="resumoEmpresa"></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxJ__JSCy6quMs_Gvrxh2vrQMm4hgqbJWSmdoGEC51JtyeeRSr5iHVZdPBviStNM_4VAg/exec";
+let dados = [];
+
+/* 🔹 CARREGA NOTAS */
+async function carregar(){
+  const res = await fetch(GAS_URL + "?action=listarNotasFiscais");
+  const json = await res.json();
+
+  if(!json.success){
+    alert("Erro ao carregar dados");
+    return;
+  }
+
+  dados = json.rows || [];
+  popularFiltros();
+  render();
+}
+
+/* 🔹 FILTROS */
+function render(){
+  const tbody = document.getElementById("lista");
+  tbody.innerHTML = "";
+
+  const empresa = fEmpresa.value;
+  const fornecedor = fFornecedor.value.toLowerCase();
+  const emerg = fEmergencial.value;
+  const ini = fInicio.value;
+  const fim = fFim.value;
+
+  dados.filter(n=>{
+    if(empresa && n.empresa!==empresa) return false;
+    if(fornecedor && !n.fornecedor.toLowerCase().includes(fornecedor)) return false;
+    if(emerg && n.emergencial!==emerg) return false;
+    if(ini && n.dataCompra < ini) return false;
+    if(fim && n.dataCompra > fim) return false;
+    return true;
+  }).forEach(n=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${n.empresa}</td>
+        <td>${n.dataCompra}</td>
+        <td>${n.numeroNota}</td>
+        <td>${n.fornecedor}</td>
+        <td>${n.qtdParcelas}</td>
+        <td>R$ ${Number(n.valorParcela).toFixed(2)}</td>
+        <td>R$ ${Number(n.valorTotal).toFixed(2)}</td>
+        <td>${n.vencimento}</td>
+        <td>
+          <span class="badge ${n.emergencial==='SIM'?'sim':'nao'}">
+            ${n.emergencial}
+          </span>
+        </td>
+        <td><a href="${n.pdf}" target="_blank">Abrir</a></td>
+      </tr>`;
+  });
+
+  resumoPorEmpresa();
+}
+
+/* 🔹 FILTROS DINÂMICOS */
+function popularFiltros(){
+  const empresas = [...new Set(dados.map(d=>d.empresa))];
+  empresas.forEach(e=>{
+    fEmpresa.innerHTML += `<option>${e}</option>`;
+  });
+}
+
+/* 🔹 RESUMO */
+function resumoPorEmpresa(){
+  const data = dataResumo.value;
+  const tbody = document.getElementById("resumoEmpresa");
+  tbody.innerHTML = "";
+
+  if(!data) return;
+
+  const mapa = {};
+
+  dados.filter(d=>d.dataCompra===data)
+    .forEach(d=>{
+      mapa[d.empresa] = (mapa[d.empresa]||0) + Number(d.valorTotal);
+    });
+
+  Object.keys(mapa).forEach(emp=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${emp}</td>
+        <td>R$ ${mapa[emp].toFixed(2)}</td>
+      </tr>`;
+  });
+}
+
+/* eventos */
+["fEmpresa","fFornecedor","fEmergencial","fInicio","fFim"]
+.forEach(id=>document.getElementById(id).addEventListener("input",render));
+
+dataResumo.addEventListener("change",resumoPorEmpresa);
+
+carregar();
+</script>
+
+</body>
+</html>
