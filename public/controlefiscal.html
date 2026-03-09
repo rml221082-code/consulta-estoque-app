@@ -2,239 +2,461 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Controle Fiscal</title>
+<title>Controle Fiscal PRO V3</title>
 
 <style>
+
 *{box-sizing:border-box}
+
 body{
-  font-family:'Segoe UI',Arial,sans-serif;
-  background:#f4f6f8;
-  padding:20px
+font-family:Arial;
+background:#f4f6f8;
+padding:20px
 }
+
 .container{
-  max-width:1200px;
-  margin:auto;
-  background:#fff;
-  padding:25px;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,.08)
+max-width:1750px;
+margin:auto;
+background:#fff;
+padding:25px;
+border-radius:10px;
+box-shadow:0 6px 18px rgba(0,0,0,.08)
 }
+
 h1{margin-bottom:20px}
 
+/* DASHBOARD */
+
+.dashboard{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+margin-bottom:20px
+}
+
+.card{
+background:#f7f9fb;
+padding:15px;
+border-radius:8px;
+text-align:center
+}
+
+.card h2{
+margin:0;
+font-size:22px
+}
+
+.card span{
+font-size:13px;
+color:#666
+}
+
+.atrasadoCard{background:#ffe5e5}
+.pagoCard{background:#e6f7ea}
+.hojeCard{background:#fff7cc}
+
+/* FILTROS */
+
 .row{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:15px;
-  margin-bottom:15px
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:10px;
+margin-bottom:15px
 }
 
 input,select{
-  width:100%;
-  padding:8px 10px;
-  border:1px solid #ccc;
-  border-radius:6px
+padding:8px;
+border:1px solid #ccc;
+border-radius:6px
 }
+
+/* TABELA */
 
 table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:20px
+width:100%;
+border-collapse:collapse;
+font-size:13px
 }
-th,td{
-  padding:8px;
-  border-bottom:1px solid #ddd;
-  text-align:left;
-  font-size:14px
-}
-th{background:#f0f2f5}
 
-a{
-  color:#0078d4;
-  text-decoration:none;
-  font-weight:600
+th,td{
+padding:7px;
+border-bottom:1px solid #ddd;
+text-align:center
 }
-a:hover{text-decoration:underline}
+
+th{
+background:#f0f2f5
+}
+
+tr:hover{
+background:#fafafa
+}
+
+/* BADGE */
 
 .badge{
-  padding:3px 8px;
-  border-radius:10px;
-  font-size:12px;
-  font-weight:600
+padding:3px 7px;
+border-radius:10px;
+font-size:11px
 }
-.sim{background:#ffe1e1;color:#a80000}
-.nao{background:#e1f3ff;color:#005a9e}
 
-.resumo{
-  margin-top:30px;
-  padding-top:20px;
-  border-top:2px solid #eee
+.sim{background:#ffdede;color:#b30000}
+.nao{background:#e3f3ff;color:#005a9e}
+
+/* BOTÕES */
+
+.btn{
+border:none;
+padding:4px 8px;
+border-radius:5px;
+font-size:11px;
+cursor:pointer;
+color:#fff;
+margin:2px
 }
-.resumo h2{margin-bottom:10px}
+
+.pagar{background:#0078d4}
+.pago{background:#16a34a}
+.atrasado{background:#dc2626}
+.hoje{background:#eab308}
+
+.cancelar{background:#444}
+
+.parcelaBox{
+border:1px solid #eee;
+border-radius:6px;
+padding:4px;
+margin-bottom:4px
+}
+
+.parcelaValor{
+font-size:11px;
+color:#444
+}
+
+.parcelaData{
+font-size:10px;
+color:#888
+}
+
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
-<h1>Controle Fiscal</h1>
+<h1>Controle Fiscal PRO V3</h1>
 
-<!-- 🔍 FILTROS -->
-<div class="row">
-  <select id="fEmpresa">
-    <option value="">Todas Empresas</option>
-  </select>
+<div class="dashboard">
 
-  <input type="text" id="fFornecedor" placeholder="Fornecedor">
-
-  <select id="fEmergencial">
-    <option value="">Emergencial (Todos)</option>
-    <option value="SIM">SIM</option>
-    <option value="NAO">NÃO</option>
-  </select>
-
-  <input type="date" id="fInicio">
-  <input type="date" id="fFim">
+<div class="card">
+<span>Total Notas</span>
+<h2 id="dNotas">0</h2>
 </div>
 
-<!-- 📋 TABELA -->
+<div class="card pagoCard">
+<span>Total Pago</span>
+<h2 id="dPago">0</h2>
+</div>
+
+<div class="card">
+<span>Em Aberto</span>
+<h2 id="dAberto">0</h2>
+</div>
+
+<div class="card atrasadoCard">
+<span>Parcelas Atrasadas</span>
+<h2 id="dAtrasado">0</h2>
+</div>
+
+<div class="card hojeCard">
+<span>Vencendo Hoje</span>
+<h2 id="dHoje">0</h2>
+</div>
+
+</div>
+
+<div class="row">
+
+<select id="fEmpresa">
+<option value="">Empresa</option>
+</select>
+
+<input id="fFornecedor" placeholder="Fornecedor">
+
+<input id="fNota" placeholder="Nota">
+
+<select id="fStatus">
+<option value="">Todos</option>
+<option value="ATIVO"selected>ATIVO</option>
+<option value="CANCELADO">CANCELADO</option>
+</select>
+
+</div>
+
 <table>
+
 <thead>
+
 <tr>
-  <th>Empresa</th>
-  <th>Data</th>
-  <th>Nota</th>
-  <th>Fornecedor</th>
-  <th>Parcelas</th>
-  <th>Valor Parcela</th>
-  <th>Total</th>
-  <th>Vencimento</th>
-  <th>Emergencial</th>
-  <th>PDF</th>
+<th>Empresa</th>
+<th>Nota</th>
+<th>Fornecedor</th>
+<th>Total</th>
+<th>Pago</th>
+<th>Saldo</th>
+<th>Parcelas</th>
+<th>Emergencial</th>
+<th>PDF</th>
+<th>Ação</th>
 </tr>
+
 </thead>
+
 <tbody id="lista"></tbody>
+
 </table>
-
-<!-- 📊 RESUMO -->
-<div class="resumo">
-<h2>Resumo por Empresa</h2>
-
-<div class="row">
-  <input type="date" id="dataResumo">
-</div>
-
-<table>
-<thead>
-<tr>
-  <th>Empresa</th>
-  <th>Total</th>
-</tr>
-</thead>
-<tbody id="resumoEmpresa"></tbody>
-</table>
-</div>
 
 </div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxJ__JSCy6quMs_Gvrxh2vrQMm4hgqbJWSmdoGEC51JtyeeRSr5iHVZdPBviStNM_4VAg/exec";
-let dados = [];
 
-/* 🔹 CARREGA NOTAS */
-async function carregar(){
-  const res = await fetch(GAS_URL + "?action=listarNotasFiscais");
-  const json = await res.json();
+const GAS_URL="https://script.google.com/macros/s/AKfycbzENhUoA22JokQGmwRh1840yb-W2WDgJYFHSj59Ph-J2VM2kHzAm1nRF03_nEXnUQb5jQ/exec"
 
-  if(!json.success){
-    alert("Erro ao carregar dados");
-    return;
-  }
+let dados=[]
 
-  dados = json.rows || [];
-  popularFiltros();
-  render();
+function hoje(){
+
+const h=new Date()
+return new Date(h.getFullYear(),h.getMonth(),h.getDate())
+
 }
 
-/* 🔹 FILTROS */
-function render(){
-  const tbody = document.getElementById("lista");
-  tbody.innerHTML = "";
+function carregar(){
 
-  const empresa = fEmpresa.value;
-  const fornecedor = fFornecedor.value.toLowerCase();
-  const emerg = fEmergencial.value;
-  const ini = fInicio.value;
-  const fim = fFim.value;
+fetch(GAS_URL+"?action=listarnotasfiscais")
+.then(r=>r.json())
+.then(json=>{
 
-  dados.filter(n=>{
-    if(empresa && n.empresa!==empresa) return false;
-    if(fornecedor && !n.fornecedor.toLowerCase().includes(fornecedor)) return false;
-    if(emerg && n.emergencial!==emerg) return false;
-    if(ini && n.dataCompra < ini) return false;
-    if(fim && n.dataCompra > fim) return false;
-    return true;
-  }).forEach(n=>{
-    tbody.innerHTML += `
-      <tr>
-        <td>${n.empresa}</td>
-        <td>${n.dataCompra}</td>
-        <td>${n.numeroNota}</td>
-        <td>${n.fornecedor}</td>
-        <td>${n.qtdParcelas}</td>
-        <td>R$ ${Number(n.valorParcela).toFixed(2)}</td>
-        <td>R$ ${Number(n.valorTotal).toFixed(2)}</td>
-        <td>${n.vencimento}</td>
-        <td>
-          <span class="badge ${n.emergencial==='SIM'?'sim':'nao'}">
-            ${n.emergencial}
-          </span>
-        </td>
-        <td><a href="${n.pdf}" target="_blank">Abrir</a></td>
-      </tr>`;
-  });
+dados=json.rows || []
 
-  resumoPorEmpresa();
+popularFiltros()
+
+render()
+
+})
+
 }
 
-/* 🔹 FILTROS DINÂMICOS */
 function popularFiltros(){
-  const empresas = [...new Set(dados.map(d=>d.empresa))];
-  empresas.forEach(e=>{
-    fEmpresa.innerHTML += `<option>${e}</option>`;
-  });
+
+const select=document.getElementById("fEmpresa")
+
+select.innerHTML='<option value="">Empresa</option>'
+
+const empresas=[...new Set(dados.map(d=>d.empresa))]
+
+empresas.sort()
+
+empresas.forEach(e=>{
+if(e) select.innerHTML+=`<option>${e}</option>`
+})
+
 }
 
-/* 🔹 RESUMO */
-function resumoPorEmpresa(){
-  const data = dataResumo.value;
-  const tbody = document.getElementById("resumoEmpresa");
-  tbody.innerHTML = "";
+function calcularFinanceiro(n){
 
-  if(!data) return;
+let pago=0
+let total=Number(n.valorTotal)
 
-  const mapa = {};
+for(let i=1;i<=5;i++){
 
-  dados.filter(d=>d.dataCompra===data)
-    .forEach(d=>{
-      mapa[d.empresa] = (mapa[d.empresa]||0) + Number(d.valorTotal);
-    });
+if(String(n["pagamento"+i]).toUpperCase()=="PAGO"){
 
-  Object.keys(mapa).forEach(emp=>{
-    tbody.innerHTML += `
-      <tr>
-        <td>${emp}</td>
-        <td>R$ ${mapa[emp].toFixed(2)}</td>
-      </tr>`;
-  });
+pago+=Number(n["valorParcela"+i]||0)
+
 }
 
-/* eventos */
-["fEmpresa","fFornecedor","fEmergencial","fInicio","fFim"]
-.forEach(id=>document.getElementById(id).addEventListener("input",render));
+}
 
-dataResumo.addEventListener("change",resumoPorEmpresa);
+return{
+pago,
+saldo:total-pago
+}
 
-carregar();
+}
+
+function pagarParcela(id,parcela){
+
+fetch(GAS_URL+`?action=pagarparcela&id=${id}&parcela=${parcela}&t=`+Date.now())
+.then(()=>carregar())
+
+}
+
+function cancelarNota(id){
+
+if(!confirm("Cancelar esta nota?")) return
+
+fetch(GAS_URL+`?action=cancelarnota&id=${id}`)
+.then(r=>r.json())
+.then(r=>{
+if(r.success){
+carregar()
+}else{
+alert("Erro ao cancelar")
+}
+})
+
+}
+function filtrar(){
+
+return dados.filter(n=>{
+
+if(fEmpresa.value && n.empresa!=fEmpresa.value) return false
+
+if(fFornecedor.value && !n.fornecedor.toLowerCase().includes(fFornecedor.value.toLowerCase())) return false
+
+if(fNota.value && !n.numeroNota.includes(fNota.value)) return false
+
+if(fStatus.value && n.status!=fStatus.value) return false
+
+return true
+
+})
+
+}
+
+function render(){
+
+const tbody=document.getElementById("lista")
+
+tbody.innerHTML=""
+
+let totalNotas=0
+let totalPago=0
+let totalAtrasado=0
+let vencHoje=0
+
+const lista=filtrar()
+
+lista.forEach(n=>{
+
+const fin=calcularFinanceiro(n)
+
+totalNotas+=Number(n.valorTotal)
+totalPago+=fin.pago
+
+let parcelasHTML=""
+
+for(let i=1;i<=n.qtdParcelas;i++){
+
+let status=n["pagamento"+i]
+let venc=n["vencimento"+i]
+let valor=n["valorParcela"+i]
+
+let classe="pagar"
+
+let vencDate=venc?new Date(venc):null
+
+if(String(status).toUpperCase()=="PAGO"){
+
+classe="pago"
+
+}else if(vencDate && vencDate < hoje()){
+
+classe="atrasado"
+totalAtrasado+=Number(valor||0)
+
+}else if(vencDate && vencDate.getTime()==hoje().getTime()){
+
+classe="hoje"
+vencHoje++
+
+}
+
+let dataFormat=""
+
+if(vencDate){
+
+dataFormat=
+vencDate.getDate().toString().padStart(2,'0')+"/"+
+(vencDate.getMonth()+1).toString().padStart(2,'0')+"/"+
+vencDate.getFullYear()
+
+}
+
+parcelasHTML+=`
+
+<div class="parcelaBox">
+
+<button class="btn ${classe}" onclick="pagarParcela('${n.id}',${i})">
+P${i}
+</button>
+
+<div class="parcelaValor">
+R$ ${Number(valor||0).toFixed(2)}
+</div>
+
+<div class="parcelaData">
+${dataFormat}
+</div>
+
+</div>
+
+`
+
+}
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${n.empresa}</td>
+<td>${n.numeroNota}</td>
+<td>${n.fornecedor}</td>
+
+<td>R$ ${Number(n.valorTotal).toFixed(2)}</td>
+<td>R$ ${fin.pago.toFixed(2)}</td>
+<td>R$ ${fin.saldo.toFixed(2)}</td>
+
+<td>${parcelasHTML}</td>
+
+<td>
+<span class="badge ${n.emergencial=="SIM"?"sim":"nao"}">
+${n.emergencial}
+</span>
+</td>
+
+<td>
+<a href="${n.pdf}" target="_blank">PDF</a>
+</td>
+
+<td>
+<button class="btn cancelar" onclick="cancelarNota('${n.id}')">
+Cancelar
+</button>
+</td>
+
+</tr>
+
+`
+
+})
+
+dNotas.innerText="R$ "+totalNotas.toFixed(2)
+dPago.innerText="R$ "+totalPago.toFixed(2)
+dAberto.innerText="R$ "+(totalNotas-totalPago).toFixed(2)
+dAtrasado.innerText="R$ "+totalAtrasado.toFixed(2)
+dHoje.innerText=vencHoje
+
+}
+
+document.querySelectorAll("#fEmpresa,#fFornecedor,#fNota,#fStatus")
+.forEach(el=>el.addEventListener("input",render))
+
+carregar()
+
 </script>
 
 </body>

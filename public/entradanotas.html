@@ -1,72 +1,234 @@
-
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <title>Entrada de Notas</title>
+
 <style>
 *{box-sizing:border-box}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f8;padding:20px}
-.container{max-width:900px;margin:auto;background:#fff;padding:25px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+
+body{
+font-family:'Segoe UI',Arial,sans-serif;
+background:#f4f6f8;
+padding:20px
+}
+
+.container{
+max-width:900px;
+margin:auto;
+background:#fff;
+padding:25px;
+border-radius:10px;
+box-shadow:0 6px 18px rgba(0,0,0,.08)
+}
+
 h1{margin-bottom:20px}
-label{font-weight:600;margin-top:12px;display:block}
-input,select,textarea{width:100%;padding:8px 10px;margin-top:4px;border:1px solid #ccc;border-radius:6px}
+
+label{
+font-weight:600;
+margin-top:12px;
+display:block
+}
+
+input,select,textarea{
+width:100%;
+padding:8px 10px;
+margin-top:4px;
+border:1px solid #ccc;
+border-radius:6px
+}
+
 textarea{resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
-.checkbox{margin-top:10px}
-button{margin-top:20px;background:#0078d4;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer}
-button:hover{background:#005a9e}
+
+.row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px
+}
+
+button{
+margin-top:20px;
+background:#0078d4;
+color:#fff;
+border:none;
+padding:12px 18px;
+border-radius:6px;
+cursor:pointer;
+font-size:15px;
+font-weight:600
+}
+
+button:hover{
+background:#005a9e
+}
+
+button:disabled{
+background:#999;
+cursor:not-allowed
+}
+
+.toggle-container{
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:15px;
+}
+
+.toggle{
+position:relative;
+width:50px;
+height:26px;
+}
+
+.toggle input{
+opacity:0;
+width:0;
+height:0;
+}
+
+.slider{
+position:absolute;
+cursor:pointer;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:#ccc;
+transition:.3s;
+border-radius:30px;
+}
+
+.slider:before{
+position:absolute;
+content:"";
+height:20px;
+width:20px;
+left:3px;
+bottom:3px;
+background:white;
+transition:.3s;
+border-radius:50%;
+box-shadow:0 2px 5px rgba(0,0,0,.3);
+}
+
+.toggle input:checked + .slider{
+background:#ff3b3b;
+}
+
+.toggle input:checked + .slider:before{
+transform:translateX(24px);
+}
+
+.toggle-text{
+font-weight:600;
+font-size:14px;
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
+
 <h1>Entrada de Notas</h1>
+
 <form id="formNota">
 
-<label>Empresa</label> <select id="empresa" required>
-
+<label>Empresa</label>
+<select id="empresa" required>
 <option value="">Selecione</option>
 <option>HIDRAUMAN</option>
 <option>HIDRAUFLEX</option>
 </select>
 
 <div class="row">
+
 <div>
 <label>Data de Compra</label>
-<input type="date" id="dataCompra" required />
+<input type="date" id="dataCompra" required>
 </div>
+
 <div>
 <label>Nº da Nota</label>
-<input type="text" id="numeroNota" />
-</div>
+<input type="text" id="numeroNota"required>
 </div>
 
-<label>Fornecedor</label> <input type="text" id="fornecedor" />
+</div>
+
+<label>Fornecedor</label>
+<input type="text" id="fornecedor"required>
 
 <div class="row">
+
 <div>
 <label>Valor Total</label>
-<input type="number" id="valorTotal" step="0.01" />
+<input type="text" id="valorTotal"required>
 </div>
+
 <div>
 <label>Quantidade de Parcelas</label>
-<input type="number" id="qtdParcelas" />
+<input type="number" id="qtdParcelas" min="1" max="5">
 </div>
+
 </div>
 
 <div class="row">
+
 <div>
-<label>Valor da Parcela</label>
-<input type="number" id="valorParcela" step="0.01" />
-</div>
-<div>
-<label>Vencimento 1ª Parcela</label>
-<input type="date" id="vencimento" />
-</div>
+<label>Valor Parcela 1</label>
+<input type="text" id="valorParcela1">
 </div>
 
-<label>Quem solicitou</label> <select id="solicitante">
+<div>
+<label>Vencimento 1</label>
+<input type="date" id="vencimento1">
+</div>
+
+<div>
+<label>Valor Parcela 2</label>
+<input type="text" id="valorParcela2">
+</div>
+
+<div>
+<label>Vencimento 2</label>
+<input type="date" id="vencimento2">
+</div>
+
+<div>
+<label>Valor Parcela 3</label>
+<input type="text" id="valorParcela3">
+</div>
+
+<div>
+<label>Vencimento 3</label>
+<input type="date" id="vencimento3">
+</div>
+
+<div>
+<label>Valor Parcela 4</label>
+<input type="text" id="valorParcela4">
+</div>
+
+<div>
+<label>Vencimento 4</label>
+<input type="date" id="vencimento4">
+</div>
+
+<div>
+<label>Valor Parcela 5</label>
+<input type="text" id="valorParcela5">
+</div>
+
+<div>
+<label>Vencimento 5</label>
+<input type="date" id="vencimento5">
+</div>
+
+</div>
+
+<label>Quem solicitou</label>
+
+<select id="solicitante">
 
 <option value="">Selecione</option>
 <option>Altair</option>
@@ -79,67 +241,187 @@ button:hover{background:#005a9e}
 <option>Mayara</option>
 <option>Robson</option>
 <option>Samuel</option>
+
 </select>
 
-<div class="checkbox">
-<label><input type="checkbox" id="emergencial" /> Emergencial</label>
+<div class="toggle-container">
+<label class="toggle">
+<input type="checkbox" id="emergencial">
+<span class="slider"></span>
+</label>
+<span class="toggle-text">Emergencial</span>
 </div>
 
 <label>Observações</label>
 
 <textarea id="obs" rows="3"></textarea>
 
-<label>Nota Fiscal (PDF)</label> <input type="file" id="pdf" accept="application/pdf" required />
+<label>Nota Fiscal (PDF)</label>
+<input type="file" id="pdf" accept="application/pdf">
 
-<button type="submit">Salvar Nota</button>
+<button id="btnSalvar" type="submit">Salvar Nota</button>
 
 </form>
+
 </div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyc-UC1zDDiPo1s1MvKZMOJBtm_2MhuLvm-QSiMiDM7sO9mrK5dOWyK-0NOXZFQx64grQ/exec";
 
-document.getElementById('formNota').addEventListener('submit', async e => {
-  e.preventDefault();
+const GAS_URL="https://script.google.com/macros/s/AKfycbwxXSEvXQQu15VA8esNJCtdbnsKhPskvHe6PeBsw8Jq0FBTysqR8c-p2ix_21cYGjiVcA/exec"
 
-  const file = document.getElementById('pdf').files[0];
-  if(!file){alert('Anexe o PDF');return;}
+function moedaParaNumero(v){
+return Number(v.replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))
+}
 
-  const base64 = await toBase64(file);
+function formatarMoeda(campo){
 
-  const form = new FormData();
-  form.append('action','salvarNotaFiscal');
-  form.append('empresa',empresa.value);
-  form.append('dataCompra',dataCompra.value);
-  form.append('numeroNota',numeroNota.value);
-  form.append('fornecedor',fornecedor.value);
-  form.append('valorTotal',valorTotal.value);
-  form.append('qtdParcelas',qtdParcelas.value);
-  form.append('valorParcela',valorParcela.value);
-  form.append('vencimento',vencimento.value);
-  form.append('solicitante',solicitante.value);
-  form.append('emergencial',emergencial.checked?'SIM':'NAO');
-  form.append('obs',obs.value);
-  form.append('arquivo',JSON.stringify({nome:file.name,tipo:file.type,dados:base64}));
+campo.addEventListener("input",()=>{
 
-  const res = await fetch(GAS_URL,{method:'POST',body:form});
-  const r = await res.json();
+let v=campo.value.replace(/\D/g,'')
 
-  if(r.success){
-    alert('Nota salva com sucesso');
-    e.target.reset();
-  }else{
-    alert('Erro: '+r.erro);
-  }
-});
+v=(v/100).toFixed(2)+''
+
+v=v.replace(".",",")
+
+v=v.replace(/\B(?=(\d{3})+(?!\d))/g,".")
+
+campo.value="R$ "+v
+
+})
+
+}
+
+function calcularParcelas(){
+
+const total=moedaParaNumero(valorTotal.value)
+const qtd=parseInt(qtdParcelas.value)
+
+if(!total||!qtd)return
+
+const valor=total/qtd
+
+for(let i=1;i<=5;i++){
+
+const campo=document.getElementById("valorParcela"+i)
+
+if(i<=qtd){
+
+campo.value=new Intl.NumberFormat('pt-BR',{
+style:'currency',
+currency:'BRL'
+}).format(valor)
+
+}else{
+campo.value=""
+}
+
+}
+
+}
+
+formatarMoeda(valorTotal)
+for(let i=1;i<=5;i++){
+formatarMoeda(document.getElementById("valorParcela"+i))
+}
+
+valorTotal.addEventListener("blur",calcularParcelas)
+qtdParcelas.addEventListener("input",calcularParcelas)
+
+document.getElementById('formNota').addEventListener('submit',async e=>{
+
+e.preventDefault()
+
+const btn=document.getElementById("btnSalvar")
+
+btn.disabled=true
+btn.innerText="Salvando..."
+
+const file=document.getElementById('pdf').files[0]
+
+let arquivo=null
+
+if(file){
+
+const base64=await toBase64(file)
+
+arquivo=JSON.stringify({
+nome:file.name,
+tipo:file.type,
+dados:base64
+})
+
+}
+
+const form=new FormData()
+
+form.append('action','salvarNotaFiscal')
+form.append('empresa',empresa.value)
+form.append('dataCompra',dataCompra.value)
+form.append('numeroNota',numeroNota.value)
+form.append('fornecedor',fornecedor.value)
+form.append('valorTotal',moedaParaNumero(valorTotal.value))
+form.append('qtdParcelas',qtdParcelas.value)
+
+for(let i=1;i<=5;i++){
+
+form.append('valorParcela'+i,moedaParaNumero(document.getElementById('valorParcela'+i).value))
+form.append('vencimento'+i,document.getElementById('vencimento'+i).value)
+
+}
+
+form.append('solicitante',solicitante.value)
+form.append('emergencial',emergencial.checked?'SIM':'NAO')
+form.append('obs',obs.value)
+
+if(arquivo){
+form.append('arquivo',arquivo)
+}
+
+try{
+
+const res=await fetch(GAS_URL,{
+method:'POST',
+body:form
+})
+
+const r=await res.json()
+
+if(r.success){
+
+alert('Nota salva com sucesso')
+e.target.reset()
+
+}else{
+
+alert('Erro: '+r.erro)
+
+}
+
+}catch(err){
+
+alert("Erro ao enviar")
+
+}
+
+btn.disabled=false
+btn.innerText="Salvar Nota"
+
+})
 
 function toBase64(file){
-  return new Promise(res=>{
-    const r=new FileReader();
-    r.onload=e=>res(e.target.result.split(',')[1]);
-    r.readAsDataURL(file);
-  });
+
+return new Promise(res=>{
+
+const r=new FileReader()
+
+r.onload=e=>res(e.target.result.split(',')[1])
+
+r.readAsDataURL(file)
+
+})
+
 }
+
 </script>
 
 </body>
