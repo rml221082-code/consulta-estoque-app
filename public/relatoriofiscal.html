@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Notas Fiscais</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+
+<style>
+body{
+  font-family: Arial;
+  background:#f5f6fa;
+  padding:20px;
+}
+
+h1{text-align:center;}
+
+.filtros{
+  display:flex;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+select, button{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.cards{
+  display:flex;
+  gap:15px;
+  margin-bottom:20px;
+}
+
+.card{
+  flex:1;
+  background:#fff;
+  padding:15px;
+  border-radius:10px;
+}
+
+canvas{
+  background:#ffffff;
+  padding:20px;
+  border-radius:10px;
+  max-width:1600px;
+  max-height:800px;
+ 
+  
+}
+
+table{
+  width:100%;
+  margin-top:20px;
+  border-collapse:collapse;
+  background:#fff;
+}
+
+th, td{
+  padding:10px;
+  border-bottom:1px solid #858484;
+}
+
+th{
+  background:#2f3640;
+  color:#fff;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 Dashboard Notas Fiscais</h1>
+
+<div class="filtros">
+  <select id="empresa"></select>
+  <select id="mes"></select>
+  <select id="fornecedor"></select>
+  <button onclick="aplicarFiltro()">Filtrar</button>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3>Total Geral</h3>
+    <p id="totalGeral">R$ 0</p>
+  </div>
+
+  <div class="card">
+    <h3>Total Emergencial</h3>
+    <p id="totalEmergencial">R$ 0</p>
+  </div>
+
+  <div class="card">
+    <h3>Total do Mês</h3>
+    <p id="totalMes">R$ 0</p>
+  </div>
+</div>
+
+<canvas id="graficoPizza"></canvas>
+
+<table>
+<thead>
+<tr>
+<th>Fornecedor</th>
+<th>Total</th>
+<th>%</th>
+<th>Qtd Compras</th>
+</tr>
+</thead>
+<tbody id="tabela"></tbody>
+</table>
+
+<script>
+
+const API = "https://script.google.com/macros/s/AKfycbzENhUoA22JokQGmwRh1840yb-W2WDgJYFHSj59Ph-J2VM2kHzAm1nRF03_nEXnUQb5jQ/exec?action=listarnotasfiscais";
+
+let dados = [];
+let grafico;
+let coresGrafico = [];
+let labelsGrafico = [];
+// ===============================
+// DATA ISO → OBJETO
+// ===============================
+function parseData(dataStr){
+  if(!dataStr) return null;
+  return new Date(dataStr);
+}
+
+// ===============================
+// FORMATAR DD/MM/AA
+// ===============================
+function formatarData(dataStr){
+  const d = parseData(dataStr);
+  if(!d) return "";
+
+  const dia = String(d.getDate()).padStart(2,"0");
+  const mes = String(d.getMonth()+1).padStart(2,"0");
+  const ano = String(d.getFullYear()).slice(-2);
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+// ===============================
+async function carregar(){
+  const res = await fetch(API);
+  const json = await res.json();
+
+  dados = json.rows || [];
+
+  preencherFiltros();
+  aplicarFiltro();
+}
+
+// ===============================
+function preencherFiltros(){
+
+  const empresas = [...new Set(dados.map(d=>d.empresa))];
+  const fornecedores = [...new Set(dados.map(d=>d.fornecedor))];
+
+  document.getElementById("empresa").innerHTML =
+    `<option value="">Todas Empresas</option>` +
+    empresas.map(e=>`<option>${e}</option>`).join("");
+
+  document.getElementById("fornecedor").innerHTML =
+    `<option value="">Todos</option>` +
+    fornecedores.map(f=>`<option>${f}</option>`).join("");
+
+  document.getElementById("mes").innerHTML = `
+     <option value="">Todos Meses</option>
+    <option value="0">Janeiro</option>
+    <option value="1">Fevereiro</option>
+    <option value="2">Março</option>
+    <option value="3">Abril</option>
+    <option value="4">Maio</option>
+    <option value="5">Junho</option>
+    <option value="6">Julho</option>
+    <option value="7">Agosto</option>
+    <option value="8">Setembro</option>
+    <option value="9">Outubro</option>
+    <option value="10">Novembro</option>
+    <option value="11">Dezembro</option>
+  `;
+}
+
+// ===============================
+function aplicarFiltro(){
+
+  const empresa = document.getElementById("empresa").value;
+  const fornecedor = document.getElementById("fornecedor").value;
+  const mes = document.getElementById("mes").value;
+
+  const filtrado = dados.filter(d=>{
+
+    const data = parseData(d.dataCompra);
+    if(!data) return false;
+
+    const mesAtual = data.getMonth();
+
+    return (!empresa || d.empresa === empresa)
+        && (!fornecedor || d.fornecedor === fornecedor)
+        && (mes === "" || mesAtual === Number(mes));
+  });
+
+  montarDashboard(filtrado);
+}
+
+// ===============================
+function montarDashboard(lista){
+
+  let total = 0;
+  let emergencial = 0;
+  let totalMes = 0;
+
+  const porFornecedor = {};
+  const qtdPorFornecedor = {};
+
+
+  lista.forEach(d=>{
+if(!qtdPorFornecedor[d.fornecedor]){
+  qtdPorFornecedor[d.fornecedor] = 0;
+}
+qtdPorFornecedor[d.fornecedor]++;
+    const valor = Number(d.valorTotal)||0;
+    total += valor;
+
+    if(d.emergencial === "SIM"){
+      emergencial += valor;
+    }
+
+    const data = parseData(d.dataCompra);
+    const mesAtual = data ? data.getMonth() : null;
+    const mesSel = document.getElementById("mes").value;
+
+    if(mesSel === "" || mesAtual === Number(mesSel)){
+      totalMes += valor;
+    }
+
+    if(!porFornecedor[d.fornecedor]){
+      porFornecedor[d.fornecedor] = 0;
+    }
+
+    porFornecedor[d.fornecedor] += valor;
+  });
+
+  document.getElementById("totalGeral").innerText =
+    total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  document.getElementById("totalEmergencial").innerText =
+    emergencial.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  document.getElementById("totalMes").innerText =
+    totalMes.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  gerarGrafico(porFornecedor);
+  montarTabela(porFornecedor, qtdPorFornecedor);
+}
+
+// ===============================
+function gerarGrafico(dados){
+
+  // ✅ ORDENA DO MAIOR PARA O MENOR
+  const ordenado = Object.entries(dados)
+    .sort((a,b)=> b[1] - a[1]);
+
+  const labels = ordenado.map(item => item[0]);
+  const valores = ordenado.map(item => item[1]);
+
+  const cores = [
+    "#36A2EB","#FF6384","#FFCE56","#4BC0C0","#9966FF",
+    "#FF9F40","#2ecc71","#e74c3c","#3498db","#9b59b6",
+    "#f1c40f","#1abc9c","#34495e","#e67e22","#7f8c8d"
+  ];
+
+  // ✅ salva já ORDENADO (importante pra tabela bater)
+  labelsGrafico = labels;
+  coresGrafico = cores;
+
+  if(grafico) grafico.destroy();
+
+  grafico = new Chart(document.getElementById("graficoPizza"), {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: valores,
+        backgroundColor: cores,
+
+        // ✅ BORDA DO GRÁFICO (fatia)
+        borderColor: "#f5f6fa",
+        borderWidth: 4
+      }]
+    },
+    options:{
+        cutout: '0%', // 👈 aqui faz virar rosca
+      plugins:{
+        datalabels:{
+          color:'#fff',
+          formatter:(value,context)=>{
+            const total = context.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            return ((value/total)*100).toFixed(1)+"%";
+          }
+        }
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
+}
+// ===============================
+function montarTabela(dados, qtdDados){
+
+  const tbody = document.getElementById("tabela");
+
+  const totalGeral = Object.values(dados)
+    .reduce((soma, val)=> soma + val, 0);
+
+  const linhas = Object.entries(dados)
+    .sort((a,b)=> b[1] - a[1]);
+
+  tbody.innerHTML = linhas.map(([fornecedor, total])=>{
+
+    const pct = totalGeral > 0 
+      ? ((total/totalGeral)*100).toFixed(1) 
+      : 0;
+
+    const index = labelsGrafico.indexOf(fornecedor);
+    const cor = coresGrafico[index] || "#ccc";
+
+    const qtd = qtdDados[fornecedor] || 0;
+
+    return `
+      <tr>
+        <td>
+          <span style="
+            display:inline-block;
+            width:12px;
+            height:12px;
+            background:${cor};
+            margin-right:8px;
+            border-radius:3px;
+          "></span>
+          ${fornecedor}
+        </td>
+        <td>${total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+        <td>${pct}%</td>
+        <td>${qtd}</td>
+      </tr>
+    `;
+  }).join("");
+}
+// ===============================
+carregar();
+// ===============================
+
+</script>
+
+</body>
+</html>
