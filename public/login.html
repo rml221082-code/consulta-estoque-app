@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+
+<style>
+body {
+  margin:0;
+  font-family: "Segoe UI";
+  background: linear-gradient(135deg, #121111, #2c2c2c);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+
+.box {
+  background:white;
+  padding:40px;
+  border-radius:15px;
+  width:320px;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+input {
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.login { background:#121111; color:white; }
+.google { background:#db4437; color:white; }
+
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🔐 Sistema de Estoque</h2>
+
+  <input id="email" placeholder="Email">
+  <input id="senha" type="password" placeholder="Senha">
+
+  <button class="login" onclick="login()">Entrar</button>
+  <button class="google" onclick="loginGoogle()">Google</button>
+
+  <p id="erro" style="color:red;"></p>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+  authDomain: "consulta-estoque-app.firebaseapp.com",
+  projectId: "consulta-estoque-app",
+  storageBucket: "consulta-estoque-app.firebasestorage.app",
+  messagingSenderId: "1065893590092",
+  appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function login() {
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
+
+  auth.signInWithEmailAndPassword(email, senha)
+    .then(() => window.location.href = "b.html")
+    .catch(err => document.getElementById("erro").innerText = err.message);
+}
+
+function loginGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  auth.signInWithPopup(provider)
+    .then(() => window.location.href = "b.html")
+    .catch(err => document.getElementById("erro").innerText = err.message);
+}
+</script>
+
+</body>
+</html>

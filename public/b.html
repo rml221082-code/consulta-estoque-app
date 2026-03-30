@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Links com Acesso</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    header {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      height: 60px;
+      background: #2f80ed;
+    }
+
+    h1 { margin-bottom: 30px; color: #333; text-align: center; }
+
+    .botoes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 500px;
+      padding: 0 20px;
+      margin-bottom: 30px;
+    }
+
+    .botoes a { text-decoration: none; }
+
+    .btn {
+      width: 100%;
+      padding: 18px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .btn-azul { background: #2f80ed; }
+    .btn-vermelho { background: #ed3c2f; }
+
+  </style>
+</head>
+
+<body>
+
+<header></header>
+
+<h1>Links</h1>
+
+<div class="botoes">
+  <a href="https://consulta-estoque-app.web.app/servico.html" data-tipo="administrativo">
+    <button class="btn btn-azul">Entrada de Serviço</button>
+  </a>
+
+  <a href="https://consulta-estoque-app.web.app/controledeveiculo.html" data-tipo="funcionario">
+    <button class="btn btn-azul">Controle de Veículo</button>
+  </a>
+
+  <a href="https://consulta-estoque-app.web.app/manutencaodeveiculo.html" data-tipo="funcionario">
+    <button class="btn btn-azul">Manutenção de Veículo</button>
+  </a>
+
+  <a href="https://consulta-estoque-app.web.app/pedidosdecompras.html" data-tipo="administrativo">
+    <button class="btn btn-azul">Pedidos de Compras</button>
+  </a>
+
+  <a href="https://consulta-estoque-app.web.app/entrada.html" data-tipo="administrativo">
+    <button class="btn btn-azul">Entrada Mercadoria</button>
+  </a>
+  <a href="https://consulta-estoque-app.web.app/aguardando.html" data-tipo="funcionario"> 
+    <button class="btn btn-azul">Aguardando</button>
+ </a>
+    <a href="https://consulta-estoque-app.web.app/venda.html" data-tipo="administrativo">
+     <button class="btn btn-azul">Venda</button> 
+    </a>
+</div>
+
+<h1>EM TESTE</h1>
+
+<div class="botoes">
+  <a href="https://consulta-estoque-app.web.app/orcamento.html" data-tipo="administrativo">
+    <button class="btn btn-vermelho">Orçamento</button>
+  </a>
+<a href="https://consulta-estoque-app.web.app/entradanotas.html" data-tipo="administrativo">
+     <button class="btn btn-vermelho">Entrada de Notas</button>
+     </a>
+     <a href="https://consulta-estoque-app.web.app/controlefiscal.html" data-tipo="administrativo">
+         <button class="btn btn-vermelho">Controle Fiscal</button> 
+        </a>
+        <a href="https://consulta-estoque-app.web.app/relatoriofiscal.html" data-tipo="administrativo">
+             <button class="btn btn-vermelho">Relatório Fiscal</button> 
+            </a>
+  <a href="https://consulta-estoque-app.web.app/imagens.html" data-tipo="administrativo">
+    <button class="btn btn-vermelho">Inserir Imagens</button>
+  </a>
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+  authDomain: "consulta-estoque-app.firebaseapp.com",
+  projectId: "consulta-estoque-app",
+  storageBucket: "consulta-estoque-app.firebasestorage.app",
+  messagingSenderId: "1065893590092",
+  appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(async user => {
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  let doc = await db.collection("usuarios").doc(user.uid).get();
+
+  let usuario;
+
+  // cria se não existir
+  if (!doc.exists) {
+    usuario = {
+      nome: user.displayName || "Usuário",
+      email: user.email,
+      tipo: "funcionario",
+      ativo: false
+    };
+
+    await db.collection("usuarios").doc(user.uid).set(usuario);
+  } else {
+    usuario = doc.data();
+  }
+
+  // bloqueio
+  if (usuario.ativo === false) {
+    alert("Aguardando liberação do administrador");
+    await auth.signOut();
+    window.location.href = "login.html";
+    return;
+  }
+
+  // =========================
+  // 👤 HEADER USUÁRIO
+  // =========================
+
+  const header = document.querySelector("header");
+
+  const userBox = document.createElement("div");
+  userBox.style.position = "absolute";
+  userBox.style.right = "20px";
+  userBox.style.top = "10px";
+  userBox.style.display = "flex";
+  userBox.style.alignItems = "center";
+  userBox.style.gap = "10px";
+  userBox.style.color = "white";
+
+  const avatar = document.createElement("img");
+  avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
+  avatar.style.width = "35px";
+  avatar.style.borderRadius = "50%";
+
+  const info = document.createElement("div");
+  info.innerHTML = `
+    <div><b>${usuario.nome}</b></div>
+    <div style="font-size:11px;">${usuario.tipo}</div>
+  `;
+
+  const sair = document.createElement("button");
+  sair.innerText = "Sair";
+  sair.onclick = () => {
+    auth.signOut().then(() => {
+      window.location.href = "login.html";
+    });
+  };
+
+  userBox.appendChild(avatar);
+  userBox.appendChild(info);
+  userBox.appendChild(sair);
+
+  header.appendChild(userBox);
+
+  // 🔥 BOTÃO ADMIN
+  if (usuario.tipo === "admin") {
+    const btnAdmin = document.createElement("button");
+    btnAdmin.innerText = "Admin";
+    btnAdmin.style.position = "absolute";
+    btnAdmin.style.right = "120px";
+    btnAdmin.style.top = "10px";
+
+    btnAdmin.onclick = () => {
+      window.location.href = "admin.html";
+    };
+
+    header.appendChild(btnAdmin);
+  }
+
+  // =========================
+  // 🔐 CONTROLE DE BOTÕES
+  // =========================
+
+  const botoes = document.querySelectorAll('.botoes a');
+
+  botoes.forEach(btn => btn.style.display = 'none');
+
+  if (usuario.tipo === "admin") {
+    botoes.forEach(btn => btn.style.display = 'block');
+  } else {
+    botoes.forEach(btn => {
+      if (btn.getAttribute('data-tipo') === usuario.tipo) {
+        btn.style.display = 'block';
+      }
+    });
+  }
+
+});
+</script>
+
+</body>
+</html>

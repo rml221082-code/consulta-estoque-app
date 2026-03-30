@@ -24,7 +24,7 @@
   }
 
   #carrinhoBtn {
-    position: absolute;
+    position: fixed;
     right: 20px;
     top: 15px;
     background: #ffffff;
@@ -121,7 +121,7 @@
   #boxCarrinho {
     background: #fff;
     width: 95%;
-    max-width: 900px;
+    max-width: 1200px;
     padding: 20px;
     border-radius: 10px;
   }
@@ -156,6 +156,19 @@
   button {
     cursor: pointer;
   }
+  .tabela-scroll {
+  max-height: 400px; /* altura máxima */
+  overflow-y: auto;  /* ativa scroll vertical */
+  margin-top: 10px;
+}
+
+/* opcional: deixa o cabeçalho fixo */
+.tabela-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: #eee;
+  z-index: 2;
+}
   </style>
   </head>
 
@@ -163,9 +176,9 @@
 
   <header>
     Entrada de Produtos
-    <button id="carrinhoBtn" onclick="abrirCarrinho()">📥 Carrinho (<span id="qtdCarrinho">0</span>)</button>
+    <button id="carrinhoBtn" onclick="abrirCarrinho()">🛒 Carrinho (<span id="qtdCarrinho">0</span>)</button>
     <button id="novoProdutoBtn" onclick="abrirNovoProduto()"
-  style="position:absolute; right:150px; top:15px; background:#ffd700; border:none; padding:10px 16px; border-radius:6px;">
+  style="position:fixed; right:150px; top:15px; background:#ffd700; border:none; padding:10px 16px; border-radius:6px;">
 ➕ Produto Novo
 </button>
   </header>
@@ -184,17 +197,19 @@
       <div id="erro" class="erro"></div>
       <div id="produtos"></div>
     </main>
-
+ 
+    
   <!-- MODAL CARRINHO -->
   <div id="modalCarrinho">
     <div id="boxCarrinho">
-      <h2>Carrinho de Entrada</h2>
-
+      <h2><center>Carrinho de Entrada</center></h2>
+<div class="tabela-scroll">
       <table>
         <thead>
           <tr>
             <th>CATEGORIA</th>
             <th>Produto</th>
+             <th>Caixa</th> <!-- ✅ NOVO -->
             <th>Qtd</th>
             <th>Valor Compra</th>
             <th>IPI %</th>
@@ -206,7 +221,7 @@
         </thead>
         <tbody id="listaCarrinho"></tbody>
       </table>
-
+</div>
       <div class="total-geral">
         Total Geral: <span id="totalGeral">R$ 0,00</span>
       </div>
@@ -248,10 +263,11 @@ function fecharCarrinho() {
 
       card.innerHTML = `
         <img src="${
-          p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http")
-            ? p['IMAGEM APP']
-            : 'https://via.placeholder.com/300?text=Sem+Imagem'
-        }">
+  p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http")
+    ? p['IMAGEM APP']
+    : 'https://via.placeholder.com/300?text=Sem+Imagem'
+}" const img = card.querySelector("img");
+img.addEventListener("click", () => abrirModal(p));>
 
         <div class="info">
           <b>${p.PRODUTO}</b><br>
@@ -273,6 +289,34 @@ function fecharCarrinho() {
 
     div.appendChild(fragment);
   }
+  
+function fecharModal() {
+  document.getElementById("modal").style.display = "none";
+}
+ function abrirModal(p) {
+    const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
+
+    document.getElementById("modalImg").src = p["IMAGEM APP"];
+
+    document.getElementById("modalDesc").innerHTML = `
+      <h2>${p.PRODUTO}</h2>
+
+      
+      <p><b>Categoria:</b> ${p.CATEGORIA}</p>
+      <p><b>Categoria + Produto:</b> ${chave}</p>
+      <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
+      <p><b>Caixa:</b> ${p.CAIXA || ""}</p>
+
+      <h2>
+      <p><b>Valor:</b> ${dinheiro(p.VALOR_VENDA)}</p>
+
+      </h2>
+    `;
+
+    document.getElementById("modal").style.display = "flex";
+  }
+
+    
 
   /* ======= CARRINHO ======= */
 
@@ -283,9 +327,11 @@ function fecharCarrinho() {
       existente.qtd += 1;
     } else {
       carrinho.push({
+        IMAGEM: p["IMAGEM APP"] || "",
         ID_PRODUTO: p.ID_PRODUTO,
         PRODUTO: p.PRODUTO,
         CATEGORIA: p.CATEGORIA,
+        CAIXA: p.CAIXA, // ✅ AQUI
         qtd: 1,
         valorCompra: Number(p.VALOR_COMPRA) || 0,
         ipi: 0,
@@ -346,8 +392,26 @@ function buscar() {
       tbody.innerHTML += `
         <tr>
           <td>${i.CATEGORIA}</td>
-          <td>${i.PRODUTO}</td>
+          <td style="text-align:left;">
+  <div style="display:flex; align-items:center; gap:10px;">
+    
+    <img src="${
+      i.IMAGEM && String(i.IMAGEM).startsWith("http")
+        ? i.IMAGEM
+        : 'https://via.placeholder.com/60'
+    }" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+
+    <div>
+      <b>${i.PRODUTO}</b><br>
+     
+    </div>
+
+  </div>
+</td>
+<td>${i.CAIXA}</td>
         <td>
+          
+
           <input type="number" min="1" value="${i.qtd}" oninput="carrinho[${idx}].qtd=Number(this.value)||1; agendarAtualizacao()"></td>
           <td><input type="number" value="${i.valorCompra}" onchange="carrinho[${idx}].valorCompra=Number(this.value)||0; atualizarCarrinho()"></td>
           <td><input type="number" value="${i.ipi}" onchange="carrinho[${idx}].ipi=Number(this.value)||0; atualizarCarrinho()"></td>
@@ -367,8 +431,53 @@ function buscar() {
 
 
   </script>
+  <!-- 🔥 SOMENTE A PARTE CORRIGIDA -->
+
+<script>
+function renderizarProdutos(lista) {
+  const div = document.getElementById("produtos");
+  div.innerHTML = "";
+
+  const fragment = document.createDocumentFragment();
+
+  lista.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const imagem = (p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http"))
+      ? p['IMAGEM APP']
+      : 'https://via.placeholder.com/300?text=Sem+Imagem';
+
+    card.innerHTML = `
+      <img src="${imagem}">
+
+      <div class="info">
+        <b>${p.PRODUTO}</b><br>
+        Categoria: ${p.CATEGORIA || "-"}<br>
+        Estoque: ${p.QUANTIDADE || 0}<br>
+        Caixa: ${p.CAIXA || ''}<br>
+        Compra: ${Number(p.VALOR_COMPRA || 0)
+          .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+      </div>
+
+      <button class="btn-add">➕ Adicionar</button>
+    `;
+
+    // ✅ CLIQUE NA IMAGEM (CORRETO)
+    card.querySelector("img")
+      .addEventListener("click", () => abrirModal(p));
+
+    card.querySelector(".btn-add")
+      .addEventListener("click", () => addCarrinhoPorId(p.ID_PRODUTO));
+
+    fragment.appendChild(card);
+  });
+
+  div.appendChild(fragment);
+}
+</script>
   <script>
- function renderizarCategorias() {
+function renderizarCategorias() {
   const div = document.getElementById("categorias");
   div.innerHTML = "";
 
@@ -386,16 +495,30 @@ function buscar() {
     const a = document.createElement("a");
     a.href = "#";
     a.textContent = nome;
-    a.className = valor === categoriaAtual ? "ativo" : "";
+
+    // ✅ MARCA COMO ATIVO
+    if (valor === categoriaAtual) {
+      a.classList.add("ativo");
+    }
+
     a.onclick = e => {
       e.preventDefault();
+
       categoriaAtual = valor;
+
+      // 🔥 REMOVE ATIVO DE TODOS
+      document.querySelectorAll("#categorias a")
+        .forEach(el => el.classList.remove("ativo"));
+
+      // 🔥 ADICIONA NO CLICADO
+      a.classList.add("ativo");
+
       buscar();
     };
+
     div.appendChild(a);
   }
 }
-
 
   
   </script>
@@ -618,6 +741,45 @@ async function adicionarProdutoManual() {
     alert("Erro ao gerar ID do produto");
   }
 }
+
 </script>
+
+
+  
+</div>
+<div id="modal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:9999;
+">
+
+  <span onclick="fecharModal()" style="
+    position:absolute;
+    top:20px;
+    right:30px;
+    color:white;
+    font-size:30px;
+    cursor:pointer;
+  ">✖</span>
+
+  <img id="modalImg" style="
+    max-width:90%;
+    max-height:60%;
+    border-radius:10px;
+  ">
+
+  <div id="modalDesc" style="
+    color:white;
+    text-align:center;
+    margin-top:15px;
+  "></div>
+</div>
+
   </body>
+  
   </html>

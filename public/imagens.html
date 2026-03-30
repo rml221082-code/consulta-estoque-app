@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Cadastro de Imagens</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+  padding: 20px;
+}
+
+.box {
+  background: #fff;
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+  border-radius: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #1b5500;
+  color: #fff;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+#resultadoBusca {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  display: none;
+}
+
+.itemBusca {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.itemBusca:hover {
+  background: #eee;
+}
+
+/* 🔥 PREVIEW */
+#previewBox {
+  text-align: center;
+  margin-top: 10px;
+}
+
+#previewImg {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Cadastro de Imagem</h2>
+
+  <label>Buscar Produto</label>
+  <input type="text" id="buscaProduto" placeholder="Digite o nome..." oninput="buscarProduto()">
+
+  <div id="resultadoBusca"></div>
+
+  <label>ID Produto</label>
+  <input type="text" id="idProduto" readonly>
+
+  <label>Link da Imagem</label>
+  <input type="text" id="linkImagem" placeholder="Cole o link da imagem" oninput="previewImagem()">
+
+  <!-- 🔥 PREVIEW -->
+  <div id="previewBox">
+    <img id="previewImg">
+  </div>
+
+  <button onclick="salvarImagem(event)">Salvar Imagem</button>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzUF3598pzooFqm_wnUygBn5DcCrly5-xSSapLMho91wakqPjbEPDCPHb5zPsMLRoYKPA/exec";
+
+let produtos = [];
+
+/* 🔎 BUSCAR PRODUTO */
+async function buscarProduto() {
+  const termo = document.getElementById("buscaProduto").value.toLowerCase();
+
+  if (!produtos.length) {
+    const res = await fetch(API_URL + "?action=listarProdutos");
+    const data = await res.json();
+    produtos = data.rows || [];
+  }
+
+  const filtrados = produtos.filter(p =>
+    (p.PRODUTO || "").toLowerCase().includes(termo)
+  );
+
+  const div = document.getElementById("resultadoBusca");
+  div.innerHTML = "";
+  div.style.display = "block";
+
+  filtrados.slice(0, 10).forEach(p => {
+    const item = document.createElement("div");
+    item.className = "itemBusca";
+    item.textContent = p.PRODUTO + " (ID: " + p.ID_PRODUTO + ")";
+
+    item.onclick = () => {
+      document.getElementById("idProduto").value = p.ID_PRODUTO;
+      document.getElementById("buscaProduto").value = p.PRODUTO;
+      div.style.display = "none";
+    };
+
+    div.appendChild(item);
+  });
+}
+
+/* 🖼️ PREVIEW AUTOMÁTICO */
+function previewImagem() {
+  const url = document.getElementById("linkImagem").value;
+  const img = document.getElementById("previewImg");
+
+
+
+  img.onload = () => {
+    img.style.display = "block";
+  };
+
+  img.onerror = () => {
+    img.style.display = "none";
+    alert("Imagem inválida!");
+  };
+
+  img.src = url;
+}
+
+/* 💾 SALVAR */
+async function salvarImagem(event) {
+  const btn = event.target;
+  btn.textContent = "Salvando...";
+
+  const id = document.getElementById("idProduto").value;
+  const link = document.getElementById("linkImagem").value;
+
+  if (!id || !link) {
+    alert("Preencha tudo");
+    btn.textContent = "Salvar Imagem";
+    return;
+  }
+
+  const form = new URLSearchParams();
+  form.append("action", "salvarimagemlink");
+  form.append("id", id);
+  form.append("url", link);
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: form
+  });
+
+  btn.textContent = "Salvar Imagem";
+  alert("Imagem salva!");
+
+  // 🔥 LIMPAR CAMPOS
+  document.getElementById("idProduto").value = "";
+  document.getElementById("linkImagem").value = "";
+  document.getElementById("buscaProduto").value = "";
+
+  // 🔥 LIMPAR PREVIEW
+  const img = document.getElementById("previewImg");
+  img.src = "";
+  img.style.display = "none";
+
+  // 🔥 ESCONDER LISTA
+  document.getElementById("resultadoBusca").style.display = "none";
+}
+/* 🔄 ATUALIZAR */
+async function atualizarImagens() {
+  await fetch(API_URL + "?action=atualizarimagens");
+  alert("Imagens atualizadas!");
+}
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".box")) {
+    document.getElementById("resultadoBusca").style.display = "none";
+  }
+});
+</script>
+
+</body>
+</html>

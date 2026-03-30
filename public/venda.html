@@ -381,7 +381,7 @@
         card.className = "card";
 
         card.innerHTML = `
-          <img src="${p['IMAGEM APP']}" onclick='abrirModal(${JSON.stringify(p)})'>
+          <img src="${tratarImagem(p['IMAGEM APP'])}" onclick='abrirModal(${JSON.stringify(p)})'>
           <div class="info">
             <h3>${p.PRODUTO}</h3>
             <p><b>Categoria:</b> ${p.CATEGORIA}</p>
@@ -404,7 +404,7 @@
   function abrirModal(p) {
     const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
 
-    document.getElementById("modalImg").src = p["IMAGEM APP"];
+    document.getElementById("modalImg").src = tratarImagem(p["IMAGEM APP"]);
 
     document.getElementById("modalDesc").innerHTML = `
       <h2>${p.PRODUTO}</h2>
@@ -490,7 +490,7 @@
   lista.innerHTML += `
     <div class="item-carrinho">
 
-      <img src="${p['IMAGEM APP'] || 'https://via.placeholder.com/60'}">
+      <img src="${tratarImagem(p['IMAGEM APP']) || 'https://via.placeholder.com/60'}">
 
       <div class="dados">
         <div><b>${p.PRODUTO || ''}</b></div>
@@ -772,7 +772,24 @@
     });
   }
   </script>
+<script>
+function tratarImagem(url) {
+  if (!url) return "https://via.placeholder.com/300";
 
+  if (url.includes("drive.google.com")) {
+
+    let match = url.match(/\/d\/(.*?)\//);
+    if (match && match[1]) {
+      const id = match[1];
+
+      // 🔥 MAIS ESTÁVEL (nova forma)
+      return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+    }
+  }
+
+  return url;
+}
+</script>
 
   <div id="spinnerVenda" style="
     display:none;
