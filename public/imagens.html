@@ -51,7 +51,24 @@ button {
   background: #eee;
 }
 
-/* 🔥 PREVIEW */
+/* TAGS */
+.tag {
+  display: inline-block;
+  background: #1b5500;
+  color: #fff;
+  padding: 5px 10px;
+  margin: 3px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.tag span {
+  margin-left: 8px;
+  cursor: pointer;
+  color: #ffcccc;
+}
+
+/* PREVIEW */
 #previewBox {
   text-align: center;
   margin-top: 10px;
@@ -76,13 +93,14 @@ button {
 
   <div id="resultadoBusca"></div>
 
-  <label>ID Produto</label>
-  <input type="text" id="idProduto" readonly>
+  <label>Produtos Selecionados</label>
+  <div id="listaSelecionados"></div>
+
+  <input type="hidden" id="idProduto">
 
   <label>Link da Imagem</label>
   <input type="text" id="linkImagem" placeholder="Cole o link da imagem" oninput="previewImagem()">
 
-  <!-- 🔥 PREVIEW -->
   <div id="previewBox">
     <img id="previewImg">
   </div>
@@ -94,8 +112,9 @@ button {
 const API_URL = "https://script.google.com/macros/s/AKfycbzUF3598pzooFqm_wnUygBn5DcCrly5-xSSapLMho91wakqPjbEPDCPHb5zPsMLRoYKPA/exec";
 
 let produtos = [];
+let idsSelecionados = [];
 
-/* 🔎 BUSCAR PRODUTO */
+/* BUSCAR PRODUTO */
 async function buscarProduto() {
   const termo = document.getElementById("buscaProduto").value.toLowerCase();
 
@@ -119,21 +138,56 @@ async function buscarProduto() {
     item.textContent = p.PRODUTO + " (ID: " + p.ID_PRODUTO + ")";
 
     item.onclick = () => {
-      document.getElementById("idProduto").value = p.ID_PRODUTO;
-      document.getElementById("buscaProduto").value = p.PRODUTO;
-      div.style.display = "none";
+      adicionarProduto(p.ID_PRODUTO, p.PRODUTO);
     };
 
     div.appendChild(item);
   });
 }
 
-/* 🖼️ PREVIEW AUTOMÁTICO */
+/* ADICIONAR PRODUTO */
+function adicionarProduto(id, nome) {
+
+  if (idsSelecionados.includes(id)) {
+    alert("Produto já adicionado!");
+    return;
+  }
+
+  idsSelecionados.push(id);
+
+  atualizarListaVisual();
+
+  document.getElementById("idProduto").value = idsSelecionados.join(",");
+
+  document.getElementById("buscaProduto").value = "";
+  document.getElementById("resultadoBusca").style.display = "none";
+}
+
+/* MOSTRAR TAGS */
+function atualizarListaVisual() {
+  const div = document.getElementById("listaSelecionados");
+  div.innerHTML = "";
+
+  idsSelecionados.forEach(id => {
+    const tag = document.createElement("div");
+    tag.className = "tag";
+    tag.innerHTML = `ID: ${id} <span onclick="removerProduto('${id}')">x</span>`;
+    div.appendChild(tag);
+  });
+}
+
+/* REMOVER */
+function removerProduto(id) {
+  idsSelecionados = idsSelecionados.filter(i => i != id);
+
+  atualizarListaVisual();
+  document.getElementById("idProduto").value = idsSelecionados.join(",");
+}
+
+/* PREVIEW */
 function previewImagem() {
   const url = document.getElementById("linkImagem").value;
   const img = document.getElementById("previewImg");
-
-
 
   img.onload = () => {
     img.style.display = "block";
@@ -147,51 +201,52 @@ function previewImagem() {
   img.src = url;
 }
 
-/* 💾 SALVAR */
+/* SALVAR */
 async function salvarImagem(event) {
   const btn = event.target;
   btn.textContent = "Salvando...";
 
-  const id = document.getElementById("idProduto").value;
+  const ids = idsSelecionados;
   const link = document.getElementById("linkImagem").value;
 
-  if (!id || !link) {
-    alert("Preencha tudo");
+  if (!ids.length || !link) {
+    alert("Selecione produtos e informe a imagem");
     btn.textContent = "Salvar Imagem";
     return;
   }
 
-  const form = new URLSearchParams();
-  form.append("action", "salvarimagemlink");
-  form.append("id", id);
-  form.append("url", link);
+  for (let id of ids) {
+    const form = new URLSearchParams();
+    form.append("action", "salvarimagemlink");
+    form.append("id", id);
+    form.append("url", link);
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: form
-  });
+    await fetch(API_URL, {
+      method: "POST",
+      body: form
+    });
+  }
 
-  btn.textContent = "Salvar Imagem";
-  alert("Imagem salva!");
+  alert("Imagem salva para todos!");
 
-  // 🔥 LIMPAR CAMPOS
+  // LIMPAR
+  idsSelecionados = [];
+  atualizarListaVisual();
+
   document.getElementById("idProduto").value = "";
   document.getElementById("linkImagem").value = "";
   document.getElementById("buscaProduto").value = "";
 
-  // 🔥 LIMPAR PREVIEW
   const img = document.getElementById("previewImg");
   img.src = "";
   img.style.display = "none";
 
-  // 🔥 ESCONDER LISTA
   document.getElementById("resultadoBusca").style.display = "none";
+
+  btn.textContent = "Salvar Imagem";
 }
-/* 🔄 ATUALIZAR */
-async function atualizarImagens() {
-  await fetch(API_URL + "?action=atualizarimagens");
-  alert("Imagens atualizadas!");
-}
+
+/* FECHAR LISTA */
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".box")) {
     document.getElementById("resultadoBusca").style.display = "none";

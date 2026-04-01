@@ -71,247 +71,247 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
-  authDomain: "consulta-estoque-app.firebaseapp.com",
-  projectId: "consulta-estoque-app",
-  storageBucket: "consulta-estoque-app.firebasestorage.app",
-  messagingSenderId: "1065893590092",
-  appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-let usuarioLogado = null;
-
-auth.onAuthStateChanged(async user => {
-
-  if (user === null) return; // 🔥 ESPERA O FIREBASE
-
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  let doc = await db.collection("usuarios").doc(user.uid).get();
-
-  // 🔥 CRIA AUTOMATICAMENTE SE NÃO EXISTIR
-  if (!doc.exists) {
-    const novoUsuario = {
-      nome: user.displayName || "Usuário",
-      email: user.email,
-      tipo: "funcionario",
-      ativo: false,
-      nivel: 0  // Nível de acesso inicial
-    };;
-
-    await db.collection("usuarios").doc(user.uid).set(novoUsuario);
-
-    usuarioLogado = novoUsuario; // ✅ USA DIRETO
-  } else {
-    usuarioLogado = doc.data();
-  }
-
-  // 🔒 BLOQUEIO
- if (usuarioLogado.ativo === false) {
-  alert("Seu acesso está aguardando liberação do administrador.");
-
-  await auth.signOut();
-  window.location.href = "login.html";
-
-  return;
-}
-
-  const header = document.querySelector("header");
-
-// limpa anterior
-const oldUser = document.getElementById("userBox");
-if (oldUser) oldUser.remove();
-
-document.getElementById("btnAdmin")?.remove();
-
-// 👉 BOX USUÁRIO
-const userBox = document.createElement("div");
-userBox.id = "userBox";
-userBox.style.position = "absolute";
-userBox.style.zIndex = "9999";
-userBox.style.right = "20px";
-userBox.style.top = "10px";
-userBox.style.display = "flex";
-userBox.style.alignItems = "center";
-userBox.style.gap = "10px";
-userBox.style.background = "rgba(255,255,255,0.1)";
-userBox.style.padding = "6px 10px";
-userBox.style.borderRadius = "20px";
-
-// avatar
-const avatar = document.createElement("img");
-avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
-avatar.style.width = "35px";
-avatar.style.height = "35px";
-avatar.style.borderRadius = "50%";
-
-// info
-const info = document.createElement("div");
-info.style.color = "white";
-info.innerHTML = `
-  <div><b>${usuarioLogado.nome}</b></div>
-  <div style="font-size:11px;">${usuarioLogado.tipo}</div>
-`;
-
-// botão sair ✅ CORRIGIDO
-const btn = document.createElement("button");
-btn.innerText = "Sair";
-
-btn.addEventListener("click", () => {
-  auth.signOut().then(() => {
-    window.location.href = "login.html";
-  });
-});
-
-// monta
-userBox.appendChild(avatar);
-userBox.appendChild(info);
-userBox.appendChild(btn);
-
-header.appendChild(userBox);
-
-// 🔥 BOTÃO ADMIN
-if (usuarioLogado.tipo === "admin") {
-  const btnAdmin = document.createElement("button");
-  btnAdmin.id = "btnAdmin";
-  btnAdmin.style.zIndex = "9999";
-  btnAdmin.innerText = "Admin";
-  btnAdmin.style.position = "absolute";
-  btnAdmin.style.right = "120px";
-  btnAdmin.style.top = "10px";
-
-  btnAdmin.onclick = () => {
-    window.location.href = "admin.html";
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+    authDomain: "consulta-estoque-app.firebaseapp.com",
+    projectId: "consulta-estoque-app",
+    storageBucket: "consulta-estoque-app.firebasestorage.app",
+    messagingSenderId: "1065893590092",
+    appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
   };
 
-  header.appendChild(btnAdmin);
-}
+  firebase.initializeApp(firebaseConfig);
 
-  // 🔥 CARREGA DADOS SÓ DEPOIS DO LOGIN
-  carregarDados();
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-});
-</script>
-  <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
-  let todosProdutos = [];
-  let categoriaAtual = "";
+  let usuarioLogado = null;
 
-  async function carregarDados() {
-    document.getElementById("loading").textContent = "⏳ Carregando produtos...";
-    try {
-      const res = await fetch(`${API_URL}?action=listarprodutos`);
-      const data = await res.json();
-      todosProdutos = data.rows || [];
-      preencherCategorias();
-      mostrar(todosProdutos);
-    } catch(e) {
-      document.getElementById("erro").textContent = "❌ Erro ao carregar os dados.";
-      console.error(e);
-    } finally {
-      document.getElementById("loading").textContent = "";
-    }
-  }
+  auth.onAuthStateChanged(async user => {
 
-  function preencherCategorias() {
-    const ul = document.getElementById("categorias");
-    ul.innerHTML = "";
-    const categorias = [...new Set(todosProdutos.map(p => p.CATEGORIA).filter(Boolean))].sort();
-    const liTodos = document.createElement("li");
-    liTodos.innerHTML = `<a href="#" class="ativo" onclick="filtrarPorCategoria('')">Todas</a>`;
-    ul.appendChild(liTodos);
-    categorias.forEach(cat => {
-      const li = document.createElement("li");
-      li.innerHTML = `<a href="#" onclick="filtrarPorCategoria('${cat}')">${cat}</a>`;
-      ul.appendChild(li);
-    });
-  }
+    if (user === null) return; // 🔥 ESPERA O FIREBASE
 
-  function filtrarPorCategoria(cat) {
-    categoriaAtual = cat;
-    document.querySelectorAll("#categorias a").forEach(a => a.classList.remove("ativo"));
-    const link = [...document.querySelectorAll("#categorias a")].find(a => a.textContent === (cat || "Todas"));
-    if(link) link.classList.add("ativo");
-    buscar();
-  }
-
-  function buscar() {
-    const termo = document.getElementById('busca').value.toLowerCase().trim();
-    const filtrados = todosProdutos.filter(p =>
-      (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-      ((p.PRODUTO && p.PRODUTO.toLowerCase().includes(termo)) ||
-      (p.CATEGORIA && p.CATEGORIA.toLowerCase().includes(termo)))
-    );
-    mostrar(filtrados);
-  }
-  
-  function mostrar(produtos) {
-    const div = document.getElementById("produtos");
-    div.innerHTML = "";
-    document.getElementById("erro").textContent = "";
-
-    if(!produtos || produtos.length === 0) {
-      div.innerHTML = "<p style='text-align:center;'>Nenhum produto encontrado.</p>";
+    if (!user) {
+      window.location.href = "login.html";
       return;
     }
 
-    produtos.forEach(p => {
-      const imagem = p["IMAGEM APP"] || "";
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <img src="${imagem}" alt="imagem do produto" onclick='abrirModal(${JSON.stringify(p)})'>
-        <div class="info">
-          <h3>${p.PRODUTO}</h3>
-          <p><b>Categoria:</b> ${p.CATEGORIA || ''}</p>
-          <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
-          <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
-          ${usuarioLogado?.tipo === "admin" ? `
-<p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString('pt-BR', {
-  style: 'currency',
-  currency: 'BRL'
-})}</p>
-` : ""}
+    let doc = await db.collection("usuarios").doc(user.uid).get();
 
-        </div>
-      `;
-      div.appendChild(card);
-    });
+    // 🔥 CRIA AUTOMATICAMENTE SE NÃO EXISTIR
+    if (!doc.exists) {
+      const novoUsuario = {
+        nome: user.displayName || "Usuário",
+        email: user.email,
+        tipo: "funcionario",
+        ativo: false,
+        nivel: 0  // Nível de acesso inicial
+      };;
+
+      await db.collection("usuarios").doc(user.uid).set(novoUsuario);
+
+      usuarioLogado = novoUsuario; // ✅ USA DIRETO
+    } else {
+      usuarioLogado = doc.data();
+    }
+
+    // 🔒 BLOQUEIO
+  if (usuarioLogado.ativo === false) {
+    alert("Seu acesso está aguardando liberação do administrador.");
+
+    await auth.signOut();
+    window.location.href = "login.html";
+
+    return;
   }
 
-  function abrirModal(produto){
-    const modal = document.getElementById("modal");
-    const img = document.getElementById("modalImg");
-    img.src = produto["IMAGEM APP"] || "";
-    const desc = document.getElementById("modalDesc");
-    desc.innerHTML = `
-      <h2>${produto.PRODUTO || ''}</h2>
-      <h2><p><b>Categoria:</b> ${produto.CATEGORIA || ''}</p></h2>
-      <h2><p><b>Quantidade:</b> ${produto.QUANTIDADE || '0'}</p></h2>
-      <h2><p><b>Caixa:</b> ${produto.CAIXA || ''}</p></h2>
-      <h2><p><b>Valor:</b> ${Number(produto.COMPRA || 0).toLocaleString('pt-BR', {
+    const header = document.querySelector("header");
+
+  // limpa anterior
+  const oldUser = document.getElementById("userBox");
+  if (oldUser) oldUser.remove();
+
+  document.getElementById("btnAdmin")?.remove();
+
+  // 👉 BOX USUÁRIO
+  const userBox = document.createElement("div");
+  userBox.id = "userBox";
+  userBox.style.position = "absolute";
+  userBox.style.zIndex = "9999";
+  userBox.style.right = "20px";
+  userBox.style.top = "10px";
+  userBox.style.display = "flex";
+  userBox.style.alignItems = "center";
+  userBox.style.gap = "10px";
+  userBox.style.background = "rgba(255,255,255,0.1)";
+  userBox.style.padding = "6px 10px";
+  userBox.style.borderRadius = "20px";
+
+  // avatar
+  const avatar = document.createElement("img");
+  avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
+  avatar.style.width = "35px";
+  avatar.style.height = "35px";
+  avatar.style.borderRadius = "50%";
+
+  // info
+  const info = document.createElement("div");
+  info.style.color = "white";
+  info.innerHTML = `
+    <div><b>${usuarioLogado.nome}</b></div>
+    <div style="font-size:11px;">${usuarioLogado.tipo}</div>
+  `;
+
+  // botão sair ✅ CORRIGIDO
+  const btn = document.createElement("button");
+  btn.innerText = "Sair";
+
+  btn.addEventListener("click", () => {
+    auth.signOut().then(() => {
+      window.location.href = "login.html";
+    });
+  });
+
+  // monta
+  userBox.appendChild(avatar);
+  userBox.appendChild(info);
+  userBox.appendChild(btn);
+
+  header.appendChild(userBox);
+
+  // 🔥 BOTÃO ADMIN
+  if (usuarioLogado.tipo === "admin") {
+    const btnAdmin = document.createElement("button");
+    btnAdmin.id = "btnAdmin";
+    btnAdmin.style.zIndex = "9999";
+    btnAdmin.innerText = "Admin";
+    btnAdmin.style.position = "absolute";
+    btnAdmin.style.right = "120px";
+    btnAdmin.style.top = "10px";
+
+    btnAdmin.onclick = () => {
+      window.location.href = "admin.html";
+    };
+
+    header.appendChild(btnAdmin);
+  }
+
+    // 🔥 CARREGA DADOS SÓ DEPOIS DO LOGIN
+    carregarDados();
+
+  });
+  </script>
+    <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
+    let todosProdutos = [];
+    let categoriaAtual = "";
+
+    async function carregarDados() {
+      document.getElementById("loading").textContent = "⏳ Carregando produtos...";
+      try {
+        const res = await fetch(`${API_URL}?action=listarprodutos`);
+        const data = await res.json();
+        todosProdutos = data.rows || [];
+        preencherCategorias();
+        mostrar(todosProdutos);
+      } catch(e) {
+        document.getElementById("erro").textContent = "❌ Erro ao carregar os dados.";
+        console.error(e);
+      } finally {
+        document.getElementById("loading").textContent = "";
+      }
+    }
+
+    function preencherCategorias() {
+      const ul = document.getElementById("categorias");
+      ul.innerHTML = "";
+      const categorias = [...new Set(todosProdutos.map(p => p.CATEGORIA).filter(Boolean))].sort();
+      const liTodos = document.createElement("li");
+      liTodos.innerHTML = `<a href="#" class="ativo" onclick="filtrarPorCategoria('')">Todas</a>`;
+      ul.appendChild(liTodos);
+      categorias.forEach(cat => {
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="#" onclick="filtrarPorCategoria('${cat}')">${cat}</a>`;
+        ul.appendChild(li);
+      });
+    }
+
+    function filtrarPorCategoria(cat) {
+      categoriaAtual = cat;
+      document.querySelectorAll("#categorias a").forEach(a => a.classList.remove("ativo"));
+      const link = [...document.querySelectorAll("#categorias a")].find(a => a.textContent === (cat || "Todas"));
+      if(link) link.classList.add("ativo");
+      buscar();
+    }
+
+    function buscar() {
+      const termo = document.getElementById('busca').value.toLowerCase().trim();
+      const filtrados = todosProdutos.filter(p =>
+        (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+        ((p.PRODUTO && p.PRODUTO.toLowerCase().includes(termo)) ||
+        (p.CATEGORIA && p.CATEGORIA.toLowerCase().includes(termo)))
+      );
+      mostrar(filtrados);
+    }
+    
+    function mostrar(produtos) {
+      const div = document.getElementById("produtos");
+      div.innerHTML = "";
+      document.getElementById("erro").textContent = "";
+
+      if(!produtos || produtos.length === 0) {
+        div.innerHTML = "<p style='text-align:center;'>Nenhum produto encontrado.</p>";
+        return;
+      }
+
+      produtos.forEach(p => {
+        const imagem = p["IMAGEM APP"] || "";
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${imagem}" alt="imagem do produto" onclick='abrirModal(${JSON.stringify(p)})'>
+          <div class="info">
+            <h3>${p.PRODUTO}</h3>
+            <p><b>Categoria:</b> ${p.CATEGORIA || ''}</p>
+            <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
+            <p><b>Caixa:</b> ${p.CAIXA || ''}</p>
+            ${usuarioLogado?.tipo === "admin" ? `
+  <p><b>Valor:</b> ${Number(p.COMPRA || 0).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL'
-  })}</p></h2>
-    `;
-    modal.style.display = "flex";
-  }
+  })}</p>
+  ` : ""}
 
-  function fecharModal() {
-    document.getElementById("modal").style.display = "none";
-  }
+          </div>
+        `;
+        div.appendChild(card);
+      });
+    }
 
- 
-  </script>
-  </body>
-  </html>
+    function abrirModal(produto){
+      const modal = document.getElementById("modal");
+      const img = document.getElementById("modalImg");
+      img.src = produto["IMAGEM APP"] || "";
+      const desc = document.getElementById("modalDesc");
+      desc.innerHTML = `
+        <h2>${produto.PRODUTO || ''}</h2>
+        <h2><p><b>Categoria:</b> ${produto.CATEGORIA || ''}</p></h2>
+        <h2><p><b>Quantidade:</b> ${produto.QUANTIDADE || '0'}</p></h2>
+        <h2><p><b>Caixa:</b> ${produto.CAIXA || ''}</p></h2>
+        <h2><p><b>Valor:</b> ${Number(produto.COMPRA || 0).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    })}</p></h2>
+      `;
+      modal.style.display = "flex";
+    }
+
+    function fecharModal() {
+      document.getElementById("modal").style.display = "none";
+    }
+
+  
+    </script>
+    </body>
+    </html>
