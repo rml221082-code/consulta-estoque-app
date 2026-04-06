@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Importar XML NFe</title>
+
+<style>
+body {
+  font-family: Arial;
+  background:#f4f4f4;
+  padding:20px;
+}
+
+.box {
+  background:#fff;
+  padding:20px;
+  max-width:900px;
+  margin:auto;
+  border-radius:10px;
+}
+
+button {
+  padding:10px 15px;
+  border:none;
+  background:#0d6efd;
+  color:#fff;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+table {
+  width:100%;
+  border-collapse: collapse;
+  margin-top:20px;
+}
+
+th, td {
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:center;
+}
+
+th {
+  background:#eee;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>📄 Importar Nota Fiscal (XML)</h2>
+
+  <input type="file" id="xmlFile" accept=".xml">
+  <button onclick="lerXML()">Ler XML</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Qtd</th>
+        <th>Valor</th>
+        <th>IPI %</th>
+        <th>ICMS %</th>
+      </tr>
+    </thead>
+    <tbody id="tabela"></tbody>
+  </table>
+
+  <br>
+  <button onclick="enviarParaSistema()">Enviar para Entrada</button>
+</div>
+
+<script>
+let produtosXML = [];
+
+function lerXML() {
+  const file = document.getElementById("xmlFile").files[0];
+  if (!file) return alert("Selecione um XML");
+
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const xml = e.target.result;
+
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xml, "text/xml");
+
+    const itens = xmlDoc.getElementsByTagName("det");
+
+    produtosXML = [];
+    document.getElementById("tabela").innerHTML = "";
+
+    for (let i = 0; i < itens.length; i++) {
+      const item = itens[i];
+
+      const prod = item.getElementsByTagName("prod")[0];
+
+      const nome = prod.getElementsByTagName("xProd")[0]?.textContent || "";
+      const qtdXML = prod.getElementsByTagName("qCom")[0]?.textContent || "0";
+        const qtd = Math.floor(Number(qtdXML));
+      const valor = prod.getElementsByTagName("vUnCom")[0]?.textContent || 0;
+
+      const imposto = item.getElementsByTagName("imposto")[0];
+
+      let ipi = 0;
+      let icms = 0;
+
+      // IPI
+      const ipiNode = imposto.getElementsByTagName("IPI")[0];
+      if (ipiNode) {
+        ipi = ipiNode.getElementsByTagName("pIPI")[0]?.textContent || 0;
+      }
+
+      // ICMS
+      const icmsNode = imposto.getElementsByTagName("ICMS")[0];
+      if (icmsNode) {
+        icms = icmsNode.getElementsByTagName("pICMS")[0]?.textContent || 0;
+      }
+
+      const produto = {
+        PRODUTO: nome,
+        qtd: Number(qtd),
+        valorCompra: Number(valor),
+        ipi: Number(ipi),
+        icms: Number(icms),
+        venda: 70 // padrão
+      };
+
+      produtosXML.push(produto);
+
+      document.getElementById("tabela").innerHTML += `
+        <tr>
+          <td>${nome}</td>
+          <td>${qtd}</td>
+          <td>R$ ${Number(valor).toFixed(2)}</td>
+          <td>${ipi}%</td>
+          <td>${icms}%</td>
+        </tr>
+      `;
+    }
+
+    alert("XML carregado com sucesso!");
+  };
+
+  reader.readAsText(file);
+}
+
+function enviarParaSistema() {
+
+  if (produtosXML.length === 0) {
+    alert("Nenhum produto no XML");
+    return;
+  }
+
+  // 🔥 aqui integra com seu carrinho
+  produtosXML.forEach(p => {
+    carrinho.push({
+      ID_PRODUTO: Date.now() + Math.random(),
+      CATEGORIA: "",
+      PRODUTO: p.PRODUTO,
+      qtd: p.qtd,
+      valorCompra: p.valorCompra,
+      ipi: p.ipi,
+      icms: p.icms,
+      venda: p.venda,
+      total: p.valorCompra
+    });
+  });
+
+  atualizarIcone();
+  alert("Produtos enviados para o carrinho!");
+}
+</script>
+
+</body>
+</html>

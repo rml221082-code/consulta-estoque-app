@@ -43,7 +43,6 @@ button {
 
 .login { background:#121111; color:white; }
 .google { background:#db4437; color:white; }
-
 </style>
 </head>
 
@@ -69,7 +68,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
   authDomain: "consulta-estoque-app.firebaseapp.com",
   projectId: "consulta-estoque-app",
-  storageBucket: "consulta-estoque-app.firebasestorage.app",
+  storageBucket: "consulta-estoque-app.appspot.com",
   messagingSenderId: "1065893590092",
   appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
 };
@@ -77,12 +76,26 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+// 🔐 SE JÁ ESTIVER LOGADO → VAI DIRETO
+auth.onAuthStateChanged(user => {
+  if (user) {
+    localStorage.setItem("usuarioLogado", user.email);
+    window.location.href = "venda2.html";
+  }
+});
+
 function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
   auth.signInWithEmailAndPassword(email, senha)
-    .then(() => window.location.href = "b.html")
+    .then((userCredential) => {
+      const user = userCredential.user;
+
+      localStorage.setItem("usuarioLogado", user.email);
+
+      window.location.href = "venda2.html";
+    })
     .catch(err => document.getElementById("erro").innerText = err.message);
 }
 
@@ -90,7 +103,13 @@ function loginGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
 
   auth.signInWithPopup(provider)
-    .then(() => window.location.href = "b.html")
+    .then((result) => {
+      const user = result.user;
+
+      localStorage.setItem("usuarioLogado", user.email);
+
+      window.location.href = "venda2.html";
+    })
     .catch(err => document.getElementById("erro").innerText = err.message);
 }
 </script>
