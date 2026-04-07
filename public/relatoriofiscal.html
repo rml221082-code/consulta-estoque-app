@@ -78,6 +78,10 @@ th{
   <select id="empresa"></select>
   <select id="mes"></select>
   <select id="fornecedor"></select>
+
+  <input type="date" id="dataInicio">
+  <input type="date" id="dataFim">
+
   <button onclick="aplicarFiltro()">Filtrar</button>
 </div>
 
@@ -150,9 +154,14 @@ async function carregar(){
   dados = json.rows || [];
 
   preencherFiltros();
+  definirMesAtual();
   aplicarFiltro();
-}
 
+}
+function definirMesAtual(){
+  const hoje = new Date();
+  document.getElementById("mes").value = hoje.getMonth();
+}
 // ===============================
 function preencherFiltros(){
 
@@ -191,12 +200,24 @@ function aplicarFiltro(){
   const fornecedor = document.getElementById("fornecedor").value;
   const mes = document.getElementById("mes").value;
 
+  const dataInicio = document.getElementById("dataInicio").value;
+  const dataFim = document.getElementById("dataFim").value;
+
   const filtrado = dados.filter(d=>{
 
     const data = parseData(d.dataCompra);
     if(!data) return false;
 
     const mesAtual = data.getMonth();
+
+    // 🔥 NOVO FILTRO DE DATA
+    if(dataInicio){
+      if(data < new Date(dataInicio)) return false;
+    }
+
+    if(dataFim){
+      if(data > new Date(dataFim)) return false;
+    }
 
     return (!empresa || d.empresa === empresa)
         && (!fornecedor || d.fornecedor === fornecedor)
