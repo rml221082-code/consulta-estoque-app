@@ -2,30 +2,17 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Importar XML NFe</title>
+<title>XML Inteligente PRO</title>
 
 <style>
-body {
-  font-family: Arial;
-  background:#f4f4f4;
-  padding:20px;
-}
+body { font-family: Arial; background:#f4f4f4; padding:20px; }
 
 .box {
   background:#fff;
   padding:20px;
-  max-width:900px;
+  max-width:1300px;
   margin:auto;
   border-radius:10px;
-}
-
-button {
-  padding:10px 15px;
-  border:none;
-  background:#0d6efd;
-  color:#fff;
-  cursor:pointer;
-  border-radius:6px;
 }
 
 table {
@@ -36,12 +23,55 @@ table {
 
 th, td {
   border:1px solid #ccc;
-  padding:8px;
+  padding:6px;
   text-align:center;
 }
 
-th {
-  background:#eee;
+th { background:#eee; }
+
+input {
+  width:100%;
+  padding:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+input:focus {
+  border-color:#0d6efd;
+  box-shadow:0 0 4px rgba(13,110,253,.5);
+  outline:none;
+}
+
+.lista {
+  position:absolute;
+  background:#fff;
+  border:1px solid #ccc;
+  max-height:150px;
+  overflow:auto;
+  width:100%;
+  z-index:10;
+}
+
+.item { padding:6px; cursor:pointer; }
+.item:hover { background:#eee; }
+
+button {
+  padding:10px 15px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  margin:5px;
+  color:#fff;
+}
+
+.btn-azul { background:#0d6efd; }
+.btn-verde { background:#198754; }
+.btn-pdf { background:#6f42c1; }
+.remover { background:#ffffff; }
+
+button:hover {
+  transform:scale(1.05);
+  opacity:0.9;
 }
 </style>
 </head>
@@ -49,127 +79,331 @@ th {
 <body>
 
 <div class="box">
-  <h2>📄 Importar Nota Fiscal (XML)</h2>
 
-  <input type="file" id="xmlFile" accept=".xml">
-  <button onclick="lerXML()">Ler XML</button>
+<h2>📄 XML Inteligente PRO</h2>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Produto</th>
-        <th>Qtd</th>
-        <th>Valor</th>
-        <th>IPI %</th>
-        <th>ICMS %</th>
-      </tr>
-    </thead>
-    <tbody id="tabela"></tbody>
-  </table>
+<input type="file" id="xmlFile" accept=".xml">
+<button class="btn-azul" onclick="lerXML()">Ler XML</button>
+<button class="btn-verde" onclick="salvarEntrada()">📤 Salvar Entrada</button>
+<button class="btn-pdf" onclick="gerarPDF()">🧾 Gerar PDF</button>
 
-  <br>
-  <button onclick="enviarParaSistema()">Enviar para Entrada</button>
+<table>
+<thead>
+<tr>
+<th>Produto XML</th>
+<th>ID</th>
+<th>Produto Sistema</th>
+<th>Categoria</th>
+<th>Caixa</th>
+<th>Qtd</th>
+<th>Valor</th>
+<th>IPI</th>
+<th>ICMS</th>
+<th>Venda %</th>
+<th>Valor de Venda</th>
+<th>Ação</th>
+</tr>
+</thead>
+
+<tbody id="tabela"></tbody>
+</table>
+
 </div>
 
-<script>
-let produtosXML = [];
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-function lerXML() {
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbytDLAPlyARq4cz0hD-rPSrwDhO2rmMQYC8zpvai_ZS2fR-1Jc0EzIh5ZEobqkF-6_PuQ/exec";
+
+let produtosBase = [];
+
+// carregar produtos
+async function carregarProdutos(){
+  const res = await fetch(API_URL + "?action=listarProdutos");
+  const data = await res.json();
+  produtosBase = data.rows || [];
+}
+
+// ler xml
+async function lerXML(){
+
+  await carregarProdutos();
+
   const file = document.getElementById("xmlFile").files[0];
-  if (!file) return alert("Selecione um XML");
+  if(!file) return alert("Selecione o XML");
 
   const reader = new FileReader();
 
-  reader.onload = function(e) {
-    const xml = e.target.result;
+  reader.onload = function(e){
 
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xml, "text/xml");
+    const xmlDoc = parser.parseFromString(e.target.result,"text/xml");
 
     const itens = xmlDoc.getElementsByTagName("det");
+    const tabela = document.getElementById("tabela");
 
-    produtosXML = [];
-    document.getElementById("tabela").innerHTML = "";
+    tabela.innerHTML = "";
 
-    for (let i = 0; i < itens.length; i++) {
-      const item = itens[i];
+    for(let i=0;i<itens.length;i++){
 
-      const prod = item.getElementsByTagName("prod")[0];
+      const prod = itens[i].getElementsByTagName("prod")[0];
 
       const nome = prod.getElementsByTagName("xProd")[0]?.textContent || "";
-      const qtdXML = prod.getElementsByTagName("qCom")[0]?.textContent || "0";
-        const qtd = Math.floor(Number(qtdXML));
-      const valor = prod.getElementsByTagName("vUnCom")[0]?.textContent || 0;
+      const qtd = Math.floor(Number(prod.getElementsByTagName("qCom")[0]?.textContent || 0));
+      const valor = Number(prod.getElementsByTagName("vUnCom")[0]?.textContent || 0);
 
-      const imposto = item.getElementsByTagName("imposto")[0];
+      tabela.innerHTML += `
+      <tr id="l${i}">
+        <td>${nome}</td>
+        <td id="id${i}">-</td>
 
-      let ipi = 0;
-      let icms = 0;
+        <td style="position:relative;">
+          <input id="busca${i}" oninput="buscar(${i},this.value)">
+          <div class="lista" id="lista${i}"></div>
+        </td>
 
-      // IPI
-      const ipiNode = imposto.getElementsByTagName("IPI")[0];
-      if (ipiNode) {
-        ipi = ipiNode.getElementsByTagName("pIPI")[0]?.textContent || 0;
-      }
+        <td id="cat${i}">-</td>
+        <td id="cx${i}">-</td>
 
-      // ICMS
-      const icmsNode = imposto.getElementsByTagName("ICMS")[0];
-      if (icmsNode) {
-        icms = icmsNode.getElementsByTagName("pICMS")[0]?.textContent || 0;
-      }
+        <td>${qtd}</td>
 
-      const produto = {
-        PRODUTO: nome,
-        qtd: Number(qtd),
-        valorCompra: Number(valor),
-        ipi: Number(ipi),
-        icms: Number(icms),
-        venda: 70 // padrão
-      };
+        <td><input type="number" value="${valor}" id="v${i}" oninput="calc(${i})"></td>
+        <td><input type="number" value="0" id="ipi${i}" oninput="calc(${i})"></td>
+        <td><input type="number" value="0" id="icms${i}" oninput="calc(${i})"></td>
+        <td><input type="number" value="70" id="vd${i}" oninput="calc(${i})"></td>
 
-      produtosXML.push(produto);
+        <td id="total${i}">-</td>
 
-      document.getElementById("tabela").innerHTML += `
-        <tr>
-          <td>${nome}</td>
-          <td>${qtd}</td>
-          <td>R$ ${Number(valor).toFixed(2)}</td>
-          <td>${ipi}%</td>
-          <td>${icms}%</td>
-        </tr>
-      `;
+        <td><button class="remover" onclick="rem(${i})">❌</button></td>
+      </tr>`;
+
+      autoSelecionar(i,nome);
     }
-
-    alert("XML carregado com sucesso!");
   };
 
   reader.readAsText(file);
 }
 
-function enviarParaSistema() {
+// auto selecionar melhor produto
+function autoSelecionar(i,nome){
 
-  if (produtosXML.length === 0) {
-    alert("Nenhum produto no XML");
-    return;
+  const n = nome.toLowerCase();
+
+  let melhor = produtosBase.find(p => p.PRODUTO.toLowerCase() === n);
+
+  if(!melhor){
+    melhor = produtosBase.find(p => p.PRODUTO.toLowerCase().includes(n));
   }
 
-  // 🔥 aqui integra com seu carrinho
-  produtosXML.forEach(p => {
-    carrinho.push({
-      ID_PRODUTO: Date.now() + Math.random(),
-      CATEGORIA: "",
-      PRODUTO: p.PRODUTO,
-      qtd: p.qtd,
-      valorCompra: p.valorCompra,
-      ipi: p.ipi,
-      icms: p.icms,
-      venda: p.venda,
-      total: p.valorCompra
+  if(melhor){
+    selecionar(i,melhor);
+  }
+}
+
+// buscar manual
+function buscar(i,t){
+
+  fecharListas();
+
+  const lista = document.getElementById("lista"+i);
+  lista.innerHTML="";
+
+  if(!t) return;
+
+  produtosBase
+    .filter(p=>p.PRODUTO.toLowerCase().includes(t.toLowerCase()))
+    .slice(0,10)
+    .forEach(p=>{
+
+      const d=document.createElement("div");
+      d.className="item";
+      d.innerText=p.PRODUTO;
+      d.onclick=()=>selecionar(i,p);
+
+      lista.appendChild(d);
     });
+}
+
+// selecionar produto
+function selecionar(i,p){
+
+  document.getElementById("busca"+i).value=p.PRODUTO;
+  document.getElementById("cat"+i).innerText=p.CATEGORIA;
+  document.getElementById("cx"+i).innerText=p.CAIXA || "";
+  document.getElementById("id"+i).innerText=p.ID_PRODUTO;
+
+  calc(i);
+  fecharListas();
+}
+
+// calcular venda
+function calc(i){
+
+  const v=+document.getElementById("v"+i).value;
+  const ipi=+document.getElementById("ipi"+i).value;
+  const icms=+document.getElementById("icms"+i).value;
+  const vd=+document.getElementById("vd"+i).value;
+
+  const total = v+(v*ipi/100)+(v*icms/100)+(v*vd/100);
+
+  document.getElementById("total"+i).innerText =
+    total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+
+// remover linha
+function rem(i){
+  document.getElementById("l"+i).remove();
+}
+
+// fechar listas
+function fecharListas(){
+  document.querySelectorAll(".lista").forEach(l=>l.innerHTML="");
+}
+
+document.addEventListener("click",function(e){
+  if(!e.target.closest("input")) fecharListas();
+});
+
+// montar itens
+function montarItens(){
+
+  let lista=[];
+
+  document.querySelectorAll("#tabela tr").forEach((tr,i)=>{
+
+    const id=document.getElementById("id"+i)?.innerText;
+    if(!id || id=="-") return;
+
+    const produto=document.getElementById("busca"+i).value;
+    const categoria=document.getElementById("cat"+i).innerText;
+    const qtd=tr.children[5].innerText;
+
+    const valor=+document.getElementById("v"+i).value;
+    const ipi=+document.getElementById("ipi"+i).value;
+    const icms=+document.getElementById("icms"+i).value;
+    const venda=+document.getElementById("vd"+i).value;
+
+    const total = valor+(valor*ipi/100)+(valor*icms/100)+(valor*venda/100);
+
+    lista.push({
+      ID_PRODUTO:id,
+      CATEGORIA:categoria,
+      PRODUTO:produto,
+      QTD:qtd,
+      VALOR_COMPRA:valor,
+      VALOR_VENDA:total,
+      IPI:ipi,
+      ICMS:icms,
+      VENDA:venda
+    });
+
   });
 
-  atualizarIcone();
-  alert("Produtos enviados para o carrinho!");
+  return lista;
+}
+
+// salvar entrada
+async function salvarEntrada(){
+
+  const itens = montarItens();
+
+  if(!itens.length) return alert("Nenhum item válido");
+
+  const form=new URLSearchParams();
+  form.append("action","salvarEntrada");
+  form.append("itens",JSON.stringify(itens));
+
+  const res = await fetch(API_URL,{method:"POST",body:form});
+  const data = await res.json();
+
+  if(data.success){
+    alert("Entrada salva com sucesso!");
+  }else{
+    alert("Erro: "+data.erro);
+  }
+}
+
+function gerarPDF(){
+
+  const { jsPDF } = window.jspdf;
+
+  // 🔥 HORIZONTAL
+  const doc = new jsPDF({ orientation: "landscape" });
+
+  let numeroNF = "SEM NF";
+
+  const xmlFile = document.getElementById("xmlFile").files[0];
+
+  if(xmlFile){
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+
+      numeroNF = xmlDoc.getElementsByTagName("nNF")[0]?.textContent || "SEM NF";
+
+      montarPDF(numeroNF);
+    };
+
+    reader.readAsText(xmlFile);
+
+  } else {
+    montarPDF(numeroNF);
+  }
+
+  function montarPDF(nf){
+
+    doc.setFont("helvetica","normal");
+
+    doc.setFontSize(14);
+    doc.text("ENTRADA DE PRODUTOS", 14, 15);
+
+    doc.setFontSize(11);
+    doc.text("NF nº: " + nf, 14, 22);
+
+    let linhas = [];
+
+    document.querySelectorAll("#tabela tr").forEach((tr,i)=>{
+
+      const id = document.getElementById("id"+i)?.innerText;
+      if(!id || id == "-") return;
+
+      const produtoXML = tr.children[0].innerText;
+      const produtoSistema = document.getElementById("busca"+i).value;
+
+      const categoria = document.getElementById("cat"+i).innerText;
+      const caixa = document.getElementById("cx"+i).innerText;
+      const qtd = tr.children[5].innerText;
+
+      linhas.push([
+        produtoXML,
+        produtoSistema,
+        categoria,
+        caixa,
+        qtd
+      ]);
+    });
+
+    doc.autoTable({
+      startY: 28,
+      head: [[
+        "Produto XML",
+        "Produto Sistema",
+        "Categoria",
+        "Caixa",
+        "Qtd"
+      ]],
+      body: linhas,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [13,110,253] }
+    });
+
+    doc.save("NF_" + nf + ".pdf");
+  }
 }
 </script>
 

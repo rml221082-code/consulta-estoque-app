@@ -182,7 +182,8 @@ color:#888
 <select id="fEmpresa">
 <option value="">Empresa</option>
 </select>
-
+<input type="date" id="fDataInicio">
+<input type="date" id="fDataFim">
 <input id="fFornecedor" placeholder="Fornecedor">
 
 <input id="fNota" placeholder="Nota">
@@ -194,7 +195,17 @@ color:#888
 </select>
 
 </div>
+<div style="margin-bottom:15px;display:flex;gap:10px;flex-wrap:wrap;">
 
+<button onclick="filtroHoje()" class="btn hoje">Hoje</button>
+
+<button onclick="filtroAtrasadas()" class="btn atrasado">Atrasadas</button>
+
+<button onclick="filtro7Dias()" class="btn pagar">Próximos 7 dias</button>
+
+<button onclick="limparFiltroData()" class="btn cancelar">Limpar Datas</button>
+
+</div>
 <table>
 
 <thead>
@@ -321,12 +332,86 @@ if(fNota.value && !n.numeroNota.includes(fNota.value)) return false
 
 if(fStatus.value && n.status!=fStatus.value) return false
 
-return true
+// 🔎 FILTRO POR DATA DE VENCIMENTO
+if(fDataInicio.value || fDataFim.value){
 
-})
+const inicio = fDataInicio.value ? new Date(fDataInicio.value) : null
+const fim    = fDataFim.value ? new Date(fDataFim.value) : null
+
+let temNoPeriodo = false
+
+for(let i=1;i<=n.qtdParcelas;i++){
+
+let venc = n["vencimento"+i]
+
+if(!venc) continue
+
+let dataVenc = new Date(venc)
+
+if(inicio && dataVenc < inicio) continue
+if(fim && dataVenc > fim) continue
+
+temNoPeriodo = true
+break
 
 }
 
+if(!temNoPeriodo) return false
+
+}
+
+return true
+
+})
+}
+function formatarDataInput(data){
+return data.toISOString().split("T")[0]
+}
+
+// 📅 HOJE
+function filtroHoje(){
+
+const h = hoje()
+
+fDataInicio.value = formatarDataInput(h)
+fDataFim.value    = formatarDataInput(h)
+
+render()
+}
+
+// 🔴 ATRASADAS
+function filtroAtrasadas(){
+
+const h = hoje()
+
+fDataInicio.value = "" // tudo antes de hoje
+fDataFim.value    = formatarDataInput(h)
+
+render()
+}
+
+// 🔵 PRÓXIMOS 7 DIAS
+function filtro7Dias(){
+
+const h = hoje()
+
+const futuro = new Date()
+futuro.setDate(h.getDate() + 7)
+
+fDataInicio.value = formatarDataInput(h)
+fDataFim.value    = formatarDataInput(futuro)
+
+render()
+}
+
+// 🔄 LIMPAR
+function limparFiltroData(){
+
+fDataInicio.value = ""
+fDataFim.value    = ""
+
+render()
+}
 function render(){
 
 const tbody=document.getElementById("lista")
@@ -452,7 +537,7 @@ dHoje.innerText=vencHoje
 
 }
 
-document.querySelectorAll("#fEmpresa,#fFornecedor,#fNota,#fStatus")
+document.querySelectorAll("#fEmpresa,#fFornecedor,#fNota,#fStatus,#fDataInicio,#fDataFim")
 .forEach(el=>el.addEventListener("input",render))
 
 carregar()
