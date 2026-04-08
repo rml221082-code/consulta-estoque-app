@@ -163,6 +163,8 @@ font-size:14px;
 <div>
 <label>Valor Total</label>
 <input type="text" id="valorTotal"required>
+<label>Valor Frete</label>
+<input type="text" id="valorFrete">
 </div>
 
 <div>
@@ -267,7 +269,7 @@ font-size:14px;
 
 <script>
 
-const GAS_URL="https://script.google.com/macros/s/AKfycbwxXSEvXQQu15VA8esNJCtdbnsKhPskvHe6PeBsw8Jq0FBTysqR8c-p2ix_21cYGjiVcA/exec"
+const GAS_URL="https://script.google.com/macros/s/AKfycbxl7EmSfdlBlgwgB-5SVpoScDLgiZl9ENnICH0o1jJ8ejkboWnkMIhkzo4X8HuKEc6PbA/exec"
 
 function moedaParaNumero(v){
 return Number(v.replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))
@@ -320,6 +322,7 @@ campo.value=""
 }
 
 formatarMoeda(valorTotal)
+formatarMoeda(valorFrete)
 for(let i=1;i<=5;i++){
 formatarMoeda(document.getElementById("valorParcela"+i))
 }
@@ -360,6 +363,7 @@ form.append('dataCompra',dataCompra.value)
 form.append('numeroNota',numeroNota.value)
 form.append('fornecedor',fornecedor.value)
 form.append('valorTotal',moedaParaNumero(valorTotal.value))
+form.append('valorFrete', moedaParaNumero(valorFrete.value || "0"))
 form.append('qtdParcelas',qtdParcelas.value)
 
 for(let i=1;i<=5;i++){

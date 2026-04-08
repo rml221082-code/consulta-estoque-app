@@ -346,11 +346,12 @@ let venc = n["vencimento"+i]
 
 if(!venc) continue
 
-let dataVenc = new Date(venc)
+let dataVenc = converterDataBR(venc)
+
+if(!dataVenc) continue
 
 if(inicio && dataVenc < inicio) continue
 if(fim && dataVenc > fim) continue
-
 temNoPeriodo = true
 break
 
@@ -442,24 +443,30 @@ let valor=n["valorParcela"+i]
 
 let classe="pagar"
 
-let vencDate=venc?new Date(venc):null
+let vencDate = converterDataBR(venc)
+
+function mesmaData(d1, d2){
+return d1 && d2 &&
+d1.getFullYear() === d2.getFullYear() &&
+d1.getMonth() === d2.getMonth() &&
+d1.getDate() === d2.getDate()
+}
 
 if(String(status).toUpperCase()=="PAGO"){
 
 classe="pago"
+
+}else if(vencDate && mesmaData(vencDate, hoje())){
+
+classe="hoje"
+vencHoje++
 
 }else if(vencDate && vencDate < hoje()){
 
 classe="atrasado"
 totalAtrasado+=Number(valor||0)
 
-}else if(vencDate && vencDate.getTime()==hoje().getTime()){
-
-classe="hoje"
-vencHoje++
-
 }
-
 let dataFormat=""
 
 if(vencDate){
@@ -518,6 +525,10 @@ ${n.emergencial}
 </td>
 
 <td>
+<button class="btn pagar" onclick="abrirEdicao('${n.id}')">
+Editar
+</button>
+
 <button class="btn cancelar" onclick="cancelarNota('${n.id}')">
 Cancelar
 </button>
@@ -545,8 +556,174 @@ carregar()
 setTimeout(()=>{
 filtroHoje()
 },500)
+let notaEditando = null
 
+function abrirEdicao(id){
+
+const nota = dados.find(n => String(n.id) === String(id))
+
+if(!nota){
+alert("Nota não encontrada")
+return
+}
+
+notaEditando = nota
+
+document.getElementById("eEmpresa").value = nota.empresa || ""
+document.getElementById("eNota").value = nota.numeroNota || ""
+document.getElementById("eFornecedor").value = nota.fornecedor || ""
+document.getElementById("eTotal").value = nota.valorTotal || ""
+document.getElementById("eEmergencial").value = nota.emergencial || "NAO"
+
+// 🔥 parcelas
+let html = ""
+
+for(let i=1;i<=nota.qtdParcelas;i++){
+
+let valor = nota["valorParcela"+i] || ""
+let venc = nota["vencimento"+i] || ""
+
+// converter data BR -> input
+if(venc && venc.includes("/")){
+let p = venc.split("/")
+venc = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`
+}
+
+html += `
+<div style="border:1px solid #ddd;padding:8px;margin-bottom:5px;border-radius:6px">
+<strong>Parcela ${i}</strong><br>
+
+<label>Valor</label>
+<input id="eValor${i}" type="number" value="${valor}">
+
+<label>Vencimento</label>
+<input id="eVenc${i}" type="date" value="${venc}">
+</div>
+`
+}
+
+document.getElementById("parcelasEdit").innerHTML = html
+
+document.getElementById("modalEditar").style.display = "flex"
+}
+function fecharModal(){
+modalEditar.style.display = "none"
+}
+function salvarEdicao(){
+
+if(!notaEditando) return
+
+let dadosEnvio = {
+
+action:"salvarnotafiscal",
+
+empresa: eEmpresa.value,
+numeroNota: eNota.value,
+fornecedor: eFornecedor.value,
+valorTotal: eTotal.value,
+emergencial: eEmergencial.value,
+qtdParcelas: notaEditando.qtdParcelas
+
+}
+
+// 🔥 pegar parcelas editadas
+for(let i=1;i<=notaEditando.qtdParcelas;i++){
+
+dadosEnvio["valorParcela"+i] = document.getElementById("eValor"+i).value
+dadosEnvio["vencimento"+i] = document.getElementById("eVenc"+i).value
+
+}
+
+fetch(GAS_URL,{
+method:"POST",
+body:JSON.stringify(dadosEnvio)
+})
+.then(r=>r.json())
+.then(r=>{
+
+if(r.success){
+
+// 🔴 cancela antiga automaticamente
+fetch(GAS_URL+`?action=cancelarnota&id=${notaEditando.id}`)
+
+fecharModal()
+carregar()
+
+}else{
+alert("Erro ao salvar")
+}
+
+})
+
+}
+function converterDataBR(data){
+
+if(!data || typeof data !== "string") return null
+
+if(data.includes("/")){
+const [dia, mes, ano] = data.split("/")
+return new Date(ano, mes-1, dia, 0, 0, 0)
+}
+
+// se já vier formato YYYY-MM-DD
+return new Date(data)
+
+}
 </script>
+<div id="modalEditar" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.5);
+justify-content:center;
+align-items:center;
+z-index:999;
+">
 
+<div style="
+background:#fff;
+padding:20px;
+border-radius:10px;
+width:500px;
+max-height:90vh;
+overflow:auto;
+">
+
+<h3>Editar Nota Fiscal</h3>
+
+<label>Empresa</label>
+<input id="eEmpresa"><br><br>
+
+<label>Número da Nota</label>
+<input id="eNota"><br><br>
+
+<label>Fornecedor</label>
+<input id="eFornecedor"><br><br>
+
+<label>Valor Total</label>
+<input id="eTotal" type="number"><br><br>
+
+<label>Emergencial</label>
+<select id="eEmergencial">
+<option value="NAO">NÃO</option>
+<option value="SIM">SIM</option>
+</select>
+
+<br><br>
+
+<h4>Parcelas</h4>
+
+<div id="parcelasEdit"></div>
+
+<br>
+
+<button class="btn pago" onclick="salvarEdicao()">Salvar</button>
+<button class="btn cancelar" onclick="fecharModal()">Fechar</button>
+
+</div>
+</div>
 </body>
 </html>
