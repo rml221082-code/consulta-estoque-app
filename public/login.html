@@ -80,7 +80,7 @@ const auth = firebase.auth();
 auth.onAuthStateChanged(user => {
   if (user) {
     localStorage.setItem("usuarioLogado", user.email);
-    window.location.href = "venda2.html";
+    window.location.href = "b.html";
   }
 });
 
@@ -94,7 +94,7 @@ function login() {
 
       localStorage.setItem("usuarioLogado", user.email);
 
-      window.location.href = "venda2.html";
+      window.location.href = "b.html";
     })
     .catch(err => document.getElementById("erro").innerText = err.message);
 }
@@ -108,10 +108,12 @@ function loginGoogle() {
 
       localStorage.setItem("usuarioLogado", user.email);
 
-      window.location.href = "venda2.html";
+      window.location.href = "index.html";
     })
     .catch(err => document.getElementById("erro").innerText = err.message);
 }
+// ⏱ salva horário do login
+localStorage.setItem("loginTime", Date.now());
 </script>
 
 </body>
