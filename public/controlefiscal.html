@@ -233,15 +233,13 @@ color:#888
 
 <script>
 
-const GAS_URL="https://script.google.com/macros/s/AKfycbzENhUoA22JokQGmwRh1840yb-W2WDgJYFHSj59Ph-J2VM2kHzAm1nRF03_nEXnUQb5jQ/exec"
+const GAS_URL="https://script.google.com/macros/s/AKfycbxVdug0e7GJM4eHC6z-x4634IX00bE1A5W8u41CPuq5QFZACQPKBtnLn_56zkpmz00Y5w/exec"
 
 let dados=[]
 
 function hoje(){
-
-const h=new Date()
-return new Date(h.getFullYear(),h.getMonth(),h.getDate())
-
+const h = new Date()
+return new Date(h.getFullYear(), h.getMonth(), h.getDate(), 0,0,0,0)
 }
 
 function carregar(){
@@ -275,27 +273,27 @@ if(e) select.innerHTML+=`<option>${e}</option>`
 })
 
 }
-
 function calcularFinanceiro(n){
 
-let pago=0
-let total=Number(n.valorTotal)
+let pago = 0
+let total = Number(n.valorTotal)
 
-for(let i=1;i<=5;i++){
+for(let i=1;i<=10;i++){
 
-if(String(n["pagamento"+i]).toUpperCase()=="PAGO"){
+let valorParcela = Number(n["valorParcela"+i] || 0)
+let pagoValor = Number(n["pagamentoValor"+i] || 0)
+let statusPago = String(n["pagamento"+i] || "").toUpperCase().trim()
 
-pago+=Number(n["valorParcela"+i]||0)
-
+if(statusPago === "PAGO"){
+  pago += valorParcela
 }
 
 }
 
 return{
 pago,
-saldo:total-pago
+saldo: total - pago
 }
-
 }
 
 function pagarParcela(id,parcela){
@@ -320,13 +318,16 @@ alert("Erro ao cancelar")
 })
 
 }
+function pegarVencimento(n, i){
+  return n["vencimento"+i] || n["VENCIMENTO "+i] || null
+}
 function filtrar(){
 
 return dados.filter(n=>{
 
 if(fEmpresa.value && n.empresa!=fEmpresa.value) return false
 
-if(fFornecedor.value && !n.fornecedor.toLowerCase().includes(fFornecedor.value.toLowerCase())) return false
+if(fFornecedor.value && !(n.fornecedor || "").toLowerCase().includes(fFornecedor.value.toLowerCase())) return false
 
 if(fNota.value && !n.numeroNota.includes(fNota.value)) return false
 
@@ -335,14 +336,17 @@ if(fStatus.value && n.status!=fStatus.value) return false
 // 🔎 FILTRO POR DATA DE VENCIMENTO
 if(fDataInicio.value || fDataFim.value){
 
-const inicio = fDataInicio.value ? new Date(fDataInicio.value) : null
-const fim    = fDataFim.value ? new Date(fDataFim.value) : null
+let inicio = fDataInicio.value ? converterDataBR(fDataInicio.value) : null
+let fim    = fDataFim.value ? converterDataBR(fDataFim.value) : null
+
+if(inicio) inicio.setHours(0,0,0,0)
+if(fim)    fim.setHours(23,59,59,999)
 
 let temNoPeriodo = false
 
 for(let i=1;i<=n.qtdParcelas;i++){
 
-let venc = n["vencimento"+i]
+let venc = pegarVencimento(n, i)
 
 if(!venc) continue
 
@@ -437,69 +441,68 @@ let parcelasHTML=""
 
 for(let i=1;i<=n.qtdParcelas;i++){
 
-let status=n["pagamento"+i]
-let venc=n["vencimento"+i]
-let valor=n["valorParcela"+i]
+  let valor = n["valorParcela"+i]
+  let venc = pegarVencimento(n, i)
 
-let classe="pagar"
+  let classe = "pagar"
+  let textoBotao = `P${i}`
 
-let vencDate = converterDataBR(venc)
+  let vencDate = converterDataBR(venc)
 
-function mesmaData(d1, d2){
-return d1 && d2 &&
-d1.getFullYear() === d2.getFullYear() &&
-d1.getMonth() === d2.getMonth() &&
-d1.getDate() === d2.getDate()
+  let status = String(n["pagamento"+i] || "").toUpperCase()
+  let pagoValor = Number(n["pagamentoValor"+i] || 0)
+
+  function mesmaData(d1, d2){
+    if(!d1 || !d2) return false
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    )
+  }
+
+  // ✅ STATUS
+  if(status === "PAGO" || pagoValor > 0){
+    classe = "pago"
+    textoBotao = "✔ Pago"
+
+  }else if(vencDate && mesmaData(vencDate, hoje())){
+    classe="hoje"
+    vencHoje++
+
+  }else if(vencDate && vencDate.getTime() < hoje().getTime()){
+    classe="atrasado"
+    totalAtrasado+=Number(valor||0)
+  }
+
+  // 📅 FORMATAR DATA
+  let dataFormat = "-"
+
+  if(vencDate && !isNaN(vencDate)){
+    dataFormat =
+      vencDate.getDate().toString().padStart(2,'0')+"/"+
+      (vencDate.getMonth()+1).toString().padStart(2,'0')+"/"+
+      vencDate.getFullYear()
+  }
+
+  parcelasHTML+=`
+  <div class="parcelaBox">
+
+    <button class="btn ${classe}" onclick="pagarParcela('${n.id}',${i})">
+      ${textoBotao}
+    </button>
+
+    <div class="parcelaValor">
+      R$ ${Number(valor||0).toFixed(2)}
+    </div>
+
+    <div class="parcelaData">
+      ${dataFormat}
+    </div>
+
+  </div>
+  `
 }
-
-if(String(status).toUpperCase()=="PAGO"){
-
-classe="pago"
-
-}else if(vencDate && mesmaData(vencDate, hoje())){
-
-classe="hoje"
-vencHoje++
-
-}else if(vencDate && vencDate < hoje()){
-
-classe="atrasado"
-totalAtrasado+=Number(valor||0)
-
-}
-let dataFormat=""
-
-if(vencDate){
-
-dataFormat=
-vencDate.getDate().toString().padStart(2,'0')+"/"+
-(vencDate.getMonth()+1).toString().padStart(2,'0')+"/"+
-vencDate.getFullYear()
-
-}
-
-parcelasHTML+=`
-
-<div class="parcelaBox">
-
-<button class="btn ${classe}" onclick="pagarParcela('${n.id}',${i})">
-P${i}
-</button>
-
-<div class="parcelaValor">
-R$ ${Number(valor||0).toFixed(2)}
-</div>
-
-<div class="parcelaData">
-${dataFormat}
-</div>
-
-</div>
-
-`
-
-}
-
 tbody.innerHTML+=`
 
 <tr>
@@ -658,16 +661,45 @@ alert("Erro ao salvar")
 }
 function converterDataBR(data){
 
-if(!data || typeof data !== "string") return null
+if(!data) return null
 
-if(data.includes("/")){
-const [dia, mes, ano] = data.split("/")
-return new Date(ano, mes-1, dia, 0, 0, 0)
+// 🔥 se já for Date
+if(data instanceof Date){
+return new Date(data.getFullYear(), data.getMonth(), data.getDate())
 }
 
-// se já vier formato YYYY-MM-DD
-return new Date(data)
+// 🔥 se for número (timestamp)
+if(typeof data === "number"){
+let d = new Date(data)
+return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
 
+// 🔥 se for string
+if(typeof data === "string"){
+
+data = data.trim()
+
+// formato BR 17/04/2026
+if(data.includes("/")){
+const [dia, mes, ano] = data.split("/")
+return new Date(Number(ano), Number(mes)-1, Number(dia))
+}
+
+// formato ISO completo 2026-04-17T00:00:00.000Z
+if(data.includes("T")){
+let d = new Date(data)
+return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+// formato YYYY-MM-DD
+if(data.includes("-")){
+const [ano, mes, dia] = data.split("-")
+return new Date(Number(ano), Number(mes)-1, Number(dia))
+}
+
+}
+
+return null
 }
 </script>
 <div id="modalEditar" style="

@@ -1,411 +1,465 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>XML Inteligente PRO</title>
+  <!DOCTYPE html>
+  <html lang="pt-BR">
+  <head>
+  <meta charset="UTF-8">
+  <title>XML Inteligente PRO</title>
 
-<style>
-body { font-family: Arial; background:#f4f4f4; padding:20px; }
+  <style>
+  body { font-family: Arial; background:#f4f4f4; padding:20px; }
 
-.box {
-  background:#fff;
-  padding:20px;
-  max-width:1300px;
-  margin:auto;
-  border-radius:10px;
+  .box {
+    background:#fff;
+    padding:20px;
+    max-width:1300px;
+    margin:auto;
+    border-radius:10px;
+  }
+.tabela-container{
+  width: 100%;
+  overflow-x: auto;
 }
 
 table {
-  width:100%;
   border-collapse: collapse;
   margin-top:20px;
+  min-width: 1200px;
+  table-layout: auto;
 }
 
+/* 🔥 LINHAS SIMPLES (SEM QUADRADO FEIO) */
 th, td {
-  border:1px solid #ccc;
-  padding:6px;
+  padding:8px;
   text-align:center;
+  border-bottom:1px solid #ddd; /* só linha horizontal */
 }
 
-th { background:#eee; }
-
-input {
-  width:100%;
-  padding:6px;
-  border-radius:6px;
-  border:1px solid #ccc;
+/* cabeçalho */
+th {
+  background:#f8f8f8;
+  font-weight:600;
 }
 
-input:focus {
-  border-color:#0d6efd;
-  box-shadow:0 0 4px rgba(13,110,253,.5);
-  outline:none;
+/* efeito leve ao passar o mouse */
+tr:hover td {
+  background:#f5f9ff;
 }
 
-.lista {
-  position:absolute;
-  background:#fff;
-  border:1px solid #ccc;
-  max-height:150px;
-  overflow:auto;
-  width:100%;
-  z-index:10;
+/* coluna Produto Sistema maior */
+td:nth-child(3), th:nth-child(3){
+  min-width: 300px;
+  text-align: left;
 }
 
-.item { padding:6px; cursor:pointer; }
-.item:hover { background:#eee; }
-
-button {
-  padding:10px 15px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  margin:5px;
-  color:#fff;
+/* quebra só onde precisa */
+td:nth-child(1){
+  white-space: normal;
 }
 
-.btn-azul { background:#0d6efd; }
-.btn-verde { background:#198754; }
-.btn-pdf { background:#6f42c1; }
-.remover { background:#ffffff; }
-
-button:hover {
-  transform:scale(1.05);
-  opacity:0.9;
+/* resto não quebra */
+td, th {
+  white-space: nowrap;
 }
-</style>
-</head>
+/* permitir quebra só onde precisa */
+td:nth-child(1){
+  white-space: normal;
+}
+  input {
+    width:100%;
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #ccc;
+  }
 
-<body>
+  input:focus {
+    border-color:#0d6efd;
+    box-shadow:0 0 4px rgba(13,110,253,.5);
+    outline:none;
+  }
 
-<div class="box">
+  .lista {
+    position:absolute;
+    background:#fff;
+    border:1px solid #ccc;
+    max-height:150px;
+    overflow:auto;
+    width:100%;
+    z-index:10;
+  }
 
-<h2>📄 XML Inteligente PRO</h2>
+  .item { padding:6px; cursor:pointer; }
+  .item:hover { background:#eee; }
 
-<input type="file" id="xmlFile" accept=".xml">
-<button class="btn-azul" onclick="lerXML()">Ler XML</button>
-<button class="btn-verde" onclick="salvarEntrada()">📤 Salvar Entrada</button>
-<button class="btn-pdf" onclick="gerarPDF()">🧾 Gerar PDF</button>
+  button {
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin:5px;
+    color:#fff;
+  }
 
-<table>
-<thead>
-<tr>
-<th>Produto XML</th>
-<th>ID</th>
-<th>Produto Sistema</th>
-<th>Categoria</th>
-<th>Caixa</th>
-<th>Qtd</th>
-<th>Valor</th>
-<th>IPI</th>
-<th>ICMS</th>
-<th>Venda %</th>
-<th>Valor de Venda</th>
-<th>Ação</th>
-</tr>
-</thead>
+  .btn-azul { background:#0d6efd; }
+  .btn-verde { background:#198754; }
+  .btn-pdf { background:#6f42c1; }
+  .remover { background:#ffffff; }
 
-<tbody id="tabela"></tbody>
-</table>
+  button:hover {
+    transform:scale(1.05);
+    opacity:0.9;
+  }
+  </style>
+  </head>
 
+  <body>
+
+  <div class="box">
+
+  <h2>📄 XML Inteligente PRO</h2>
+
+  <input type="file" id="xmlFile" accept=".xml">
+  <button class="btn-azul" onclick="lerXML()">Ler XML</button>
+  <button class="btn-verde" onclick="salvarEntrada()">📤 Salvar Entrada</button>
+  <button class="btn-pdf" onclick="gerarPDF()">🧾 Gerar PDF</button>
+<div class="tabela-container">
+  
+  <table>
+  <thead>
+  <tr>
+  <th>Produto XML</th>
+  <th>ID</th>
+  <th>Produto Sistema</th>
+  <th>Categoria</th>
+  <th>Caixa</th>
+  <th>Qtd</th>
+  <th>Valor</th>
+  <th>IPI </th>
+  <th>ICMS</th>
+  <th>Venda %</th>
+  <th>Valor de Venda</th>
+  <th>Ação</th>
+  </tr>
+  </thead>
+
+  <tbody id="tabela"></tbody>
+  </table>
 </div>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbytDLAPlyARq4cz0hD-rPSrwDhO2rmMQYC8zpvai_ZS2fR-1Jc0EzIh5ZEobqkF-6_PuQ/exec";
+  <script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbytDLAPlyARq4cz0hD-rPSrwDhO2rmMQYC8zpvai_ZS2fR-1Jc0EzIh5ZEobqkF-6_PuQ/exec";
 
-let produtosBase = [];
+  let produtosBase = [];
 
-// carregar produtos
-async function carregarProdutos(){
-  const res = await fetch(API_URL + "?action=listarProdutos");
-  const data = await res.json();
-  produtosBase = data.rows || [];
-}
-
-// ler xml
-async function lerXML(){
-
-  await carregarProdutos();
-
-  const file = document.getElementById("xmlFile").files[0];
-  if(!file) return alert("Selecione o XML");
-
-  const reader = new FileReader();
-
-  reader.onload = function(e){
-
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(e.target.result,"text/xml");
-
-    const itens = xmlDoc.getElementsByTagName("det");
-    const tabela = document.getElementById("tabela");
-
-    tabela.innerHTML = "";
-
-    for(let i=0;i<itens.length;i++){
-
-      const prod = itens[i].getElementsByTagName("prod")[0];
-
-      const nome = prod.getElementsByTagName("xProd")[0]?.textContent || "";
-      const qtd = Math.floor(Number(prod.getElementsByTagName("qCom")[0]?.textContent || 0));
-      const valor = Number(prod.getElementsByTagName("vUnCom")[0]?.textContent || 0);
-
-      tabela.innerHTML += `
-      <tr id="l${i}">
-        <td>${nome}</td>
-        <td id="id${i}">-</td>
-
-        <td style="position:relative;">
-          <input id="busca${i}" oninput="buscar(${i},this.value)">
-          <div class="lista" id="lista${i}"></div>
-        </td>
-
-        <td id="cat${i}">-</td>
-        <td id="cx${i}">-</td>
-
-        <td>${qtd}</td>
-
-        <td><input type="number" value="${valor}" id="v${i}" oninput="calc(${i})"></td>
-        <td><input type="number" value="0" id="ipi${i}" oninput="calc(${i})"></td>
-        <td><input type="number" value="0" id="icms${i}" oninput="calc(${i})"></td>
-        <td><input type="number" value="70" id="vd${i}" oninput="calc(${i})"></td>
-
-        <td id="total${i}">-</td>
-
-        <td><button class="remover" onclick="rem(${i})">❌</button></td>
-      </tr>`;
-
-      autoSelecionar(i,nome);
-    }
-  };
-
-  reader.readAsText(file);
-}
-
-// auto selecionar melhor produto
-function autoSelecionar(i,nome){
-
-  const n = nome.toLowerCase();
-
-  let melhor = produtosBase.find(p => p.PRODUTO.toLowerCase() === n);
-
-  if(!melhor){
-    melhor = produtosBase.find(p => p.PRODUTO.toLowerCase().includes(n));
+  // carregar produtos
+  async function carregarProdutos(){
+    const res = await fetch(API_URL + "?action=listarProdutos");
+    const data = await res.json();
+    produtosBase = data.rows || [];
   }
 
-  if(melhor){
-    selecionar(i,melhor);
-  }
-}
+  // ler xml
+  async function lerXML(){
 
-// buscar manual
-function buscar(i,t){
+    await carregarProdutos();
 
-  fecharListas();
-
-  const lista = document.getElementById("lista"+i);
-  lista.innerHTML="";
-
-  if(!t) return;
-
-  produtosBase
-    .filter(p=>p.PRODUTO.toLowerCase().includes(t.toLowerCase()))
-    .slice(0,10)
-    .forEach(p=>{
-
-      const d=document.createElement("div");
-      d.className="item";
-      d.innerText=p.PRODUTO;
-      d.onclick=()=>selecionar(i,p);
-
-      lista.appendChild(d);
-    });
-}
-
-// selecionar produto
-function selecionar(i,p){
-
-  document.getElementById("busca"+i).value=p.PRODUTO;
-  document.getElementById("cat"+i).innerText=p.CATEGORIA;
-  document.getElementById("cx"+i).innerText=p.CAIXA || "";
-  document.getElementById("id"+i).innerText=p.ID_PRODUTO;
-
-  calc(i);
-  fecharListas();
-}
-
-// calcular venda
-function calc(i){
-
-  const v=+document.getElementById("v"+i).value;
-  const ipi=+document.getElementById("ipi"+i).value;
-  const icms=+document.getElementById("icms"+i).value;
-  const vd=+document.getElementById("vd"+i).value;
-
-  const total = v+(v*ipi/100)+(v*icms/100)+(v*vd/100);
-
-  document.getElementById("total"+i).innerText =
-    total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-}
-
-// remover linha
-function rem(i){
-  document.getElementById("l"+i).remove();
-}
-
-// fechar listas
-function fecharListas(){
-  document.querySelectorAll(".lista").forEach(l=>l.innerHTML="");
-}
-
-document.addEventListener("click",function(e){
-  if(!e.target.closest("input")) fecharListas();
-});
-
-// montar itens
-function montarItens(){
-
-  let lista=[];
-
-  document.querySelectorAll("#tabela tr").forEach((tr,i)=>{
-
-    const id=document.getElementById("id"+i)?.innerText;
-    if(!id || id=="-") return;
-
-    const produto=document.getElementById("busca"+i).value;
-    const categoria=document.getElementById("cat"+i).innerText;
-    const qtd=tr.children[5].innerText;
-
-    const valor=+document.getElementById("v"+i).value;
-    const ipi=+document.getElementById("ipi"+i).value;
-    const icms=+document.getElementById("icms"+i).value;
-    const venda=+document.getElementById("vd"+i).value;
-
-    const total = valor+(valor*ipi/100)+(valor*icms/100)+(valor*venda/100);
-
-    lista.push({
-      ID_PRODUTO:id,
-      CATEGORIA:categoria,
-      PRODUTO:produto,
-      QTD:qtd,
-      VALOR_COMPRA:valor,
-      VALOR_VENDA:total,
-      IPI:ipi,
-      ICMS:icms,
-      VENDA:venda
-    });
-
-  });
-
-  return lista;
-}
-
-// salvar entrada
-async function salvarEntrada(){
-
-  const itens = montarItens();
-
-  if(!itens.length) return alert("Nenhum item válido");
-
-  const form=new URLSearchParams();
-  form.append("action","salvarEntrada");
-  form.append("itens",JSON.stringify(itens));
-
-  const res = await fetch(API_URL,{method:"POST",body:form});
-  const data = await res.json();
-
-  if(data.success){
-    alert("Entrada salva com sucesso!");
-  }else{
-    alert("Erro: "+data.erro);
-  }
-}
-
-function gerarPDF(){
-
-  const { jsPDF } = window.jspdf;
-
-  // 🔥 HORIZONTAL
-  const doc = new jsPDF({ orientation: "landscape" });
-
-  let numeroNF = "SEM NF";
-
-  const xmlFile = document.getElementById("xmlFile").files[0];
-
-  if(xmlFile){
+    const file = document.getElementById("xmlFile").files[0];
+    if(!file) return alert("Selecione o XML");
 
     const reader = new FileReader();
 
     reader.onload = function(e){
 
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+      const xmlDoc = parser.parseFromString(e.target.result,"text/xml");
 
-      numeroNF = xmlDoc.getElementsByTagName("nNF")[0]?.textContent || "SEM NF";
+      const itens = xmlDoc.getElementsByTagName("det");
+      const tabela = document.getElementById("tabela");
 
-      montarPDF(numeroNF);
-    };
+      tabela.innerHTML = "";
 
-    reader.readAsText(xmlFile);
+      for(let i=0;i<itens.length;i++){
 
-  } else {
-    montarPDF(numeroNF);
+        const prod = itens[i].getElementsByTagName("prod")[0];
+
+        const nome = prod.getElementsByTagName("xProd")[0]?.textContent || "";
+        const qtd = Math.floor(Number(prod.getElementsByTagName("qCom")[0]?.textContent || 0));
+        const valor = Number(prod.getElementsByTagName("vUnCom")[0]?.textContent || 0);
+
+  // ✅ PEGAR IPI DO XML (pIPI)
+  let ipiXML = 0;
+
+  const imposto = itens[i].getElementsByTagName("imposto")[0];
+
+  if (imposto) {
+    const ipiTag = imposto.getElementsByTagName("IPI")[0];
+
+    if (ipiTag) {
+      const pIPI =
+    ipiTag.getElementsByTagName("pIPI")[0] ||
+    ipiTag.getElementsByTagName("pIPITrib")[0];
+
+      if (pIPI) {
+        ipiXML = Number(pIPI.textContent) || 0;
+      }
+    }
   }
 
-  function montarPDF(nf){
+        tabela.innerHTML += `
+        <tr id="l${i}">
+          <td>${nome}</td>
+          <td id="id${i}">-</td>
 
-    doc.setFont("helvetica","normal");
+          <td style="position:relative;">
+            <input id="busca${i}" oninput="buscar(${i},this.value)">
+            <div class="lista" id="lista${i}"></div>
+          </td>
 
-    doc.setFontSize(14);
-    doc.text("ENTRADA DE PRODUTOS", 14, 15);
+          <td id="cat${i}">-</td>
+          <td id="cx${i}">-</td>
 
-    doc.setFontSize(11);
-    doc.text("NF nº: " + nf, 14, 22);
+          <td>${qtd}</td>
 
-    let linhas = [];
+          <td><input type="number" value="${valor}" id="v${i}" oninput="calc(${i})"></td>
+          <td><input type="number" value="${ipiXML}" id="ipi${i}" oninput="calc(${i})"></td>
+          <td><input type="number" value="0" id="icms${i}" oninput="calc(${i})"></td>
+          <td><input type="number" value="100" id="vd${i}" oninput="calc(${i})"></td>
+
+          <td id="total${i}">-</td>
+
+          <td><button class="remover" onclick="rem(${i})">❌</button></td>
+        </tr>`;
+
+        autoSelecionar(i,nome);
+      }
+    };
+
+    reader.readAsText(file);
+  }
+
+  // auto selecionar melhor produto
+  function autoSelecionar(i,nome){
+
+    const n = nome.toLowerCase();
+
+    let melhor = produtosBase.find(p => p.PRODUTO.toLowerCase() === n);
+
+    if(!melhor){
+      melhor = produtosBase.find(p => p.PRODUTO.toLowerCase().includes(n));
+    }
+
+    if(melhor){
+      selecionar(i,melhor);
+    }
+  }
+
+  // buscar manual
+  function buscar(i,t){
+
+    fecharListas();
+
+    const lista = document.getElementById("lista"+i);
+    lista.innerHTML="";
+
+    if(!t) return;
+
+    produtosBase
+      .filter(p=>p.PRODUTO.toLowerCase().includes(t.toLowerCase()))
+      .slice(0,10)
+      .forEach(p=>{
+
+        const d=document.createElement("div");
+        d.className="item";
+        d.innerText=p.PRODUTO;
+        d.onclick=()=>selecionar(i,p);
+
+        lista.appendChild(d);
+      });
+  }
+
+  // selecionar produto
+  function selecionar(i,p){
+
+    document.getElementById("busca"+i).value=p.PRODUTO;
+    document.getElementById("cat"+i).innerText=p.CATEGORIA;
+    document.getElementById("cx"+i).innerText=p.CAIXA || "";
+    document.getElementById("id"+i).innerText=p.ID_PRODUTO;
+
+    calc(i);
+    fecharListas();
+  }
+
+  // calcular venda
+  function calc(i){
+
+    const v=+document.getElementById("v"+i).value;
+    const ipi=+document.getElementById("ipi"+i).value;
+    const icms=+document.getElementById("icms"+i).value;
+    const vd=+document.getElementById("vd"+i).value;
+
+    const total = v+(v*ipi/100)+(v*icms/100)+(v*vd/100);
+
+    document.getElementById("total"+i).innerText =
+      total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  }
+
+  // remover linha
+  function rem(i){
+    document.getElementById("l"+i).remove();
+  }
+
+  // fechar listas
+  function fecharListas(){
+    document.querySelectorAll(".lista").forEach(l=>l.innerHTML="");
+  }
+
+  document.addEventListener("click",function(e){
+    if(!e.target.closest("input")) fecharListas();
+  });
+
+  // montar itens
+  function montarItens(){
+
+    let lista=[];
 
     document.querySelectorAll("#tabela tr").forEach((tr,i)=>{
 
-      const id = document.getElementById("id"+i)?.innerText;
-      if(!id || id == "-") return;
+      const id=document.getElementById("id"+i)?.innerText;
+      if(!id || id=="-") return;
 
-      const produtoXML = tr.children[0].innerText;
-      const produtoSistema = document.getElementById("busca"+i).value;
+      const produto=document.getElementById("busca"+i).value;
+      const categoria=document.getElementById("cat"+i).innerText;
+      const qtd=tr.children[5].innerText;
 
-      const categoria = document.getElementById("cat"+i).innerText;
-      const caixa = document.getElementById("cx"+i).innerText;
-      const qtd = tr.children[5].innerText;
+      const valor=+document.getElementById("v"+i).value;
+      const ipi=+document.getElementById("ipi"+i).value;
+      const icms=+document.getElementById("icms"+i).value;
+      const venda=+document.getElementById("vd"+i).value;
 
-      linhas.push([
-        produtoXML,
-        produtoSistema,
-        categoria,
-        caixa,
-        qtd
-      ]);
+      const total = valor+(valor*ipi/100)+(valor*icms/100)+(valor*venda/100);
+
+      lista.push({
+        ID_PRODUTO:id,
+        CATEGORIA:categoria,
+        PRODUTO:produto,
+        QTD:qtd,
+        VALOR_COMPRA:valor,
+        VALOR_VENDA:total,
+        IPI:ipi,
+        ICMS:icms,
+        VENDA:venda
+      });
+
     });
 
-    doc.autoTable({
-      startY: 28,
-      head: [[
-        "Produto XML",
-        "Produto Sistema",
-        "Categoria",
-        "Caixa",
-        "Qtd"
-      ]],
-      body: linhas,
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [13,110,253] }
-    });
-
-    doc.save("NF_" + nf + ".pdf");
+    return lista;
   }
-}
-</script>
 
-</body>
-</html>
+  // salvar entrada
+  async function salvarEntrada(){
+
+    const itens = montarItens();
+
+    if(!itens.length) return alert("Nenhum item válido");
+
+    const form=new URLSearchParams();
+    form.append("action","salvarEntrada");
+    form.append("itens",JSON.stringify(itens));
+
+    const res = await fetch(API_URL,{method:"POST",body:form});
+    const data = await res.json();
+
+    if(data.success){
+      alert("Entrada salva com sucesso!");
+    }else{
+      alert("Erro: "+data.erro);
+    }
+  }
+
+  function gerarPDF(){
+
+    const { jsPDF } = window.jspdf;
+
+    // 🔥 HORIZONTAL
+    const doc = new jsPDF({ orientation: "landscape" });
+
+    let numeroNF = "SEM NF";
+
+    const xmlFile = document.getElementById("xmlFile").files[0];
+
+    if(xmlFile){
+
+      const reader = new FileReader();
+
+      reader.onload = function(e){
+
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+
+        numeroNF = xmlDoc.getElementsByTagName("nNF")[0]?.textContent || "SEM NF";
+
+        montarPDF(numeroNF);
+      };
+
+      reader.readAsText(xmlFile);
+
+    } else {
+      montarPDF(numeroNF);
+    }
+
+    function montarPDF(nf){
+
+      doc.setFont("helvetica","normal");
+
+      doc.setFontSize(14);
+      doc.text("ENTRADA DE PRODUTOS", 14, 15);
+
+      doc.setFontSize(11);
+      doc.text("NF nº: " + nf, 14, 22);
+
+      let linhas = [];
+
+      document.querySelectorAll("#tabela tr").forEach((tr,i)=>{
+
+        const id = document.getElementById("id"+i)?.innerText;
+        if(!id || id == "-") return;
+
+        const produtoXML = tr.children[0].innerText;
+        const produtoSistema = document.getElementById("busca"+i).value;
+
+        const categoria = document.getElementById("cat"+i).innerText;
+        const caixa = document.getElementById("cx"+i).innerText;
+        const qtd = tr.children[5].innerText;
+
+        linhas.push([
+          produtoXML,
+          produtoSistema,
+          categoria,
+          caixa,
+          qtd
+        ]);
+      });
+
+      doc.autoTable({
+        startY: 28,
+        head: [[
+          "Produto XML",
+          "Produto Sistema",
+          "Categoria",
+          "Caixa",
+          "Qtd"
+        ]],
+        body: linhas,
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [13,110,253] }
+      });
+
+      doc.save("NF_" + nf + ".pdf");
+    }
+  }
+  </script>
+
+  </body>
+  </html>

@@ -169,7 +169,7 @@ font-size:14px;
 
 <div>
 <label>Quantidade de Parcelas</label>
-<input type="number" id="qtdParcelas" min="1" max="5">
+<input type="number" id="qtdParcelas" min="1" max="10">
 </div>
 
 </div>
@@ -226,6 +226,56 @@ font-size:14px;
 <input type="date" id="vencimento5">
 </div>
 
+<div>
+<label>Valor Parcela 6</label>
+<input type="text" id="valorParcela6">
+</div>
+
+<div>
+<label>Vencimento 6</label>
+<input type="date" id="vencimento6">
+</div>
+
+<div>
+<label>Valor Parcela 7</label>
+<input type="text" id="valorParcela7">
+</div>
+
+<div>
+<label>Vencimento 7</label>
+<input type="date" id="vencimento7">
+</div>
+
+<div>
+<label>Valor Parcela 8</label>
+<input type="text" id="valorParcela8">
+</div>
+
+<div>
+<label>Vencimento 8</label>
+<input type="date" id="vencimento8">
+</div>
+
+<div>
+<label>Valor Parcela 9</label>
+<input type="text" id="valorParcela9">
+</div>
+
+<div>
+<label>Vencimento 9</label>
+<input type="date" id="vencimento9">
+</div>
+
+<div>
+<label>Valor Parcela 10</label>
+<input type="text" id="valorParcela10">
+</div>
+
+<div>
+<label>Vencimento 10</label>
+<input type="date" id="vencimento10">
+</div>
+
 </div>
 
 <label>Quem solicitou</label>
@@ -269,7 +319,7 @@ font-size:14px;
 
 <script>
 
-const GAS_URL="https://script.google.com/macros/s/AKfycbxl7EmSfdlBlgwgB-5SVpoScDLgiZl9ENnICH0o1jJ8ejkboWnkMIhkzo4X8HuKEc6PbA/exec"
+const GAS_URL="https://script.google.com/macros/s/AKfycbz0JuKdWxCLCEa1treSJmOeg00POU6g1CSOO-xOMshgV7mZ54n4ZIODtUr_7d5ZYzz3gg/exec"
 
 function moedaParaNumero(v){
 return Number(v.replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))
@@ -302,7 +352,7 @@ if(!total||!qtd)return
 
 const valor=total/qtd
 
-for(let i=1;i<=5;i++){
+for(let i=1;i<=10;i++){
 
 const campo=document.getElementById("valorParcela"+i)
 
@@ -323,7 +373,7 @@ campo.value=""
 
 formatarMoeda(valorTotal)
 formatarMoeda(valorFrete)
-for(let i=1;i<=5;i++){
+for(let i=1;i<=10;i++){
 formatarMoeda(document.getElementById("valorParcela"+i))
 }
 
@@ -366,7 +416,7 @@ form.append('valorTotal',moedaParaNumero(valorTotal.value))
 form.append('valorFrete', moedaParaNumero(valorFrete.value || "0"))
 form.append('qtdParcelas',qtdParcelas.value)
 
-for(let i=1;i<=5;i++){
+for(let i=1;i<=10;i++){
 
 form.append('valorParcela'+i,moedaParaNumero(document.getElementById('valorParcela'+i).value))
 form.append('vencimento'+i,document.getElementById('vencimento'+i).value)

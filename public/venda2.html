@@ -1,921 +1,367 @@
-  <!DOCTYPE html>
-  <html lang="pt-BR">
-  <head>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
   <meta charset="UTF-8">
-  <title>Entrada de Produtos</title>
-  <link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Veículo</title>
 
   <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f4f4f4;
-  }
-
-  /* HEADER */
-  header {
-    background: #1b5500;
-    color: #fff;
-    padding: 18px;
-    text-align: center;
-    font-size: 1.6rem;
-    position: relative;
-  }
-
-  #carrinhoBtn {
-    position: fixed;
-    right: 20px;
-    top: 15px;
-    background: #ffffff;
-    border: none;
-    padding: 10px 16px;
-    color: #000000;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  #busca-area input {
-  width: 100%;
-  padding: 14px 16px;
-  font-size: 18px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-}
-
-  /* SIDEBAR */
-  #sidebar {
-    position: fixed;
-    left: 0;
-    top: 70px;
-    bottom: 0;
-    width: 220px;
-    background: #fff;
-    border-right: 1px solid #ccc;
-    padding: 15px;
-  }
-
-  #categorias a {
-    display: block;
-    padding: 10px;
-    margin-bottom: 4px;
-    text-decoration: none;
-    color: #222;
-    border-radius: 6px;
-  }
-
-  #categorias a:hover,
-  #categorias a.ativo {
-    background: #1b5500;
-    color: #fff;
-  }
-
-  /* MAIN */
-  main {
-    margin-left: 240px;
-    padding: 30px;
-  }
-
-  #produtos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-  }
-
-  /* CARD */
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,.1);
-    overflow: hidden;
-  }
-
-  .card img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-  }
-
-  .card .info {
-    padding: 12px;
-  }
-
-  .btn-add {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    background: #121111;
-    color: #fff;
-    cursor: pointer;
-  }
-
-  /* MODAL CARRINHO */
-  #modalCarrinho {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.7);
-    justify-content: center;
-    align-items: center;
-  }
-
-  #boxCarrinho {
-    background: #fff;
-    width: 95%;
-    max-width: 1200px;
-    padding: 20px;
-    border-radius: 10px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-  }
-
-  th, td {
-    border: 1px solid #ccc;
-    padding: 6px;
-    text-align: center;
-  }
-
-  th {
-    background: #eee;
-  }
-
-  input[type=number] {
-    width: 90px;
-  }
-
-  .total-geral {
-    margin-top: 10px;
-    text-align: right;
-    font-size: 18px;
-    font-weight: bold;
-  }
-
-  button {
-    cursor: pointer;
-  }
-  .tabela-scroll {
-  max-height: 400px; /* altura máxima */
-  overflow-y: auto;  /* ativa scroll vertical */
-  margin-top: 10px;
-}
-
-/* opcional: deixa o cabeçalho fixo */
-.tabela-scroll thead th {
-  position: sticky;
-  top: 0;
-  background: #eee;
-  z-index: 2;
-}
-  </style>
-  </head>
-
-  <body>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-  <header>
-    Entrada de Produtos
-    <button id="carrinhoBtn" onclick="abrirCarrinho()">🛒 Carrinho (<span id="qtdCarrinho">0</span>)</button>
-    <button id="novoProdutoBtn" onclick="abrirNovoProduto()"
-  style="position:fixed; right:150px; top:15px; background:#ffd700; border:none; padding:10px 16px; border-radius:6px;">
-➕ Produto Novo
-</button>
-  </header>
-
-  <aside id="sidebar">
-    <h3>Categorias</h3>
-    <div id="categorias"></div>
-  </aside>
-
-  <main>
-      <div id="busca-area">
-        <input id="busca" placeholder="Buscar produto..." oninput="buscar()" autofocus />
-      </div>
-
-      <div id="loading"></div>
-      <div id="erro" class="erro"></div>
-      <div id="produtos"></div>
-    </main>
- 
-    
-  <!-- MODAL CARRINHO -->
-  <div id="modalCarrinho">
-    <div id="boxCarrinho">
-      <h2><center>Carrinho de Entrada</center></h2>
-<div class="tabela-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>CATEGORIA</th>
-            <th>Produto</th>
-             <th>Caixa</th> <!-- ✅ NOVO -->
-            <th>Qtd</th>
-            <th>Valor Compra</th>
-            <th>IPI %</th>
-            <th>ICMS %</th>
-            <th>VENDA %</th>
-            <th>Total</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody id="listaCarrinho"></tbody>
-      </table>
-</div>
-      <div class="total-geral">
-        Total Geral: <span id="totalGeral">R$ 0,00</span>
-      </div>
-
-      <br>
-      <button onclick="fecharCarrinho()">Fechar</button>
-      <button onclick="salvarEntrada()" style="background:#0d6efd;color:#fff;padding:10px 20px;border:none;">
-        SALVAR ENTRADA
-      </button>
-    </div>
-  </div>
-<script>
-function fecharCarrinho() {
-  document.getElementById("modalCarrinho").style.display = "none";
-}
-</script>
-
-  <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbytDLAPlyARq4cz0hD-rPSrwDhO2rmMQYC8zpvai_ZS2fR-1Jc0EzIh5ZEobqkF-6_PuQ/exec";
-
-  
-  let carrinho = [];
-  let produtos = [];
-  let produtosBase = [];
-  let categoriaAtual = "";
-
-
-  /* ======= RENDERIZA PRODUTOS ======= */
-
-  function renderizarProdutos(lista) {
-    const div = document.getElementById("produtos");
-    div.innerHTML = "";
-
-    const fragment = document.createDocumentFragment();
-
-    lista.forEach(p => {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      card.innerHTML = `
-        <img src="${
-  p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http")
-    ? p['IMAGEM APP']
-    : 'https://via.placeholder.com/300?text=Sem+Imagem'
-}" const img = card.querySelector("img");
-img.addEventListener("click", () => abrirModal(p));>
-
-        <div class="info">
-          <b>${p.PRODUTO}</b><br>
-          Categoria: ${p.CATEGORIA || "-"}<br>
-          Estoque: ${p.QUANTIDADE || 0}<br>
-          Caixa: ${p.CAIXA || ''}<br>
-          Compra: ${Number(p.VALOR_COMPRA || 0)
-            .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
-        </div>
-
-        <button class="btn-add">➕ Adicionar</button>
-      `;
-
-      card.querySelector(".btn-add")
-        .addEventListener("click", () => addCarrinhoPorId(p.ID_PRODUTO));
-
-      fragment.appendChild(card);
-    });
-
-    div.appendChild(fragment);
-  }
-  
-function fecharModal() {
-  document.getElementById("modal").style.display = "none";
-}
- function abrirModal(p) {
-    const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
-
-    document.getElementById("modalImg").src = p["IMAGEM APP"];
-
-    document.getElementById("modalDesc").innerHTML = `
-      <h2>${p.PRODUTO}</h2>
-
-      
-      <p><b>Categoria:</b> ${p.CATEGORIA}</p>
-      <p><b>Categoria + Produto:</b> ${chave}</p>
-      <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
-      <p><b>Caixa:</b> ${p.CAIXA || ""}</p>
-
-      <h2>
-      <p><b>Valor:</b> ${dinheiro(p.VALOR_VENDA)}</p>
-
-      </h2>
-    `;
-
-    document.getElementById("modal").style.display = "flex";
-  }
-
-    
-
-  /* ======= CARRINHO ======= */
-
-  function addCarrinho(p) {
-    const existente = carrinho.find(i => i.ID_PRODUTO === p.ID_PRODUTO);
-
-    if (existente) {
-      existente.qtd += 1;
-    } else {
-      carrinho.push({
-        IMAGEM: p["IMAGEM APP"] || "",
-        ID_PRODUTO: p.ID_PRODUTO,
-        PRODUTO: p.PRODUTO,
-        CATEGORIA: p.CATEGORIA,
-        CAIXA: p.CAIXA, // ✅ AQUI
-        qtd: 1,
-        valorCompra: Number(p.VALOR_COMPRA) || 0,
-        ipi: 0,
-        icms: 0,
-        venda: 0,
-        total: Number(p.VALOR_COMPRA) || 0
-      });
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
     }
 
-    atualizarIcone();
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .empresa {
+      text-align: center;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background: #fff;
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 6px;
+    }
+
+    .form-containerbotao {
+      background: #fff;
+      max-width: 250px;
+      margin: auto;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .grupo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .botoes {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-salvar {
+      background: #2f80ed;
+      color: #fff;
+    }
+
+    .btn-limpar {
+      background: #ccc;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Controle de Veículo</h1>
+
+<div class="form-containerbotao">
+  <div class="botoes" style="justify-content:center">
+    <a href="https://consulta-estoque-app.web.app/veiculo.html">
+      <button class="btn-salvar">Voltar para Veículos</button>
+    </a>
+  </div>
+</div>
+
+<div class="form-container">
+  <form id="formControleVeiculo">
+
+    <!-- Motorista / Veículo -->
+    <div class="grupo">
+      <div>
+        <label>Motorista</label>
+        <select name="motorista" required>
+          <option value="">Selecione</option>
+          <option>Altair</option>
+          <option>Daniel</option>
+          <option>Duarte</option>
+          <option>Guilherme</option>
+          <option>Josué</option>
+          <option>Juliana</option>
+          <option>Júlio</option>
+          <option>Mayara</option>
+          <option>Robson</option>
+          <option>Samuel</option>
+        </select>
+      </div>
+<div>
+        <label>Entrada/Saída</label>
+        <select name="entradaSaida" required>
+          <option value="">Selecione</option>
+          <option>Entrada</option>
+          <option>Saída</option>
+      
+        </select>
+      </div>
+      <div>
+        <label>Veículo</label>
+        <select name="veiculo" required>
+          <option value="">Selecione</option>
+          <option>Saveiro</option>
+          <option>Ford ka</option>
+          <option>Fiorino</option>
+          <option>Fox</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Destino</label>
+        <input type="text" name="destino" required>
+      </div>
+    </div>
+
+    <!-- KM / Abastecimento -->
+    <div class="grupo">
+      <div>
+        <label>KM</label>
+        <input type="number" name="km" required>
+      </div>
+
+      <div>
+        <label>Abastecimento</label>
+        <select name="abastecimento" required>
+          <option value="">Selecione</option>
+          <option>Sim</option>
+          <option>Não</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Litros</label>
+        <input type="number" step="0.01" name="litros">
+      </div>
+    </div>
+
+    <!-- Observações -->
+    <div>
+      <label>Observações</label>
+      <textarea name="obs"></textarea>
+    </div>
+
+    <!-- Botões -->
+    <div class="botoes">
+      <button type="reset" class="btn-limpar">Limpar</button>
+      <button type="submit" class="btn-salvar">Salvar</button>
+    </div>
+
+  </form>
+<div style="margin-top:30px;">
+
+  <h2>Últimos Registros</h2>
+
+  <div class="tabela-container tabela-nova">
+    <table id="tabelaControle">
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Motorista</th>
+          <th>Entrada/Saída</th>
+          <th>Veículo</th>
+          <th>Destino</th>
+          <th>KM</th>
+          <th>Abastecimento</th>
+          <th>Litros</th>
+          <th>Obs</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="9" style="text-align:center">
+            Carregando...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+</div>
+
+<script>
+const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
+
+document.getElementById("formControleVeiculo").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const form = this;
+
+  if(!navigator.geolocation){
+    alert("Geolocalização não suportada");
+    enviarFormulario(form, null, null);
+    return;
   }
 
-  function atualizarIcone() {
-    document.getElementById("qtdCarrinho").innerText = carrinho.length;
-  }
+  navigator.geolocation.getCurrentPosition(
 
-  function abrirCarrinho() {
-    atualizarCarrinho();
-    document.getElementById("modalCarrinho").style.display = "flex";
-  }
+    (pos)=>{
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
 
+      enviarFormulario(form, lat, lng);
+    },
 
-    
-  function dinheiro(valor) {
-    return Number(valor || 0).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    });
-  }
-function buscar() {
-  const termo = document.getElementById("busca").value.toLowerCase();
+    (erro)=>{
+      alert("Permita a localização para salvar com rastreio");
+      enviarFormulario(form, null, null);
+    }
 
-  const filtrados = produtosBase.filter(p =>
-    (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-    (p.PRODUTO || "").toLowerCase().includes(termo)
   );
 
-  renderizarProdutos(filtrados);
-}
-
-
-  function atualizarCarrinho() {
-    const tbody = document.getElementById("listaCarrinho");
-    tbody.innerHTML = "";
-    let totalGeral = 0;
-
-    carrinho.forEach((i, idx) => {
-      const valorFinal =
-      
-        i.valorCompra +
-        (i.valorCompra * i.ipi / 100) +
-        (i.valorCompra * i.icms / 100) +
-        (i.valorCompra * i.venda / 100);
-
-      i.total = valorFinal;
-      totalGeral += i.total * i.qtd;
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${i.CATEGORIA}</td>
-          <td style="text-align:left;">
-  <div style="display:flex; align-items:center; gap:10px;">
-    
-    <img src="${
-      i.IMAGEM && String(i.IMAGEM).startsWith("http")
-        ? i.IMAGEM
-        : 'https://via.placeholder.com/60'
-    }" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
-
-    <div>
-      <b>${i.PRODUTO}</b><br>
-     
-    </div>
-
-  </div>
-</td>
-<td>${i.CAIXA}</td>
-        <td>
-          
-
-          <input type="number" min="1" value="${i.qtd}" oninput="carrinho[${idx}].qtd=Number(this.value)||1; agendarAtualizacao()"></td>
-          <td><input type="number" value="${i.valorCompra}" onchange="carrinho[${idx}].valorCompra=Number(this.value)||0; atualizarCarrinho()"></td>
-          <td><input type="number" value="${i.ipi}" onchange="carrinho[${idx}].ipi=Number(this.value)||0; atualizarCarrinho()"></td>
-          <td><input type="number" value="${i.icms}" onchange="carrinho[${idx}].icms=Number(this.value)||0; atualizarCarrinho()"></td>
-          <td><input type="number" value="${i.venda}" onchange="carrinho[${idx}].venda=Number(this.value)||0; atualizarCarrinho()"></td>
-          <td>${i.total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
-          <td><button onclick="carrinho.splice(${idx},1); atualizarCarrinho(); atualizarIcone()">❌</button></td>
-        </tr>
-      `;
-    });
-
-    document.getElementById("totalGeral").innerText =
-      totalGeral.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  }
-
-
-
-
-  </script>
-  <!-- 🔥 SOMENTE A PARTE CORRIGIDA -->
-
-<script>
-function renderizarProdutos(lista) {
-  const div = document.getElementById("produtos");
-  div.innerHTML = "";
-
-  const fragment = document.createDocumentFragment();
-
-  lista.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const imagem = (p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http"))
-      ? p['IMAGEM APP']
-      : 'https://via.placeholder.com/300?text=Sem+Imagem';
-
-    card.innerHTML = `
-      <img src="${imagem}">
-
-      <div class="info">
-        <b>${p.PRODUTO}</b><br>
-        Categoria: ${p.CATEGORIA || "-"}<br>
-        Estoque: ${p.QUANTIDADE || 0}<br>
-        Caixa: ${p.CAIXA || ''}<br>
-        Compra: ${Number(p.VALOR_COMPRA || 0)
-          .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
-      </div>
-
-      <button class="btn-add">➕ Adicionar</button>
-    `;
-
-    // ✅ CLIQUE NA IMAGEM (CORRETO)
-    card.querySelector("img")
-      .addEventListener("click", () => abrirModal(p));
-
-    card.querySelector(".btn-add")
-      .addEventListener("click", () => addCarrinhoPorId(p.ID_PRODUTO));
-
-    fragment.appendChild(card);
-  });
-
-  div.appendChild(fragment);
-}
-</script>
-  <script>
-function renderizarCategorias() {
-  const div = document.getElementById("categorias");
-  div.innerHTML = "";
-
-  const categorias = [...new Set(
-    produtosBase
-      .map(p => (p.CATEGORIA || "").trim())
-      .filter(Boolean)
-  )].sort();
-
-  criarLinkCategoria("Todas", "");
-
-  categorias.forEach(cat => criarLinkCategoria(cat, cat));
-
-  function criarLinkCategoria(nome, valor) {
-    const a = document.createElement("a");
-    a.href = "#";
-    a.textContent = nome;
-
-    // ✅ MARCA COMO ATIVO
-    if (valor === categoriaAtual) {
-      a.classList.add("ativo");
-    }
-
-    a.onclick = e => {
-      e.preventDefault();
-
-      categoriaAtual = valor;
-
-      // 🔥 REMOVE ATIVO DE TODOS
-      document.querySelectorAll("#categorias a")
-        .forEach(el => el.classList.remove("ativo"));
-
-      // 🔥 ADICIONA NO CLICADO
-      a.classList.add("ativo");
-
-      buscar();
-    };
-
-    div.appendChild(a);
-  }
-}
-
-  
-  </script>
-
-
-  <script>
-  async function salvarEntrada() {
-    if (carrinho.length === 0) {
-      alert("Carrinho vazio");
-      return;
-    }
-
-    const itens = carrinho.map(i => ({
-    ID_PRODUTO: i.ID_PRODUTO,
-    CATEGORIA: i.CATEGORIA,
-    PRODUTO: i.PRODUTO,
-    QTD: i.qtd,
-    VALOR_COMPRA: i.valorCompra,
-    VALOR_VENDA: i.total,   // 👈 TOTAL FINAL
-    IPI: i.ipi,
-    ICMS: i.icms,
-    VENDA: i.venda
-  }));
-
-
-    const form = new URLSearchParams();
-    form.append("action", "salvarEntrada");
-    form.append("itens", JSON.stringify(itens));
-
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        body: form
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        alert("Entrada salva com sucesso!");
-        carrinho = [];
-        atualizarCarrinho();
-        atualizarIcone();
-        fecharCarrinho();
-      } else {
-        alert("Erro: " + data.erro);
-      }
-
-    } catch (e) {
-      console.error(e);
-      alert("Erro ao salvar entrada");
-    }
-  }
-  </script>
-  <script>
-  async function carregarProdutos() {
-    try {
-      const url = API_URL + "?action=listarProdutos";
-
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (!data.rows || !Array.isArray(data.rows)) {
-        throw new Error("Resposta inválida da API");
-      }
-
-      produtosBase = data.rows;
-produtos = [...produtosBase];
-
-renderizarCategorias();
-renderizarProdutos(produtos);
-
-
-
-    } catch (e) {
-      console.error("Erro ao carregar produtos:", e);
-      alert("Erro ao carregar produtos. Veja o console.");
-    }
-  }
-  </script>
-
-
-  <script>
-  function addCarrinhoPorId(id) {
-    const produto = produtos.find(p => String(p.ID_PRODUTO) === String(id));
-    if (!produto) return;
-    addCarrinho(produto);
-  }
-  </script>
-  <script>
-  let timerCarrinho;
-  function agendarAtualizacao() {
-    clearTimeout(timerCarrinho);
-    timerCarrinho = setTimeout(atualizarCarrinho, 200);
-  }
-  </script>
-  <script>
-
-  document.addEventListener("DOMContentLoaded", () => {
-  //carregarProdutos();
-  carregarCategoriasManual();
 });
-  </script>
-  <div id="modalNovoProduto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); justify-content:center; align-items:center;">
-  <div style="background:#fff; padding:20px; width:400px; border-radius:10px;">
-    <h3>Novo Produto Manual</h3>
 
-    <label>Categoria</label>
-    <select id="categoriaManual" style="width:100%; padding:8px; margin-bottom:10px;"></select>
+function enviarFormulario(form, lat, lng){
 
-    <label>Produto</label>
-    <input id="produtoManual" type="text" placeholder="Nome do produto"
-      style="width:100%; padding:8px; margin-bottom:10px;">
+  const formData = new FormData(form);
 
-    <label>Valor Compra</label>
-    <input id="valorManual" type="number" value="0"
-      style="width:100%; padding:8px; margin-bottom:10px;">
+  formData.append("action", "controleVeiculo");
 
-    <button onclick="adicionarProdutoManual()" style="background:#1b5500;color:#fff;padding:10px;width:100%;border:none;">
-      Adicionar ao Carrinho
-    </button>
+  // 📍 adiciona localização
+  formData.append("latitude", lat || "");
+  formData.append("longitude", lng || "");
 
-    <br><br>
-    <button onclick="fecharNovoProduto()" style="width:100%;">Cancelar</button>
-  </div>
-</div>
-<script>
-function abrirNovoProduto() {
-  document.getElementById("modalNovoProduto").style.display = "flex";
-}
-
-function fecharNovoProduto() {
-  document.getElementById("modalNovoProduto").style.display = "none";
-}
-</script>
-<script>
-async function carregarCategoriasManual() {
-  try {
-    const res = await fetch(API_URL + "?action=listarcategorias");
-    const data = await res.json();
-
-    console.log("Resposta categorias:", data);
-
-    if (!data.success || !Array.isArray(data.rows)) {
-      throw new Error(data.erro || "Formato inválido");
-    }
-
-    const sel = document.getElementById("categoriaManual");
-    sel.innerHTML = "";
-
-    if (!data.rows.length) {
-      const opt = document.createElement("option");
-      opt.textContent = "Sem categorias cadastradas";
-      opt.value = "";
-      sel.appendChild(opt);
-      return;
-    }
-
-    data.rows.forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      sel.appendChild(opt);
-    });
-
-  } catch (err) {
-    console.error("Erro ao carregar categorias:", err);
-    alert("Erro ao carregar categorias (ver console)");
-  }
-}
-</script>
-<script>
-async function adicionarProdutoManual() {
-  const categoriaEl = document.getElementById("categoriaManual");
-  const produtoEl = document.getElementById("produtoManual");
-  const valorEl = document.getElementById("valorManual");
-
-  const categoria = categoriaEl.value;
-  const nome = produtoEl.value.trim();
-  const valor = Number(valorEl.value) || 0;
-
-  if (!nome) {
-    alert("Informe o nome do produto");
-    return;
-  }
-
-  try {
-    // 🔹 BUSCA O PRÓXIMO ID NO GAS
-    const res = await fetch(API_URL + "?action=obterProximoIdEntrada");
-    const data = await res.json();
-
-    if (!data.success) {
-      throw new Error(data.erro || "Erro ao obter próximo ID");
-    }
-
-    // 🔹 ADICIONA NO CARRINHO COM ID SEQUENCIAL
-    carrinho.push({
-      ID_PRODUTO: data.proximoId, // ✅ PRÓXIMO ID
-      CATEGORIA: categoria,
-      PRODUTO: nome,
-      qtd: 1,
-      valorCompra: valor,
-      ipi: 0,
-      icms: 0,
-      venda: 70,
-      total: valor
-    });
-
-    atualizarIcone();
-
-    // ✅ LIMPA OS CAMPOS APÓS ENVIAR
-    produtoEl.value = "";
-    valorEl.value = "0";
-    categoriaEl.selectedIndex = 0;
-
-    // fecha o modal
-    fecharNovoProduto();
-
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao gerar ID do produto");
-  }
-}
-
-</script>
-
-
-  
-</div>
-<div id="modal" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.85);
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  z-index:9999;
-">
-
-  <span onclick="fecharModal()" style="
-    position:absolute;
-    top:20px;
-    right:30px;
-    color:white;
-    font-size:30px;
-    cursor:pointer;
-  ">✖</span>
-
-  <img id="modalImg" style="
-    max-width:90%;
-    max-height:60%;
-    border-radius:10px;
-  ">
-
-  <div id="modalDesc" style="
-    color:white;
-    text-align:center;
-    margin-top:15px;
-  "></div>
-</div>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
-    authDomain: "consulta-estoque-app.firebaseapp.com",
-    projectId: "consulta-estoque-app",
-    storageBucket: "consulta-estoque-app.firebasestorage.app",
-    messagingSenderId: "1065893590092",
-    appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  let usuarioLogado = null;
-
-  // 🔐 CONTROLE COMPLETO DE LOGIN
-  auth.onAuthStateChanged(async user => {
-
-    if (user === null) return;
-
-    if (!user) {
-      window.location.href = "login.html";
-      return;
-    }
-
-    let doc = await db.collection("usuarios").doc(user.uid).get();
-
-    // 🔥 CRIA USUÁRIO AUTOMATICO
-    if (!doc.exists) {
-      const novoUsuario = {
-        nome: user.displayName || "Usuário",
-        email: user.email,
-        tipo: "funcionario",
-        ativo: false,
-        nivel: 0
-      };
-
-      await db.collection("usuarios").doc(user.uid).set(novoUsuario);
-      usuarioLogado = novoUsuario;
-
-  } else {
-  usuarioLogado = doc.data();
-
-  const tipo = (usuarioLogado.tipo || "").toLowerCase();
-
-  // 🔒 BLOQUEIA SE NÃO FOR ADMIN OU ADMINISTRATIVO
-  if (tipo !== "admin" && tipo !== "administrativo") {
-    alert("Acesso permitido somente para Administrador!");
-
-    await auth.signOut();
-    window.location.href = "login.html";
-    return;
-  }
-}
-
-    // 🔒 BLOQUEIO
-    if (usuarioLogado.ativo === false) {
-      alert("Seu acesso está aguardando liberação do administrador.");
-
-      await auth.signOut();
-      window.location.href = "login.html";
-      return;
-    }
-
-    // 🔥 HEADER USUÁRIO
-    const header = document.querySelector("header");
-
-    document.getElementById("userBox")?.remove();
-    document.getElementById("btnAdmin")?.remove();
-
-    const userBox = document.createElement("div");
-    userBox.id = "userBox";
-    userBox.style.position = "absolute";
-    userBox.style.right = "350px";
-    userBox.style.top = "10px";
-    userBox.style.display = "flex";
-    userBox.style.alignItems = "center";
-    userBox.style.gap = "10px";
-    userBox.style.background = "rgba(255,255,255,0.1)";
-    userBox.style.padding = "6px 10px";
-    userBox.style.borderRadius = "60px";
-
-    const avatar = document.createElement("img");
-    avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
-    avatar.style.width = "35px";
-    avatar.style.height = "35px";
-    avatar.style.borderRadius = "50%";
-
-    const info = document.createElement("div");
-    info.style.color = "white";
-    info.innerHTML = `
-      <div><b>${usuarioLogado.nome}</b></div>
-      <div style="font-size:11px;">${usuarioLogado.tipo}</div>
-    `;
-
-    const btn = document.createElement("button");
-    btn.innerText = "Sair";
-
-    btn.onclick = () => {
-      auth.signOut().then(() => {
-        window.location.href = "login.html";
-      });
-    };
-
-    userBox.appendChild(avatar);
-    userBox.appendChild(info);
-    userBox.appendChild(btn);
-
-    header.appendChild(userBox);
-
-    // 🔥 BOTÃO ADMIN
-    if (usuarioLogado.tipo === "admin") {
-      const btnAdmin = document.createElement("button");
-      btnAdmin.id = "btnAdmin";
-      btnAdmin.innerText = "Admin";
-
-      btnAdmin.style.position = "absolute";
-      btnAdmin.style.right = "290px";
-      btnAdmin.style.top = "26px";
-
-      btnAdmin.onclick = () => {
-        window.location.href = "admin.html";
-      };
-
-      header.appendChild(btnAdmin);
-    }
-
-    // 🔥 SÓ CARREGA PRODUTOS DEPOIS DO LOGIN
-    carregarProdutos();
-carregarCategoriasManual();
-
+  fetch(URL_WEBAPP, {
+    method: "POST",
+    body: formData
+  })
+  .then(r => r.text())
+  .then(() => {
+    alert("Registro salvo com sucesso!");
+    form.reset();
+  })
+  .catch(err => {
+    alert("Erro ao salvar");
+    console.error(err);
   });
-  </script>
-  </body>
-  
-  </html>
+
+}
+</script>s
+<script>
+function carregarUltimosControle() {
+  fetch(URL_WEBAPP + "?action=listarControle")
+    .then(r => r.json())
+    .then(dados => {
+      const tbody = document.querySelector("#tabelaControle tbody");
+      tbody.innerHTML = "";
+
+      if (!dados.length) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align:center">
+              Nenhum registro encontrado
+            </td>
+          </tr>`;
+        return;
+      }
+
+      dados.slice(-10).reverse().forEach(l => {
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${l.dataHora}</td>
+            <td>${l.motorista}</td>
+            <td>${l.entradaSaida}</td>
+            <td>${l.veiculo}</td>
+            <td>${l.destino}</td>
+            <td>${l.km}</td>
+            <td>${l.abastecimento}</td>
+            <td>${l.litros}</td>
+            <td>${l.obs || ""}</td>
+          </tr>
+        `;
+      });
+    })
+    .catch(() => {
+      document.querySelector("#tabelaControle tbody").innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align:center">
+            Erro ao carregar dados
+          </td>
+        </tr>`;
+    });
+}
+
+document.addEventListener("DOMContentLoaded", carregarUltimosControle);
+</script>
+<style>
+/* ===== ESTILO NOVO APENAS PARA "ÚLTIMOS REGISTROS" ===== */
+.tabela-nova table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+
+.tabela-nova th {
+  background: #1f6feb;
+  color: #fff;
+  padding: 12px;
+  border: 1px solid #ccc;
+  font-weight: bold;
+  text-align: center;
+}
+
+.tabela-nova td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.tabela-nova tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+
+
+.tabela-nova tbody tr:hover {
+  background: #e6f0ff;
+}
+</style>
+
+</body>
+</html>

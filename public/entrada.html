@@ -250,7 +250,21 @@ function fecharCarrinho() {
 
 
   /* ======= RENDERIZA PRODUTOS ======= */
+function tratarImagem(url) {
+  if (!url) return "https://via.placeholder.com/300";
 
+  if (url.includes("drive.google.com")) {
+
+    let match = url.match(/\/d\/(.*?)\//);
+    if (match && match[1]) {
+      const id = match[1];
+
+      return `https://drive.google.com/thumbnail?id=${id}&sz=w1000`;
+    }
+  }
+
+  return url;
+}
   function renderizarProdutos(lista) {
     const div = document.getElementById("produtos");
     div.innerHTML = "";
@@ -296,7 +310,7 @@ function fecharModal() {
  function abrirModal(p) {
     const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
 
-    document.getElementById("modalImg").src = p["IMAGEM APP"];
+    document.getElementById("modalImg").src = tratarImagem(p["IMAGEM APP"]);
 
     document.getElementById("modalDesc").innerHTML = `
       <h2>${p.PRODUTO}</h2>
@@ -395,10 +409,7 @@ function buscar() {
           <td style="text-align:left;">
   <div style="display:flex; align-items:center; gap:10px;">
     
-    <img src="${
-      i.IMAGEM && String(i.IMAGEM).startsWith("http")
-        ? i.IMAGEM
-        : 'https://via.placeholder.com/60'
+    tratarImagem(i.IMAGEM)
     }" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
 
     <div>
@@ -444,12 +455,10 @@ function renderizarProdutos(lista) {
     const card = document.createElement("div");
     card.className = "card";
 
-    const imagem = (p['IMAGEM APP'] && String(p['IMAGEM APP']).startsWith("http"))
-      ? p['IMAGEM APP']
-      : 'https://via.placeholder.com/300?text=Sem+Imagem';
+    const imagem = tratarImagem(p['IMAGEM APP']);
 
     card.innerHTML = `
-      <img src="${imagem}">
+      <img src="${imagem}" onclick='abrirModal(${JSON.stringify(p)})'>
 
       <div class="info">
         <b>${p.PRODUTO}</b><br>
