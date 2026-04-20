@@ -404,13 +404,18 @@ function buscar() {
       totalGeral += i.total * i.qtd;
 
       tbody.innerHTML += `
-        <tr>
-          <td>${i.CATEGORIA}</td>
-          <td style="text-align:left;">
+        <td style="text-align:left;">
   <div style="display:flex; align-items:center; gap:10px;">
     
-    tratarImagem(i.IMAGEM)
-    }" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+    <img src="${tratarImagem(i.IMAGEM)}"
+         style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+
+    <div>
+      <b>${i.PRODUTO}</b><br>
+    </div>
+
+  </div>
+</td>
 
     <div>
       <b>${i.PRODUTO}</b><br>
