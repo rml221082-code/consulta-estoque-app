@@ -342,7 +342,56 @@ campo.value="R$ "+v
 })
 
 }
+async function verificarDuplicata(){
 
+try{
+
+const res = await fetch(GAS_URL,{
+  method:'POST',
+  body:new URLSearchParams({
+    action:'listarnotasfiscais'
+  })
+});
+
+const r = await res.json();
+
+if(!r.rows) return false;
+
+const nota = numeroNota.value.trim();
+const data = normalizarData(dataCompra.value);
+
+return r.rows.some(n =>
+  String(n.numeroNota).trim() === nota &&
+  normalizarData(n.data) === data // ✅ AQUI
+);
+
+}catch(err){
+console.error("Erro duplicata:", err);
+return false;
+}
+console.log(r.rows[0]);
+}
+function normalizarData(data){
+
+if(!data) return "";
+
+// remove hora se existir
+data = data.split(" ")[0];
+
+// formato 2026-04-28
+if(data.includes("-")){
+  return data;
+}
+
+// formato 28/04/2026
+if(data.includes("/")){
+  const [dia, mes, ano] = data.split("/");
+  return `${ano}-${mes.padStart(2,'0')}-${dia.padStart(2,'0')}`;
+}
+
+return data;
+
+}
 function calcularParcelas(){
 
 const total=moedaParaNumero(valorTotal.value)
@@ -384,10 +433,18 @@ document.getElementById('formNota').addEventListener('submit',async e=>{
 
 e.preventDefault()
 
+// 🔎 VERIFICA DUPLICATA
+if(await verificarDuplicata()){
+  alert("⚠️ Essa nota já foi cadastrada para esse fornecedor!");
+  return;
+}
+
 const btn=document.getElementById("btnSalvar")
 
 btn.disabled=true
 btn.innerText="Salvando..."
+
+
 
 const file=document.getElementById('pdf').files[0]
 

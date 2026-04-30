@@ -258,21 +258,23 @@ reader.readAsText(file);
 // ================= DUPLICATA =================
 async function verificarDuplicata(){
 
-const res=await fetch(GAS_URL,{
-method:'POST',
-body:new URLSearchParams({
-action:'listarnotasfiscais'
-})
+const res = await fetch(GAS_URL,{
+  method:'POST',
+  body:new URLSearchParams({
+    action:'listarnotasfiscais'
+  })
 });
 
-const r=await res.json();
+const r = await res.json();
 
-const nota=numeroNota.value.trim();
-const fornecedorTxt=fornecedor.value.trim();
+if(!r.rows) return false; // segurança
+
+const nota = numeroNota.value.trim();
+const fornecedorTxt = fornecedor.value.trim().toUpperCase();
 
 return r.rows.some(n =>
-String(n.numeroNota)===nota &&
-String(n.fornecedor).toUpperCase()===fornecedorTxt.toUpperCase()
+  String(n.numeroNota).trim() === nota &&
+  String(n.fornecedor).trim().toUpperCase() === fornecedorTxt
 );
 
 }

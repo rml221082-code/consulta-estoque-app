@@ -620,7 +620,7 @@ function debounceBuscar() {
   renderizarCategorias();
   renderizarProdutos(produtos);
 
-
+   carregarCategoriasManual(); // 🔥 GARANTE atualização
 
       } catch (e) {
         console.error("Erro ao carregar produtos:", e);
@@ -646,10 +646,10 @@ function debounceBuscar() {
     </script>
     <script>
 
-    document.addEventListener("DOMContentLoaded", () => {
-    carregarProdutos();
-    carregarCategoriasManual();
-  });
+    document.addEventListener("DOMContentLoaded", async () => {
+  await carregarProdutos(); // espera carregar os produtos
+  carregarCategoriasManual(); // agora sim funciona
+});
     </script>
     <div id="modalNovoProduto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); justify-content:center; align-items:center;">
     <div style="background:#fff; padding:20px; width:400px; border-radius:10px;">
@@ -684,40 +684,23 @@ function debounceBuscar() {
   }
   </script>
   <script>
-  async function carregarCategoriasManual() {
-    try {
-      const res = await fetch(API_URL + "?action=listarcategorias");
-      const data = await res.json();
+  function carregarCategoriasManual() {
+  const sel = document.getElementById("categoriaManual");
+  sel.innerHTML = "";
 
-      console.log("Resposta categorias:", data);
+  const categorias = [...new Set(
+    produtosBase
+      .map(p => (p.CATEGORIA || "").trim())
+      .filter(Boolean)
+  )].sort();
 
-      if (!data.success || !Array.isArray(data.rows)) {
-        throw new Error(data.erro || "Formato inválido");
-      }
-
-      const sel = document.getElementById("categoriaManual");
-      sel.innerHTML = "";
-
-      if (!data.rows.length) {
-        const opt = document.createElement("option");
-        opt.textContent = "Sem categorias cadastradas";
-        opt.value = "";
-        sel.appendChild(opt);
-        return;
-      }
-
-      data.rows.forEach(c => {
-        const opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        sel.appendChild(opt);
-      });
-
-    } catch (err) {
-      console.error("Erro ao carregar categorias:", err);
-      alert("Erro ao carregar categorias (ver console)");
-    }
-  }
+  categorias.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
   </script>
   <script>
   async function adicionarProdutoManual() {
@@ -752,7 +735,7 @@ function debounceBuscar() {
         valorCompra: valor,
         ipi: 0,
         icms: 0,
-        venda: 70,
+        venda: 100,
         total: valor
       });
 

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Venda de Produtos</title>
+
+<style>
+body { margin:0; font-family:Arial; background:#f4f4f4; }
+
+header{
+  background:#121111;
+  color:#fff;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#carrinhoBtn{
+  background:#fff;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* PRODUTOS */
+#produtos{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:20px;
+  padding:20px;
+}
+
+.card{
+  background:#fff;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  overflow:hidden;
+}
+
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+}
+
+.card .info{ padding:10px; }
+
+.btn-add{
+  width:100%;
+  padding:10px;
+  border:none;
+  background:#121111;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* MODAIS */
+#modalCarrinho, #modalOrcamento{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+}
+
+.box{
+  background:#fff;
+  width:90%;
+  max-width:600px;
+  padding:20px;
+  border-radius:10px;
+  max-height:80vh;
+  overflow:auto;
+}
+
+.item{
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>Venda de Produtos</h2>
+  <button id="carrinhoBtn" onclick="abrirCarrinho()">
+    🛒 Carrinho (<span id="qtd">0</span>)
+  </button>
+</header>
+
+<div id="produtos">Carregando...</div>
+
+<!-- CARRINHO -->
+<div id="modalCarrinho">
+  <div class="box">
+    <h2>Carrinho</h2>
+    <div id="lista"></div>
+
+    <button onclick="gerarOrcamento()">🧾 Gerar Orçamento</button>
+    <button onclick="fecharCarrinho()">Fechar</button>
+  </div>
+</div>
+
+<!-- ORÇAMENTO -->
+<div id="modalOrcamento">
+  <div class="box">
+    <h2>🧾 ORÇAMENTO</h2>
+    <div id="orcamentoLista"></div>
+    <button onclick="fecharOrcamento()">Fechar</button>
+  </div>
+</div>
+
+<script>
+
+// 🔥 SUA API
+const API_URL = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
+
+let produtos = [];
+let carrinho = [];
+
+// 🔥 CARREGAR PRODUTOS (CORRIGIDO)
+async function carregarProdutos() {
+  try {
+
+    const res = await fetch(API_URL + "?action=listarprodutos");
+
+    // 🔥 força leitura segura
+    let text = await res.text();
+
+    // tenta converter para JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      console.error("Resposta inválida:", text);
+      throw "API não retornou JSON válido";
+    }
+
+    produtos = (data.rows || []).filter(p => p.PRODUTO);
+
+    if(produtos.length === 0){
+      document.getElementById("produtos").innerHTML = "Nenhum produto encontrado.";
+      return;
+    }
+
+    mostrar();
+
+  } catch (e) {
+    console.error("Erro ao carregar produtos", e);
+    document.getElementById("produtos").innerHTML =
+      "❌ Erro ao carregar produtos<br><br>Verifique a API.";
+  }
+}
+
+// 🔥 TRATAR IMAGEM
+function tratarImagem(url) {
+  if (!url) return "https://via.placeholder.com/300";
+
+  let match = url.match(/\/d\/(.*?)\//);
+  if (match) return `https://lh3.googleusercontent.com/d/${match[1]}=w500`;
+
+  match = url.match(/id=(.*?)(?:&|$)/);
+  if (match) return `https://lh3.googleusercontent.com/d/${match[1]}=w500`;
+
+  return url;
+}
+
+// 🔥 MOSTRAR PRODUTOS
+function mostrar(){
+  const div = document.getElementById("produtos");
+  div.innerHTML = "";
+
+  produtos.forEach((p, index)=>{
+
+    // guarda no array global (sem JSON stringify)
+    produtos[index]._safe = {
+      ID_PRODUTO: p.ID_PRODUTO,
+      PRODUTO: p.PRODUTO,
+      CATEGORIA: p.CATEGORIA,
+      
+      CAIXA: p.CAIXA,
+      "IMAGEM APP": p["IMAGEM APP"]
+    };
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <img src="${tratarImagem(p["IMAGEM APP"])}">
+      <div class="info">
+        <h3>${p.PRODUTO}</h3>
+        <p>${p.CATEGORIA || ""}</p>
+       
+      </div>
+      <button class="btn-add">Adicionar</button>
+    `;
+
+    // 🔥 evento SEM string perigosa
+    card.querySelector("button").onclick = () => add(produtos[index]._safe);
+
+    div.appendChild(card);
+  });
+}// 🔥 ADD CARRINHO
+function add(p){
+  const item = carrinho.find(i => i.ID_PRODUTO === p.ID_PRODUTO);
+
+  if(item){
+    item.qtd++;
+  } else {
+    carrinho.push({
+      ...p,
+      qtd:1
+    });
+  }
+
+  atualizar();
+}
+// 🔥 ATUALIZAR ICONE
+function atualizar(){
+  document.getElementById("qtd").innerText =
+    carrinho.reduce((s,i)=>s+i.qtd,0);
+}
+
+// 🔥 ABRIR CARRINHO
+function abrirCarrinho(){
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  carrinho.forEach(p=>{
+    lista.innerHTML += `
+      <div class="item">
+        <img src="${tratarImagem(p["IMAGEM APP"])}" width="50">
+        <div>
+          <b>${p.PRODUTO}</b><br>
+          Qtd: ${p.qtd}
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("modalCarrinho").style.display="flex";
+}
+
+function fecharCarrinho(){
+  document.getElementById("modalCarrinho").style.display="none";
+}
+
+// 🔥 ORÇAMENTO (SEM VALOR)
+function gerarOrcamento(){
+
+  if(carrinho.length===0){
+    alert("Carrinho vazio");
+    return;
+  }
+
+  const lista = document.getElementById("orcamentoLista");
+  lista.innerHTML = "";
+
+  carrinho.forEach(p=>{
+    lista.innerHTML += `
+      <div class="item">
+        <img src="${tratarImagem(p["IMAGEM APP"])}" width="60">
+        <div>
+          <b>${p.PRODUTO}</b><br>
+          Categoria: ${p.CATEGORIA || ""}<br>
+          Quantidade: ${p.qtd}<br>
+          Caixa: ${p.CAIXA || "-"}
+        </div>
+      </div>
+      <hr>
+    `;
+  });
+
+  document.getElementById("modalOrcamento").style.display="flex";
+}
+
+function fecharOrcamento(){
+  document.getElementById("modalOrcamento").style.display="none";
+}
+
+// 🔥 INICIAR
+carregarProdutos();
+
+</script>
+
+</body>
+</html>

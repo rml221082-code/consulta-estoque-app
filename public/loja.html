@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hidrauman - Soluções Hidráulicas</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f4f6f8;
+}
+
+/* TOPO */
+header{
+  background:#0d47a1;
+  color:#fff;
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+header img{ height:60px; }
+
+/* BOTÃO ORÇAMENTO */
+.btn-orcamento{
+  background:#ff3c00;
+  color:#fff;
+  padding:12px 20px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+/* CARROSSEL */
+.slider{ position:relative; overflow:hidden; }
+.slides{ display:flex; transition:0.5s; }
+.slide{ min-width:100%; height:400px; position:relative; }
+
+.slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.overlay{
+  position:absolute;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+}
+
+.prev, .next{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  background:#0008;
+  color:#fff;
+  border:none;
+  padding:10px;
+  cursor:pointer;
+}
+
+.prev{ left:10px; }
+.next{ right:10px; }
+
+/* SEÇÕES */
+.section{
+  padding:50px 20px;
+  max-width:1200px;
+  margin:auto;
+  text-align:center;
+}
+
+.servicos{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(250px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* WHATS */
+.whatsapp{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#25D366;
+  color:#fff;
+  padding:15px;
+  border-radius:50%;
+  font-size:20px;
+  text-decoration:none;
+}
+
+footer{
+  background:#0d47a1;
+  color:#fff;
+  text-align:center;
+  padding:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="https://www.hidraumanhidraulicos.com.br/wp-content/uploads/2019/05/Hidrauman-Corrigido.jpg">
+  <a href="orcamentosite.html" class="btn-orcamento">🧾 Solicitar Orçamento</a>
+</header>
+
+<!-- CARROSSEL -->
+<div class="slider">
+  <div class="slides">
+
+    <div class="slide">
+      <img src="http://www.hrcdistribuidora.com.br/wp-content/uploads/MANGUEIRA-HIDRAULICA.jpg">
+      <div class="overlay"><h2>Mangueiras Hidráulicas</h2></div>
+    </div>
+
+    <div class="slide">
+      <img src="https://th.bing.com/th/id/OIP.UvybSWljGhQ8_7WfWVG84gHaFz">
+      <div class="overlay"><h2>Conexões Hidráulicas</h2></div>
+    </div>
+
+    <div class="slide">
+      <img src="https://tse2.mm.bing.net/th/id/OIP.cxEIZuhdZ4PefH21wYRyigHaIF">
+      <div class="overlay"><h2>Eletroválvulas</h2></div>
+    </div>
+
+    <div class="slide">
+      <img src="https://mentecpe.com.br/wp-content/uploads/2021/05/3-Filtros-de-Retorno.jpg">
+      <div class="overlay"><h2>Filtros Hidráulicos</h2></div>
+    </div>
+
+  </div>
+
+  <button class="prev">&#10094;</button>
+  <button class="next">&#10095;</button>
+</div>
+
+<!-- SOBRE -->
+<section class="section">
+  <h2>Sobre a Empresa</h2>
+  <p>Empresa com mais de <b>10 anos no mercado</b>, especializada em soluções hidráulicas industriais, oferecendo qualidade, rapidez e confiança.</p>
+</section>
+
+<!-- SERVIÇOS -->
+<section class="section">
+  <h2>Serviços</h2>
+
+  <div class="servicos">
+    <div class="card">🔧 Manutenção Hidráulica</div>
+    <div class="card">⚙ Sistemas Industriais</div>
+    <div class="card">💧 Mangueiras Sob Medida</div>
+    <div class="card">🚿 Solução de Vazamentos</div>
+  </div>
+</section>
+
+<a class="whatsapp" href="https://wa.me/5519999999999">💬</a>
+
+<footer>
+  © 2026 Hidrauman - Todos os direitos reservados
+</footer>
+
+<script>
+let i=0;
+const slides=document.querySelector(".slides");
+const total=slides.children.length;
+
+function show(n){
+  i=(n+total)%total;
+  slides.style.transform="translateX(-"+(i*100)+"%)";
+}
+
+document.querySelector(".next").onclick=()=>show(i+1);
+document.querySelector(".prev").onclick=()=>show(i-1);
+
+setInterval(()=>show(i+1),4000);
+</script>
+
+</body>
+</html>
