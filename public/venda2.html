@@ -1,126 +1,265 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>HIDRAUMAN</title>
+<title>Loja Profissional</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f4f6f8}
-header{background:#0d6efd;color:#fff;padding:15px;text-align:center;font-size:22px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px;padding:20px}
-.card{background:#fff;padding:15px;border-radius:10px;box-shadow:0 3px 8px rgba(0,0,0,0.1)}
-.card img{width:100%;height:150px;object-fit:cover;border-radius:8px}
-button{background:#28a745;color:#fff;border:none;padding:10px;width:100%;border-radius:6px;cursor:pointer}
-#carrinho{position:fixed;bottom:10px;right:10px;background:#000;color:#fff;padding:15px;border-radius:10px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#f4f6f8}
+
+/* TOPO */
+header{
+  position:fixed;
+  top:0;
+  width:100%;
+  height:70px;
+  background:#121111;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  z-index:999;
+}
+
+header input{
+  width:300px;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+}
+
+/* SIDEBAR */
+#sidebar{
+  position:fixed;
+  top:70px;
+  left:0;
+  bottom:0;
+  width:220px;
+  background:#fff;
+  border-right:1px solid #ddd;
+  padding:10px;
+  overflow:auto;
+}
+
+#categorias a{
+  display:block;
+  padding:8px;
+  border-radius:6px;
+  cursor:pointer;
+}
+#categorias a:hover{background:#121111;color:#fff}
+.ativo{background:#121111;color:#fff}
+
+/* MAIN */
+main{
+  margin-left:220px;
+  margin-top:80px;
+  padding:20px;
+}
+
+#produtos{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+}
+
+.info{padding:10px}
+
+.btn{
+  background:#121111;
+  color:#fff;
+  border:none;
+  padding:10px;
+  cursor:pointer;
+}
+
+/* CARRINHO */
+#carrinhoBtn{
+  background:#fff;
+  color:#000;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+#modalCarrinho{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+}
+
+#boxCarrinho{
+  background:#fff;
+  padding:20px;
+  width:400px;
+  max-height:80vh;
+  overflow:auto;
+  border-radius:10px;
+}
 </style>
 
 </head>
+
 <body>
 
-<header>HIDRAUMAN</header>
+<header>
+  <h3>Minha Loja</h3>
+  <input id="busca" placeholder="Buscar..." oninput="buscar()">
+  <button id="carrinhoBtn" onclick="abrirCarrinho()">🛒 (<span id="qtd">0</span>)</button>
+</header>
 
-<div class="grid" id="produtos"></div>
+<aside id="sidebar">
+  <h4>Categorias</h4>
+  <div id="categorias"></div>
+</aside>
 
-<div id="carrinho">
-🛒 R$ <span id="total">0.00</span>
-<button onclick="finalizar()">Finalizar</button>
+<main>
+  <div id="produtos"></div>
+</main>
+
+<div id="modalCarrinho">
+  <div id="boxCarrinho">
+    <h2>Carrinho</h2>
+    <div id="lista"></div>
+    <h3 id="total"></h3>
+    <button class="btn" onclick="fecharCarrinho()">Fechar</button>
+  </div>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
+const API="https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
 
-let produtos = [];
-let carrinho = [];
+let produtos=[], carrinho=[], categoriaAtual="";
 
-async function carregarProdutos(){
-  const res = await fetch(API + "?action=listarprodutos");
-  const json = await res.json();
+/* IMAGEM */
+function tratarImagem(p){
+ let url=p["IMAGEM APP"]||p["novolink"]||"";
+ if(!url) return "https://via.placeholder.com/300";
 
-  produtos = json.rows;
+ let m=url.match(/\/d\/(.*?)\//)||url.match(/id=(.*?)(?:&|$)/);
+ if(m) return "https://lh3.googleusercontent.com/d/"+m[1];
 
-  let html = "";
-
-  produtos.forEach(p => {
-
-  if(Number(p.QUANTIDADE || 0) <= 0) return;
-
-  html += `
-    <div class="card">
-      <img src="${p.novolink || 'https://via.placeholder.com/200'}">
-      <h3>${p.PRODUTO}</h3>
-      <p>R$ ${Number(p.VALOR || 0).toFixed(2)}</p>
-      <button onclick="add('${p.ID}','${p.PRODUTO}',${p.VALOR},'${p.CATEGORIA}')">
-        Comprar
-      </button>
-    </div>
-  `;
-});
-
-  document.getElementById("produtos").innerHTML = html;
+ return url;
 }
 
-function add(id, nome, preco, categoria){
-  carrinho.push({
-    idProduto: id,
-    produto: nome,
-    qtd: 1,
-    valorUnitario: preco,
-    subtotal: preco,
-    categoria: categoria
-  });
+/* CARREGAR */
+async function carregar(){
+ let r=await fetch(API+"?action=listarprodutos");
+ let d=await r.json();
+ produtos=d.rows||[];
+ montarCategorias();
+ mostrar(produtos);
+}
 
-  atualizar();
+/* CATEGORIAS */
+function montarCategorias(){
+ let cats=[...new Set(produtos.map(p=>p.CATEGORIA))];
+ let div=document.getElementById("categorias");
+ div.innerHTML='<a onclick="filtrar(\'\')" class="ativo">Todas</a>';
+
+ cats.forEach(c=>{
+  div.innerHTML+=`<a onclick="filtrar('${c}')">${c}</a>`;
+ });
+}
+
+function filtrar(cat){
+ categoriaAtual=cat;
+ buscar();
+}
+
+/* BUSCA */
+function buscar(){
+ let t=document.getElementById("busca").value.toLowerCase();
+ let lista=produtos.filter(p=>
+ (!categoriaAtual||p.CATEGORIA==categoriaAtual) &&
+ (p.PRODUTO||"").toLowerCase().includes(t)
+ );
+ mostrar(lista);
+}
+
+/* MOSTRAR */
+function mostrar(lista){
+ let div=document.getElementById("produtos");
+ div.innerHTML="";
+ lista.forEach(p=>{
+  div.innerHTML+=`
+   <div class="card">
+     <img src="${tratarImagem(p)}">
+     <div class="info">
+       <h3>${p.PRODUTO}</h3>
+       <p>${p.CATEGORIA}</p>
+       <p>R$ ${Number(p.VALOR_VENDA||0).toFixed(2)}</p>
+     </div>
+     <button class="btn" onclick='add(${JSON.stringify(p)})'>Adicionar</button>
+   </div>
+  `;
+ });
+}
+
+/* CARRINHO */
+function add(p){
+ let i=carrinho.findIndex(x=>x.ID_PRODUTO==p.ID_PRODUTO);
+ if(i>=0) carrinho[i].qtd++;
+ else carrinho.push({...p,qtd:1});
+ atualizar();
 }
 
 function atualizar(){
-  let total = carrinho.reduce((s,i)=>s+i.subtotal,0);
-  document.getElementById("total").innerText = total.toFixed(2);
+ document.getElementById("qtd").innerText=
+ carrinho.reduce((s,p)=>s+p.qtd,0);
 }
 
-async function finalizar(){
+function abrirCarrinho(){
+ let lista=document.getElementById("lista");
+ let total=0;
+ lista.innerHTML="";
 
-  if(carrinho.length === 0){
-    alert("Carrinho vazio");
-    return;
-  }
+ carrinho.forEach((p,i)=>{
+  let sub=p.qtd*p.VALOR_VENDA;
+  total+=sub;
 
-  let nome = prompt("Seu nome:");
-  let whats = prompt("Seu WhatsApp:");
+  lista.innerHTML+=`
+   <p>${p.PRODUTO} x${p.qtd} - R$ ${sub.toFixed(2)}
+   <button onclick="remover(${i})">❌</button></p>
+  `;
+ });
 
-  let total = carrinho.reduce((s,i)=>s+i.subtotal,0);
-
-  // 🔥 pega próximo ID automaticamente
-  const res = await fetch(API + "?action=listarprodutos");
-  const dados = await res.json();
-
-  const idVenda = (dados.ultimoIdVenda || 0) + 1;
-
-  await fetch(API,{
-    method:"POST",
-    body: JSON.stringify({
-      action:"salvarvenda",
-      idVenda,
-      totalVenda: total,
-      tipo:"VENDA",
-      itens: JSON.stringify(carrinho)
-    })
-  });
-
-  // WhatsApp
-  let msg = "🧾 Pedido HIDRAUMAN:%0A";
-  carrinho.forEach(i=>{
-    msg += `- ${i.produto} R$${i.valorUnitario}%0A`;
-  });
-  msg += `Total: R$${total}%0A`;
-  msg += `Pagamento: PIX`;
-
-  window.open(`https://wa.me/5519992367919?text=${msg}`);
-
-  carrinho=[];
-  atualizar();
+ document.getElementById("total").innerText="Total: R$ "+total.toFixed(2);
+ document.getElementById("modalCarrinho").style.display="flex";
 }
 
-carregarProdutos();
+function remover(i){
+ carrinho.splice(i,1);
+ atualizar();
+ abrirCarrinho();
+}
+
+function fecharCarrinho(){
+ document.getElementById("modalCarrinho").style.display="none";
+}
+
+carregar();
 </script>
 
 </body>
