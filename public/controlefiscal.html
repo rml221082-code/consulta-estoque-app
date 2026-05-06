@@ -329,7 +329,15 @@ if(fEmpresa.value && n.empresa!=fEmpresa.value) return false
 
 if(fFornecedor.value && !(n.fornecedor || "").toLowerCase().includes(fFornecedor.value.toLowerCase())) return false
 
-if(fNota.value && !n.numeroNota.includes(fNota.value)) return false
+if(fNota.value){
+
+const notaFiltro = fNota.value.trim().toLowerCase()
+
+const notaSistema = String(n.numeroNota || "").trim().toLowerCase()
+
+if(!notaSistema.includes(notaFiltro)) return false
+
+}
 
 if(fStatus.value && n.status!=fStatus.value) return false
 

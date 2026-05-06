@@ -154,7 +154,7 @@ td {
 </table>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbybU2SNYA5kZbXMEDC0T70A1w6JxQqzw9erMhDYM3NK7N-kz5orYZEBKo2snspUxkyi9w/exec";
+const URL = "https://script.google.com/macros/s/AKfycbz0JuKdWxCLCEa1treSJmOeg00POU6g1CSOO-xOMshgV7mZ54n4ZIODtUr_7d5ZYzz3gg/exec";
 
 // ===== FORMATAR DATA =====
 function formatarDataBR(data){
@@ -273,35 +273,100 @@ function salvarPrevisao(linha,data){
 }
 
 // ===== SALVAR FORM =====
-document.getElementById("formPedidos").addEventListener("submit", function(e){
-  e.preventDefault();
+async function carregarPedidos(){
 
-  const form = e.target;
+  const tbody = document.getElementById("tbodyPedidos");
 
-  const dados = new URLSearchParams({
-    action: "salvarpedido",
-    funcionario: form.funcionario.value,
-    departamento: form.departamento.value,
-    observacao: form.observacao.value,
-    emergencial: form.emergencial.value
-  });
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="8">Carregando...</td>
+    </tr>
+  `;
 
-  fetch(URL, {
-    method: "POST",
-    body: dados
-  })
-  .then(r => r.json())
-  .then(res => {
-    if(res.success){
-      alert("Pedido salvo!");
-      form.reset();
-      carregarPedidos();
-    }else{
-      alert("Erro ao salvar");
+  try{
+
+    const res = await fetch(URL + "?action=listarpedidos");
+
+    const resJson = await res.json();
+
+    console.log("PEDIDOS:", resJson);
+
+    const dados = Array.isArray(resJson)
+      ? resJson
+      : (resJson.rows || resJson.dados || []);
+
+    tbody.innerHTML = "";
+
+    if(dados.length === 0){
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8">Nenhum pedido encontrado</td>
+        </tr>
+      `;
+
+      return;
     }
-  });
-});
 
+    dados.forEach(p => {
+
+      tbody.innerHTML += `
+        <tr>
+
+          <td>${formatarDataBR(p.dataHora)}</td>
+
+          <td>${p.funcionario || ""}</td>
+
+          <td>${p.departamento || ""}</td>
+
+          <td>${p.observacao || ""}</td>
+
+          <td>
+            ${p.emergencial === "SIM"
+              ? "🚨SIM🚨"
+              : "NÃO"}
+          </td>
+
+          <td>${p.status || ""}</td>
+
+          <td>
+            <input
+              type="date"
+              value="${formatarDataISO(p.previsao)}"
+              onchange="salvarPrevisao(${p.index}, this.value)">
+          </td>
+
+          <td>
+
+            ${
+              p.status === "PENDENTE"
+
+              ? `<button onclick="comprar(${p.index})">
+                  Comprar
+                </button>`
+
+              : `<button onclick="entregar(${p.index})">
+                  Entregue
+                </button>`
+            }
+
+          </td>
+
+        </tr>
+      `;
+    });
+
+  }catch(err){
+
+    console.error(err);
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8">Erro ao carregar pedidos</td>
+      </tr>
+    `;
+  }
+}
 // ===== INICIAR =====
 carregarPedidos();
 </script>
