@@ -56,6 +56,7 @@ button {
 
   <button class="login" onclick="login()">Entrar</button>
   <button class="google" onclick="loginGoogle()">Google</button>
+  <button onclick="resetSenha()">Esqueci minha senha</button>
 
   <p id="erro" style="color:red;"></p>
 </div>
@@ -72,7 +73,24 @@ const firebaseConfig = {
   messagingSenderId: "1065893590092",
   appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
 };
+function resetSenha() {
+  const email = document.getElementById("email").value;
 
+  if (!email) {
+    document.getElementById("erro").innerText = "Digite seu email primeiro";
+    return;
+  }
+
+  auth.sendPasswordResetEmail(email)
+    .then(() => {
+      document.getElementById("erro").style.color = "green";
+      document.getElementById("erro").innerText = "📩 Email de redefinição enviado!";
+    })
+    .catch(err => {
+      document.getElementById("erro").style.color = "red";
+      document.getElementById("erro").innerText = err.message;
+    });
+}
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
