@@ -64,53 +64,77 @@
 <header></header>
 
 <h1>Links</h1>
+<h1 data-tipo="administrativo funcionario admin">Pedidos</h1>
+<div class="botoes">
+   <a href="https://consulta-estoque-app.web.app/pedidosdecompras.html" data-tipo="administrativo funcionario admin">
+    <button class="btn btn-azul">Pedidos de Compras</button>
+  </a>
+</div>
+<h1 data-tipo="administrativo admin">Estoque</h1>
+<div class="botoes">
+<a href="https://consulta-estoque-app.web.app/entrada.html" data-tipo="administrativo admin">
+    <button class="btn btn-azul">Entrada Mercadoria</button>
+  </a>
+<a href="https://consulta-estoque-app.web.app/venda.html" data-tipo="administrativo admin">
+     <button class="btn btn-azul">Venda</button> 
+    </a>
+<a href="https://consulta-estoque-app.web.app/imagens.html" data-tipo="administrativo admin">
+    <button class="btn btn-azul">Inserir Imagens</button>
+  </a>
+  <a href="https://consulta-estoque-app.web.app/xml.html" data-tipo="administrativo admin">
+    <button class="btn btn-azul">Inserir Xml</button>
+  </a>
+</div>
+
+<h1 data-tipo="administrativo admin">Fiscal</h1>
+<div class="botoes">
+<a href="https://consulta-estoque-app.web.app/entradanotas.html" data-tipo="administrativo admin">
+     <button class="btn btn-azul">Entrada de Notas</button>
+     </a>
+     <a href="https://consulta-estoque-app.web.app/xmlentradanota.html" data-tipo="administrativo admin">
+     <button class="btn btn-azul">Entrada de Notas XML</button>
+     </a>
+     <a href="https://consulta-estoque-app.web.app/controlefiscal.html" data-tipo="administrativo admin">
+         <button class="btn btn-azul">Controle Fiscal</button> 
+        </a>
+        <a href="https://consulta-estoque-app.web.app/relatoriofiscal.html" data-tipo="administrativo admin">
+             <button class="btn btn-azul">Relatório Fiscal</button> 
+            </a>
+</div>
+<h1 data-tipo="administrativo funcionario admin">Oficina</h1>
 
 <div class="botoes">
-  <a href="https://consulta-estoque-app.web.app/servico.html" data-tipo="administrativo">
+  <a href="https://consulta-estoque-app.web.app/servico.html" data-tipo="administrativo funcionario admin">
     <button class="btn btn-azul">Entrada de Serviço</button>
   </a>
+  <a href="https://consulta-estoque-app.web.app/aguardando.html" data-tipo="administrativo funcionario admin"> 
+    <button class="btn btn-azul">Aguardando</button>
+ </a>
+</div>
 
-  <a href="https://consulta-estoque-app.web.app/controledeveiculo.html" data-tipo="funcionario">
+<h1 data-tipo="administrativo funcionario admin">Veículo</h1>
+
+<div class="botoes">
+  <a href="https://consulta-estoque-app.web.app/controledeveiculo.html" data-tipo="administrativo funcionario admin">
     <button class="btn btn-azul">Controle de Veículo</button>
   </a>
 
-  <a href="https://consulta-estoque-app.web.app/manutencaodeveiculo.html" data-tipo="funcionario">
+  <a href="https://consulta-estoque-app.web.app/manutencaodeveiculo.html" data-tipo="administrativo funcionario admin">
     <button class="btn btn-azul">Manutenção de Veículo</button>
   </a>
-
-  <a href="https://consulta-estoque-app.web.app/pedidosdecompras.html" data-tipo="administrativo">
-    <button class="btn btn-azul">Pedidos de Compras</button>
-  </a>
-
-  <a href="https://consulta-estoque-app.web.app/entrada.html" data-tipo="administrativo">
-    <button class="btn btn-azul">Entrada Mercadoria</button>
-  </a>
-  <a href="https://consulta-estoque-app.web.app/aguardando.html" data-tipo="funcionario"> 
-    <button class="btn btn-azul">Aguardando</button>
- </a>
-    <a href="https://consulta-estoque-app.web.app/venda.html" data-tipo="administrativo">
-     <button class="btn btn-azul">Venda</button> 
-    </a>
+    
 </div>
 
-<h1>EM TESTE</h1>
+<h1 data-tipo="admin">EM TESTE</h1>
 
-<div class="botoes">
-  <a href="https://consulta-estoque-app.web.app/orcamento.html" data-tipo="administrativo">
+<div data-tipo="admin" class="botoes">
+  <a href="https://consulta-estoque-app.web.app/admin.html" data-tipo="admin">
+    <button class="btn btn-azul">Admin</button>
+  </a>
+  <a href="https://consulta-estoque-app.web.app/orcamento.html" data-tipo="admin">
     <button class="btn btn-vermelho">Orçamento</button>
   </a>
-<a href="https://consulta-estoque-app.web.app/entradanotas.html" data-tipo="administrativo">
-     <button class="btn btn-vermelho">Entrada de Notas</button>
-     </a>
-     <a href="https://consulta-estoque-app.web.app/controlefiscal.html" data-tipo="administrativo">
-         <button class="btn btn-vermelho">Controle Fiscal</button> 
-        </a>
-        <a href="https://consulta-estoque-app.web.app/relatoriofiscal.html" data-tipo="administrativo">
-             <button class="btn btn-vermelho">Relatório Fiscal</button> 
-            </a>
-  <a href="https://consulta-estoque-app.web.app/imagens.html" data-tipo="administrativo">
-    <button class="btn btn-vermelho">Inserir Imagens</button>
-  </a>
+
 </div>
 
 <!-- FIREBASE -->
@@ -225,19 +249,25 @@ auth.onAuthStateChanged(async user => {
   // 🔐 CONTROLE DE BOTÕES
   // =========================
 
-  const botoes = document.querySelectorAll('.botoes a');
+// 🔐 CONTROLE DE ACESSO (FUNCIONA COM VÁRIOS TIPOS)
 
-  botoes.forEach(btn => btn.style.display = 'none');
+const tipoUsuario = usuario.tipo;
 
-  if (usuario.tipo === "admin") {
-    botoes.forEach(btn => btn.style.display = 'block');
-  } else {
-    botoes.forEach(btn => {
-      if (btn.getAttribute('data-tipo') === usuario.tipo) {
-        btn.style.display = 'block';
-      }
-    });
+// Esconde tudo primeiro
+document.querySelectorAll("[data-tipo]").forEach(el => {
+  el.style.display = "none";
+});
+
+// Mostra apenas o permitido
+document.querySelectorAll("[data-tipo]").forEach(el => {
+
+  const tiposPermitidos = el.dataset.tipo.split(" ");
+
+  if (tiposPermitidos.includes(tipoUsuario)) {
+    el.style.display = "block";
   }
+
+});
 
 });
 </script>

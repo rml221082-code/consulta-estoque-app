@@ -1,265 +1,560 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Loja Profissional</title>
+<meta charset="UTF-8"/>
+<title>Entrada de Notas</title>
 
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial;background:#f4f6f8}
 
-/* TOPO */
-header{
-  position:fixed;
-  top:0;
-  width:100%;
-  height:70px;
-  background:#121111;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 20px;
-  z-index:999;
+body{
+font-family:'Segoe UI',Arial,sans-serif;
+background:#f4f6f8;
+padding:20px
 }
 
-header input{
-  width:300px;
-  padding:10px;
-  border-radius:8px;
-  border:none;
+.container{
+max-width:900px;
+margin:auto;
+background:#fff;
+padding:25px;
+border-radius:10px;
+box-shadow:0 6px 18px rgba(0,0,0,.08)
 }
 
-/* SIDEBAR */
-#sidebar{
-  position:fixed;
-  top:70px;
-  left:0;
-  bottom:0;
-  width:220px;
-  background:#fff;
-  border-right:1px solid #ddd;
-  padding:10px;
-  overflow:auto;
+h1{margin-bottom:20px}
+
+label{
+font-weight:600;
+margin-top:12px;
+display:block
 }
 
-#categorias a{
-  display:block;
-  padding:8px;
-  border-radius:6px;
-  cursor:pointer;
-}
-#categorias a:hover{background:#121111;color:#fff}
-.ativo{background:#121111;color:#fff}
-
-/* MAIN */
-main{
-  margin-left:220px;
-  margin-top:80px;
-  padding:20px;
+input,select,textarea{
+width:100%;
+padding:8px 10px;
+margin-top:4px;
+border:1px solid #ccc;
+border-radius:6px
 }
 
-#produtos{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:20px;
+textarea{resize:vertical}
+
+.row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px
 }
 
-.card{
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
+button{
+margin-top:20px;
+background:#0078d4;
+color:#fff;
+border:none;
+padding:12px 18px;
+border-radius:6px;
+cursor:pointer;
+font-size:15px;
+font-weight:600
 }
 
-.card img{
-  width:100%;
-  height:180px;
-  object-fit:cover;
+button:hover{
+background:#005a9e
 }
 
-.info{padding:10px}
-
-.btn{
-  background:#121111;
-  color:#fff;
-  border:none;
-  padding:10px;
-  cursor:pointer;
+button:disabled{
+background:#999;
+cursor:not-allowed
 }
 
-/* CARRINHO */
-#carrinhoBtn{
-  background:#fff;
-  color:#000;
-  padding:8px 12px;
-  border-radius:8px;
-  cursor:pointer;
+.toggle-container{
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:15px;
 }
 
-#modalCarrinho{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  justify-content:center;
-  align-items:center;
+.toggle{
+position:relative;
+width:50px;
+height:26px;
 }
 
-#boxCarrinho{
-  background:#fff;
-  padding:20px;
-  width:400px;
-  max-height:80vh;
-  overflow:auto;
-  border-radius:10px;
+.toggle input{
+opacity:0;
+width:0;
+height:0;
+}
+
+.slider{
+position:absolute;
+cursor:pointer;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:#ccc;
+transition:.3s;
+border-radius:30px;
+}
+
+.slider:before{
+position:absolute;
+content:"";
+height:20px;
+width:20px;
+left:3px;
+bottom:3px;
+background:white;
+transition:.3s;
+border-radius:50%;
+box-shadow:0 2px 5px rgba(0,0,0,.3);
+}
+
+.toggle input:checked + .slider{
+background:#ff3b3b;
+}
+
+.toggle input:checked + .slider:before{
+transform:translateX(24px);
+}
+
+.toggle-text{
+font-weight:600;
+font-size:14px;
 }
 </style>
-
 </head>
 
 <body>
 
-<header>
-  <h3>Minha Loja</h3>
-  <input id="busca" placeholder="Buscar..." oninput="buscar()">
-  <button id="carrinhoBtn" onclick="abrirCarrinho()">🛒 (<span id="qtd">0</span>)</button>
-</header>
+<div class="container">
 
-<aside id="sidebar">
-  <h4>Categorias</h4>
-  <div id="categorias"></div>
-</aside>
+<h1>Entrada de Notas</h1>
 
-<main>
-  <div id="produtos"></div>
-</main>
+<form id="formNota">
 
-<div id="modalCarrinho">
-  <div id="boxCarrinho">
-    <h2>Carrinho</h2>
-    <div id="lista"></div>
-    <h3 id="total"></h3>
-    <button class="btn" onclick="fecharCarrinho()">Fechar</button>
-  </div>
+<label>Empresa</label>
+<select id="empresa" required>
+<option value="">Selecione</option>
+<option>HIDRAUMAN</option>
+<option>HIDRAUFLEX</option>
+</select>
+
+<div class="row">
+
+<div>
+<label>Data de Compra</label>
+<input type="date" id="dataCompra" required>
+</div>
+
+<div>
+<label>Nº da Nota</label>
+<input type="text" id="numeroNota" required inputmode="numeric">
+</div>
+
+</div>
+
+<label>Fornecedor</label>
+<input type="text" id="fornecedor"required>
+
+<div class="row">
+
+<div>
+<label>Valor Total</label>
+<input type="text" id="valorTotal"required>
+<label>Valor Frete</label>
+<input type="text" id="valorFrete">
+</div>
+
+<div>
+<label>Quantidade de Parcelas</label>
+<input type="number" id="qtdParcelas" min="1" max="10">
+</div>
+
+</div>
+
+<div class="row">
+
+<div>
+<label>Valor Parcela 1</label>
+<input type="text" id="valorParcela1">
+</div>
+
+<div>
+<label>Vencimento 1</label>
+<input type="date" id="vencimento1">
+</div>
+
+<div>
+<label>Valor Parcela 2</label>
+<input type="text" id="valorParcela2">
+</div>
+
+<div>
+<label>Vencimento 2</label>
+<input type="date" id="vencimento2">
+</div>
+
+<div>
+<label>Valor Parcela 3</label>
+<input type="text" id="valorParcela3">
+</div>
+
+<div>
+<label>Vencimento 3</label>
+<input type="date" id="vencimento3">
+</div>
+
+<div>
+<label>Valor Parcela 4</label>
+<input type="text" id="valorParcela4">
+</div>
+
+<div>
+<label>Vencimento 4</label>
+<input type="date" id="vencimento4">
+</div>
+
+<div>
+<label>Valor Parcela 5</label>
+<input type="text" id="valorParcela5">
+</div>
+
+<div>
+<label>Vencimento 5</label>
+<input type="date" id="vencimento5">
+</div>
+
+<div>
+<label>Valor Parcela 6</label>
+<input type="text" id="valorParcela6">
+</div>
+
+<div>
+<label>Vencimento 6</label>
+<input type="date" id="vencimento6">
+</div>
+
+<div>
+<label>Valor Parcela 7</label>
+<input type="text" id="valorParcela7">
+</div>
+
+<div>
+<label>Vencimento 7</label>
+<input type="date" id="vencimento7">
+</div>
+
+<div>
+<label>Valor Parcela 8</label>
+<input type="text" id="valorParcela8">
+</div>
+
+<div>
+<label>Vencimento 8</label>
+<input type="date" id="vencimento8">
+</div>
+
+<div>
+<label>Valor Parcela 9</label>
+<input type="text" id="valorParcela9">
+</div>
+
+<div>
+<label>Vencimento 9</label>
+<input type="date" id="vencimento9">
+</div>
+
+<div>
+<label>Valor Parcela 10</label>
+<input type="text" id="valorParcela10">
+</div>
+
+<div>
+<label>Vencimento 10</label>
+<input type="date" id="vencimento10">
+</div>
+
+</div>
+
+<label>Quem solicitou</label>
+
+<select id="solicitante">
+
+<option value="">Selecione</option>
+<option>Altair</option>
+<option>Daniel</option>
+<option>Duarte</option>
+<option>Guilherme</option>
+<option>Josué</option>
+<option>Juliana</option>
+<option>Júlio</option>
+<option>Mayara</option>
+<option>Robson</option>
+<option>Samuel</option>
+
+</select>
+
+<div class="toggle-container">
+<label class="toggle">
+<input type="checkbox" id="emergencial">
+<span class="slider"></span>
+</label>
+<span class="toggle-text">Emergencial</span>
+</div>
+
+<label>Observações</label>
+
+<textarea id="obs" rows="3"></textarea>
+
+<label>Nota Fiscal (PDF)</label>
+<input type="file" id="pdf" accept="application/pdf">
+
+<button id="btnSalvar" type="submit">Salvar Nota</button>
+
+</form>
+
 </div>
 
 <script>
-const API="https://script.google.com/macros/s/AKfycbyqArNZnGzgDzn1mOCkHB2UGinLbANe4HBRfZgZ5neBLj-cQFPGSQl5aWnvf5Joh-vwsA/exec";
 
-let produtos=[], carrinho=[], categoriaAtual="";
+const GAS_URL="https://script.google.com/macros/s/AKfycbz0JuKdWxCLCEa1treSJmOeg00POU6g1CSOO-xOMshgV7mZ54n4ZIODtUr_7d5ZYzz3gg/exec"
+const campoNota = document.getElementById("numeroNota");
 
-/* IMAGEM */
-function tratarImagem(p){
- let url=p["IMAGEM APP"]||p["novolink"]||"";
- if(!url) return "https://via.placeholder.com/300";
+// 🔒 BLOQUEIA DIGITAÇÃO
+campoNota.addEventListener("keypress", (e) => {
+  if (!/[0-9]/.test(e.key)) {
+    e.preventDefault();
+  }
+});
 
- let m=url.match(/\/d\/(.*?)\//)||url.match(/id=(.*?)(?:&|$)/);
- if(m) return "https://lh3.googleusercontent.com/d/"+m[1];
+// 🔒 BLOQUEIA COLAR ERRADO
+campoNota.addEventListener("paste", (e) => {
+  const texto = (e.clipboardData || window.clipboardData).getData("text");
 
- return url;
+  if (!/^\d+$/.test(texto)) {
+    e.preventDefault();
+  }
+});
+
+// 🔒 LIMPEZA FINAL (garantia)
+campoNota.addEventListener("input", () => {
+  campoNota.value = campoNota.value.replace(/\D/g, "");
+});
+function moedaParaNumero(v){
+return Number(v.replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))
 }
 
-/* CARREGAR */
-async function carregar(){
- let r=await fetch(API+"?action=listarprodutos");
- let d=await r.json();
- produtos=d.rows||[];
- montarCategorias();
- mostrar(produtos);
+function formatarMoeda(campo){
+
+campo.addEventListener("input",()=>{
+
+let v=campo.value.replace(/\D/g,'')
+
+v=(v/100).toFixed(2)+''
+
+v=v.replace(".",",")
+
+v=v.replace(/\B(?=(\d{3})+(?!\d))/g,".")
+
+campo.value="R$ "+v
+
+})
+
+}
+async function verificarDuplicata(){
+
+try{
+
+const res = await fetch(GAS_URL,{
+  method:'POST',
+  body:new URLSearchParams({
+    action:'listarnotasfiscais'
+  })
+});
+
+const r = await res.json();
+
+if(!r.rows) return false;
+
+const nota = numeroNota.value.trim();
+const fornecedorTxt = fornecedor.value.trim().toUpperCase();
+
+return r.rows.some(n =>
+  String(n.numeroNota).trim() === nota &&
+  String(n.fornecedor).trim().toUpperCase() === fornecedorTxt
+);
+
+}catch(err){
+console.error("Erro duplicata:", err);
+return false;
 }
 
-/* CATEGORIAS */
-function montarCategorias(){
- let cats=[...new Set(produtos.map(p=>p.CATEGORIA))];
- let div=document.getElementById("categorias");
- div.innerHTML='<a onclick="filtrar(\'\')" class="ativo">Todas</a>';
-
- cats.forEach(c=>{
-  div.innerHTML+=`<a onclick="filtrar('${c}')">${c}</a>`;
- });
 }
 
-function filtrar(cat){
- categoriaAtual=cat;
- buscar();
+function normalizarData(data){
+
+if(!data) return "";
+
+// remove hora se existir
+data = data.split(" ")[0];
+
+// formato 2026-04-28
+if(data.includes("-")){
+  return data;
 }
 
-/* BUSCA */
-function buscar(){
- let t=document.getElementById("busca").value.toLowerCase();
- let lista=produtos.filter(p=>
- (!categoriaAtual||p.CATEGORIA==categoriaAtual) &&
- (p.PRODUTO||"").toLowerCase().includes(t)
- );
- mostrar(lista);
+// formato 28/04/2026
+if(data.includes("/")){
+  const [dia, mes, ano] = data.split("/");
+  return `${ano}-${mes.padStart(2,'0')}-${dia.padStart(2,'0')}`;
 }
 
-/* MOSTRAR */
-function mostrar(lista){
- let div=document.getElementById("produtos");
- div.innerHTML="";
- lista.forEach(p=>{
-  div.innerHTML+=`
-   <div class="card">
-     <img src="${tratarImagem(p)}">
-     <div class="info">
-       <h3>${p.PRODUTO}</h3>
-       <p>${p.CATEGORIA}</p>
-       <p>R$ ${Number(p.VALOR_VENDA||0).toFixed(2)}</p>
-     </div>
-     <button class="btn" onclick='add(${JSON.stringify(p)})'>Adicionar</button>
-   </div>
-  `;
- });
+return data;
+
+}
+function calcularParcelas(){
+
+const total=moedaParaNumero(valorTotal.value)
+const qtd=parseInt(qtdParcelas.value)
+
+if(!total||!qtd)return
+
+const valor=total/qtd
+
+for(let i=1;i<=10;i++){
+
+const campo=document.getElementById("valorParcela"+i)
+
+if(i<=qtd){
+
+campo.value=new Intl.NumberFormat('pt-BR',{
+style:'currency',
+currency:'BRL'
+}).format(valor)
+
+}else{
+campo.value=""
 }
 
-/* CARRINHO */
-function add(p){
- let i=carrinho.findIndex(x=>x.ID_PRODUTO==p.ID_PRODUTO);
- if(i>=0) carrinho[i].qtd++;
- else carrinho.push({...p,qtd:1});
- atualizar();
 }
 
-function atualizar(){
- document.getElementById("qtd").innerText=
- carrinho.reduce((s,p)=>s+p.qtd,0);
 }
 
-function abrirCarrinho(){
- let lista=document.getElementById("lista");
- let total=0;
- lista.innerHTML="";
-
- carrinho.forEach((p,i)=>{
-  let sub=p.qtd*p.VALOR_VENDA;
-  total+=sub;
-
-  lista.innerHTML+=`
-   <p>${p.PRODUTO} x${p.qtd} - R$ ${sub.toFixed(2)}
-   <button onclick="remover(${i})">❌</button></p>
-  `;
- });
-
- document.getElementById("total").innerText="Total: R$ "+total.toFixed(2);
- document.getElementById("modalCarrinho").style.display="flex";
+formatarMoeda(valorTotal)
+formatarMoeda(valorFrete)
+for(let i=1;i<=10;i++){
+formatarMoeda(document.getElementById("valorParcela"+i))
 }
 
-function remover(i){
- carrinho.splice(i,1);
- atualizar();
- abrirCarrinho();
+valorTotal.addEventListener("blur",calcularParcelas)
+qtdParcelas.addEventListener("input",calcularParcelas)
+
+document.getElementById('formNota').addEventListener('submit',async e=>{
+
+e.preventDefault()
+
+// 🔎 VERIFICA DUPLICATA
+if(await verificarDuplicata()){
+  alert("⚠️ Essa nota já foi cadastrada para esse fornecedor!");
+  return;
 }
 
-function fecharCarrinho(){
- document.getElementById("modalCarrinho").style.display="none";
+const btn=document.getElementById("btnSalvar")
+
+btn.disabled=true
+btn.innerText="Salvando..."
+
+
+
+const file=document.getElementById('pdf').files[0]
+
+let arquivo=null
+
+if(file){
+
+const base64=await toBase64(file)
+
+arquivo=JSON.stringify({
+nome:file.name,
+tipo:file.type,
+dados:base64
+})
+
 }
 
-carregar();
+const form=new FormData()
+
+form.append('action','salvarNotaFiscal')
+form.append('empresa',empresa.value)
+form.append('dataCompra',dataCompra.value)
+form.append('numeroNota',numeroNota.value)
+form.append('fornecedor',fornecedor.value)
+form.append('valorTotal',moedaParaNumero(valorTotal.value))
+form.append('valorFrete', moedaParaNumero(valorFrete.value || "0"))
+form.append('qtdParcelas',qtdParcelas.value)
+
+for(let i=1;i<=10;i++){
+
+form.append('valorParcela'+i,moedaParaNumero(document.getElementById('valorParcela'+i).value))
+form.append('vencimento'+i,document.getElementById('vencimento'+i).value)
+
+}
+
+form.append('solicitante',solicitante.value)
+form.append('emergencial',emergencial.checked?'SIM':'NAO')
+form.append('obs',obs.value)
+
+if(arquivo){
+form.append('arquivo',arquivo)
+}
+
+try{
+
+const res=await fetch(GAS_URL,{
+method:'POST',
+body:form
+})
+
+const r=await res.json()
+
+if(r.success){
+
+alert('Nota salva com sucesso')
+e.target.reset()
+
+}else{
+
+alert('Erro: '+r.erro)
+
+}
+
+}catch(err){
+
+alert("Erro ao enviar")
+
+}
+
+btn.disabled=false
+btn.innerText="Salvar Nota"
+
+})
+
+function toBase64(file){
+
+return new Promise(res=>{
+
+const r=new FileReader()
+
+r.onload=e=>res(e.target.result.split(',')[1])
+
+r.readAsDataURL(file)
+
+})
+
+}
+
 </script>
 
 </body>

@@ -150,7 +150,7 @@ font-size:14px;
 
 <div>
 <label>Nº da Nota</label>
-<input type="text" id="numeroNota"required>
+<input type="text" id="numeroNota" required inputmode="numeric">
 </div>
 
 </div>
@@ -320,7 +320,28 @@ font-size:14px;
 <script>
 
 const GAS_URL="https://script.google.com/macros/s/AKfycbz0JuKdWxCLCEa1treSJmOeg00POU6g1CSOO-xOMshgV7mZ54n4ZIODtUr_7d5ZYzz3gg/exec"
+const campoNota = document.getElementById("numeroNota");
 
+// 🔒 BLOQUEIA DIGITAÇÃO
+campoNota.addEventListener("keypress", (e) => {
+  if (!/[0-9]/.test(e.key)) {
+    e.preventDefault();
+  }
+});
+
+// 🔒 BLOQUEIA COLAR ERRADO
+campoNota.addEventListener("paste", (e) => {
+  const texto = (e.clipboardData || window.clipboardData).getData("text");
+
+  if (!/^\d+$/.test(texto)) {
+    e.preventDefault();
+  }
+});
+
+// 🔒 LIMPEZA FINAL (garantia)
+campoNota.addEventListener("input", () => {
+  campoNota.value = campoNota.value.replace(/\D/g, "");
+});
 function moedaParaNumero(v){
 return Number(v.replace(/\./g,'').replace(',','.').replace(/[^\d.-]/g,''))
 }
@@ -358,19 +379,20 @@ const r = await res.json();
 if(!r.rows) return false;
 
 const nota = numeroNota.value.trim();
-const data = normalizarData(dataCompra.value);
+const fornecedorTxt = fornecedor.value.trim().toUpperCase();
 
 return r.rows.some(n =>
   String(n.numeroNota).trim() === nota &&
-  normalizarData(n.data) === data // ✅ AQUI
+  String(n.fornecedor).trim().toUpperCase() === fornecedorTxt
 );
 
 }catch(err){
 console.error("Erro duplicata:", err);
 return false;
 }
-console.log(r.rows[0]);
+
 }
+
 function normalizarData(data){
 
 if(!data) return "";
