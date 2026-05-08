@@ -6,7 +6,35 @@
 <title>Pedidos de Compras</title>
 
 <style>
-  
+  header {
+  background:#1f6feb;
+  color:#fff;
+  padding:10px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.header-right {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+#userBox {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background: rgba(255,255,255,0.1);
+  padding:6px 10px;
+  border-radius:60px;
+}
+
+#userBox img {
+  width:35px;
+  height:35px;
+  border-radius:50%;
+}
 body {
   font-family: Arial;
   background: #f4f6f8;
@@ -26,9 +54,7 @@ h1, h2 { text-align:center; }
 
 .grupo {
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
-  margin-bottom:15px;
+  grid-template-columns:1fr;
 }
 
 input, select, textarea {
@@ -103,53 +129,136 @@ td {
 }
 </style>
 </head>
-<header style="
-  background:#1b5500;
-  color:#fff;
-  padding:10px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-">
+<header>
   <div>📦 Pedidos de Compras</div>
 
-  <div>
-    <span id="usuarioNome"></span>
-    <button onclick="logout()" style="margin-left:10px;">Sair</button>
+  <div class="header-right" id="headerRight">
+    <!-- JS vai preencher -->
   </div>
 </header>
 <body>
-<script>
-const usuario = localStorage.getItem("usuarioLogado");
+            <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
-if (!usuario) {
-  alert("Você precisa estar logado!");
-  window.location.href = "login.html"; // ajuste se seu login tiver outro nome
+
+        <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+        <script>
+        const firebaseConfig = {
+        apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+        authDomain: "consulta-estoque-app.firebaseapp.com",
+        projectId: "consulta-estoque-app",
+        storageBucket: "consulta-estoque-app.firebasestorage.app",
+        messagingSenderId: "1065893590092",
+        appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let usuarioLogado = null;
+
+        // 🔐 CONTROLE COMPLETO DE LOGIN
+    auth.onAuthStateChanged(async user => {
+
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+        let doc = await db.collection("usuarios").doc(user.uid).get();
+
+        // 🔥 CRIA USUÁRIO AUTOMATICO
+        if (!doc.exists) {
+            const novoUsuario = {
+            nome: user.displayName || "Usuário",
+            email: user.email,
+            tipo: "funcionario",
+            ativo: false,
+            nivel: 0
+            };
+
+            await db.collection("usuarios").doc(user.uid).set(novoUsuario);
+            usuarioLogado = novoUsuario;
+
+        } else {
+        usuarioLogado = doc.data();
+
+        const tipo = (usuarioLogado.tipo || "").toLowerCase();
+
+// ✅ variável GLOBAL (IMPORTANTE)
+window.podeEditar = (tipo === "admin" || tipo === "administrativo");
+// ✅ DEFINE PERMISSÃO GLOBAL
+window.podeEditar = (tipo === "admin" || tipo === "administrativo");
+
+// ❌ NÃO BLOQUEIA MAIS FUNCIONÁRIO
+// apenas deixa ele sem permissão de edição
+    }
+
+        // 🔒 BLOQUEIO
+        if (usuarioLogado.ativo === false) {
+            alert("Seu acesso está aguardando liberação do administrador.");
+
+            await auth.signOut();
+            window.location.href = "login.html";
+            return;
+        }
+
+        // 🔥 HEADER USUÁRIO
+        const userBox = document.createElement("div");
+userBox.id = "userBox";
+
+const avatar = document.createElement("img");
+avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
+
+const info = document.createElement("div");
+info.innerHTML = `
+  <div><b>${usuarioLogado.nome}</b></div>
+  <div style="font-size:11px;">${usuarioLogado.tipo}</div>
+`;
+
+const btn = document.createElement("button");
+btn.innerText = "Sair";
+btn.onclick = () => {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+};
+
+userBox.appendChild(avatar);
+userBox.appendChild(info);
+userBox.appendChild(btn);
+
+const headerRight = document.getElementById("headerRight");
+headerRight.appendChild(userBox);
+
+        // 🔥 BOTÃO ADMIN
+        if (usuarioLogado.tipo === "admin") {
+  const btnAdmin = document.createElement("button");
+  btnAdmin.innerText = "Admin";
+
+  btnAdmin.onclick = () => {
+    window.location.href = "admin.html";
+  };
+
+  headerRight.appendChild(btnAdmin);
 }
-</script>
+
+        // 🔥 SÓ CARREGA PRODUTOS DEPOIS DO LOGIN
+        carregarPedidos();
+
+        });
+        </script>
+
 <h1>Solicitação de Compras</h1>
 
 <div class="form-container">
 <form id="formPedidos">
 
 <div class="grupo">
-  <div>
-    <label>Funcionário</label>
-    <select name="funcionario" required>
-      <option value="">Selecione</option>
-      <option>Altair</option>
-      <option>Daniel</option>
-      <option>Duarte</option>
-      <option>Guilherme</option>
-      <option>Josué</option>
-      <option>Juliana</option>
-      <option>Júlio</option>
-      <option>Mayara</option>
-      <option>Robson</option>
-      <option>Samuel</option>
-    </select>
-  </div>
-
+  
   <div>
     <label>Departamento</label>
     <select name="departamento" required>
@@ -158,11 +267,15 @@ if (!usuario) {
       <option>Pintura</option>
       <option>Escritório</option>
       <option>Limpeza</option>
+      <option>Pedido</option>
       <option>Outros</option>
     </select>
   </div>
 </div>
-
+<div>
+  <label>Nº do Pedido</label>
+  <textarea name="pedido"></textarea>
+</div>
 <div>
   <label>Observação</label>
   <textarea name="observacao"></textarea>
@@ -193,6 +306,7 @@ if (!usuario) {
   <th>Funcionário</th>
   <th>Departamento</th>
   <th>Obs</th>
+  <th>Pedido</th>
   <th>🚨Emergencial</th>
   <th>Status</th>
   <th>Previsão</th>
@@ -206,9 +320,10 @@ if (!usuario) {
 const API_URL = window.CONFIG.API_URL;
 </script>
 <script>
-document.getElementById("usuarioNome").innerText =
-  "👤 " + localStorage.getItem("usuarioLogado");
-
+const el = document.getElementById("usuarioNome");
+if (el) {
+  el.innerText = "👤 " + localStorage.getItem("usuarioLogado");
+}
 function logout(){
   localStorage.removeItem("usuarioLogado");
   window.location.href = "login.html";
@@ -240,9 +355,10 @@ function comprar(linha){
   fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
-      action:"marcarcomprado",
-      linha:linha
-    })
+  action:"marcarcomprado",
+  linha:linha,
+  tipo: usuarioLogado?.tipo || ""
+})
   }).then(()=>carregarPedidos());
 }
 
@@ -250,9 +366,10 @@ function entregar(linha){
   fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
-      action:"marcarentregue",
-      linha:linha
-    })
+  action:"marcarentregue",
+  linha:linha,
+  tipo: usuarioLogado?.tipo || ""
+})
   }).then(()=>carregarPedidos());
 }
 
@@ -264,21 +381,23 @@ function salvarPrevisao(linha,data){
   fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
-      action:"salvarprevisao",
-      linha:linha,
-      previsao:data
-    })
+  action:"salvarprevisao",
+  linha:linha,
+  previsao:data,
+  tipo: usuarioLogado?.tipo || ""
+})
   })
   .then(() => {
 
     // 2. MUDA STATUS PARA COMPRADO AUTOMATICAMENTE
-    return fetch(API_URL,{
-      method:"POST",
-      body:new URLSearchParams({
-        action:"marcarcomprado",
-        linha:linha
-      })
-    });
+   return fetch(API_URL,{
+  method:"POST",
+  body:new URLSearchParams({
+    action:"marcarcomprado",
+    linha:linha,
+    tipo: usuarioLogado?.tipo || ""
+  })
+});
 
   })
   .then(() => {
@@ -330,6 +449,7 @@ async function carregarPedidos(){
           <td>${p.funcionario || ""}</td>
           <td>${p.departamento || ""}</td>
           <td>${p.observacao || ""}</td>
+          <td>${p.pedido|| ""}</td>
           <td>${p.emergencial === "SIM" ? "🚨SIM🚨" : "NÃO"}</td>
           <td class="${
   p.status === "PENDENTE" ? "status-pendente" :
@@ -342,18 +462,29 @@ async function carregarPedidos(){
     "🟢 ENTREGUE"
   }
 </td>
-          <td>
-            <input type="date"
-              value="${formatarDataISO(p.previsao)}"
-              onchange="salvarPrevisao(${p.linha}, this.value)">
-          </td>
-          <td>
-            ${
-              p.status === "PENDENTE"
-              ? `<button onclick="comprar(${p.linha})">Comprar</button>`
-              : `<button onclick="entregar(${p.linha})">Entregue</button>`
-            }
-          </td>
+         <td>
+  ${
+    podeEditar
+    ? `<input type="date"
+        value="${formatarDataISO(p.previsao)}"
+        onchange="salvarPrevisao(${p.linha}, this.value)">`
+    : `<input type="date"
+        value="${formatarDataISO(p.previsao)}"
+        disabled>`
+  }
+</td>
+
+<td>
+  ${
+    podeEditar
+    ? (
+        p.status === "PENDENTE"
+        ? `<button onclick="comprar(${p.linha})">Comprar</button>`
+        : `<button onclick="entregar(${p.linha})">Entregue</button>`
+      )
+    : `<span style="color:#999;">🔒 Bloqueado</span>`
+  }
+</td>
         </tr>
       `;
     });
@@ -375,9 +506,10 @@ document.getElementById("formPedidos").addEventListener("submit", async function
 
   const dados = {
     action: "salvarpedido",
-    funcionario: localStorage.getItem("usuarioLogado"),
+    funcionario: usuarioLogado?.nome || "Sem nome",
     departamento: form.departamento.value,
     observacao: form.observacao.value,
+    pedido: form.pedido.value,
     emergencial: form.emergencial.value
   };
 
