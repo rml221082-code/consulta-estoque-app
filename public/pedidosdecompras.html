@@ -6,6 +6,7 @@
 <title>Pedidos de Compras</title>
 
 <style>
+  
 body {
   font-family: Arial;
   background: #f4f6f8;
@@ -72,6 +73,33 @@ td {
   padding:8px;
   border:1px solid #ddd;
   text-align:center;
+}
+.status-pendente {
+  background: #fff3cd;
+  color: #856404;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.status-comprado {
+  background: #cce5ff;
+  color: #004085;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.status-entregue {
+  background: #d4edda;
+  color: #155724;
+  font-weight: bold;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.linha-emergencial {
+  background: #ffe6e6 !important;
 }
 </style>
 </head>
@@ -152,9 +180,11 @@ td {
 </thead>
 <tbody id="tbodyPedidos"></tbody>
 </table>
-
+<script src="config.js"></script>
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbzxdnIzDmsjy06njan7yro4BO78sZ-n9tpp1yTjshrQmdhHu03L7rYnP5ppQtg90wwbng/exec";
+const API_URL = window.CONFIG.API_URL;
+</script>
+<script>
 
 // ===== FORMATAR DATA =====
 function formatarDataBR(data){
@@ -172,55 +202,12 @@ function formatarDataISO(data){
   return d.toISOString().split("T")[0];
 }
 
-// ===== CARREGAR PEDIDOS =====
-async function carregarPedidos(){
 
-  const tbody = document.getElementById("tbodyPedidos");
-  tbody.innerHTML = "Carregando...";
 
-  try{
-    const res = await fetch(URL + "?action=listarpedidos");
-    const resJson = await res.json();
-
-    const dados = Array.isArray(resJson) ? resJson : resJson.dados || [];
-
-    tbody.innerHTML = "";
-
-    dados.forEach(p => {
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${formatarDataBR(p.dataHora)}</td>
-          <td>${p.funcionario || ""}</td>
-          <td>${p.departamento || ""}</td>
-          <td>${p.observacao || ""}</td>
-          <td>${p.emergencial === "SIM" ? "🚨SIM🚨" : "NÃO"}</td>
-          <td>${p.status || ""}</td>
-          <td>
-            <input type="date" value="${formatarDataISO(p.previsao)}"
-              onchange="salvarPrevisao(${p.index}, this.value)">
-          </td>
-
-          <td>
-            ${
-              p.status === "PENDENTE"
-              ? `<button onclick="comprar(${p.index})">Comprar</button>`
-              : `<button onclick="entregar(${p.index})">Entregue</button>`
-            }
-          </td>
-        </tr>
-      `;
-    });
-
-  }catch(err){
-    console.error("Erro ao carregar:", err);
-    tbody.innerHTML = "Erro ao carregar dados";
-  }
-}
 
 // ===== AÇÕES =====
 function comprar(linha){
-  fetch(URL,{
+  fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
       action:"marcarcomprado",
@@ -230,7 +217,7 @@ function comprar(linha){
 }
 
 function entregar(linha){
-  fetch(URL,{
+  fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
       action:"marcarentregue",
@@ -244,7 +231,7 @@ function salvarPrevisao(linha,data){
   if(!data) return;
 
   // 1. Salva a data
-  fetch(URL,{
+  fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
       action:"salvarprevisao",
@@ -255,7 +242,7 @@ function salvarPrevisao(linha,data){
   .then(() => {
 
     // 2. MUDA STATUS PARA COMPRADO AUTOMATICAMENTE
-    return fetch(URL,{
+    return fetch(API_URL,{
       method:"POST",
       body:new URLSearchParams({
         action:"marcarcomprado",
@@ -285,8 +272,7 @@ async function carregarPedidos(){
 
   try{
 
-    const res = await fetch(URL + "?action=listarpedidos");
-
+    const res = await fetch(API_URL + "?action=listarpedidos");
     const resJson = await res.json();
 
     console.log("PEDIDOS:", resJson);
@@ -298,13 +284,11 @@ async function carregarPedidos(){
     tbody.innerHTML = "";
 
     if(dados.length === 0){
-
       tbody.innerHTML = `
         <tr>
           <td colspan="8">Nenhum pedido encontrado</td>
         </tr>
       `;
-
       return;
     }
 
@@ -312,54 +296,40 @@ async function carregarPedidos(){
 
       tbody.innerHTML += `
         <tr>
-
           <td>${formatarDataBR(p.dataHora)}</td>
-
           <td>${p.funcionario || ""}</td>
-
           <td>${p.departamento || ""}</td>
-
           <td>${p.observacao || ""}</td>
-
+          <td>${p.emergencial === "SIM" ? "🚨SIM🚨" : "NÃO"}</td>
+          <td class="${
+  p.status === "PENDENTE" ? "status-pendente" :
+  p.status === "COMPRADO" ? "status-comprado" :
+  "status-entregue"
+}">
+  ${
+    p.status === "PENDENTE" ? "🟡 PENDENTE" :
+    p.status === "COMPRADO" ? "🔵 COMPRADO" :
+    "🟢 ENTREGUE"
+  }
+</td>
           <td>
-            ${p.emergencial === "SIM"
-              ? "🚨SIM🚨"
-              : "NÃO"}
-          </td>
-
-          <td>${p.status || ""}</td>
-
-          <td>
-            <input
-              type="date"
+            <input type="date"
               value="${formatarDataISO(p.previsao)}"
-              onchange="salvarPrevisao(${p.index}, this.value)">
+              onchange="salvarPrevisao(${p.linha}, this.value)">
           </td>
-
           <td>
-
             ${
               p.status === "PENDENTE"
-
-              ? `<button onclick="comprar(${p.index})">
-                  Comprar
-                </button>`
-
-              : `<button onclick="entregar(${p.index})">
-                  Entregue
-                </button>`
+              ? `<button onclick="comprar(${p.linha})">Comprar</button>`
+              : `<button onclick="entregar(${p.linha})">Entregue</button>`
             }
-
           </td>
-
         </tr>
       `;
     });
 
   }catch(err){
-
     console.error(err);
-
     tbody.innerHTML = `
       <tr>
         <td colspan="8">Erro ao carregar pedidos</td>
@@ -367,6 +337,47 @@ async function carregarPedidos(){
     `;
   }
 }
+// ===== ENVIAR PEDIDO (FORMULÁRIO) =====
+document.getElementById("formPedidos").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const form = e.target;
+
+  const dados = {
+    action: "salvarpedido",
+    funcionario: form.funcionario.value,
+    departamento: form.departamento.value,
+    observacao: form.observacao.value,
+    emergencial: form.emergencial.value
+  };
+
+  try{
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: new URLSearchParams(dados)
+    });
+
+    const json = await res.json();
+
+    if(json.success){
+
+      alert("✅ Pedido enviado com sucesso!");
+
+      form.reset();
+
+      carregarPedidos(); // atualiza tabela
+
+    }else{
+      alert("Erro: " + (json.erro || "Falha ao salvar"));
+    }
+
+  }catch(err){
+    console.error(err);
+    alert("Erro de conexão");
+  }
+
+});
 // ===== INICIAR =====
 carregarPedidos();
 </script>
