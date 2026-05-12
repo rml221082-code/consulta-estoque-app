@@ -393,26 +393,33 @@ return false;
 
 }
 
-function normalizarData(data){
+function normalizarData(data) {
+  if (!data) return "";
 
-if(!data) return "";
+  // se for formato ISO (com T)
+  if (data.includes("T")) {
+    const d = new Date(data);
 
-// remove hora se existir
-data = data.split(" ")[0];
+    return d.toLocaleDateString("pt-BR", {
+      timeZone: "America/Sao_Paulo"
+    }).split("/").reverse().join("-");
+  }
 
-// formato 2026-04-28
-if(data.includes("-")){
+  // remove hora se vier com espaço
+  data = data.split(" ")[0];
+
+  // formato yyyy-mm-dd
+  if (data.includes("-")) {
+    return data;
+  }
+
+  // formato dd/mm/yyyy
+  if (data.includes("/")) {
+    const [dia, mes, ano] = data.split("/");
+    return `${ano}-${mes.padStart(2,'0')}-${dia.padStart(2,'0')}`;
+  }
+
   return data;
-}
-
-// formato 28/04/2026
-if(data.includes("/")){
-  const [dia, mes, ano] = data.split("/");
-  return `${ano}-${mes.padStart(2,'0')}-${dia.padStart(2,'0')}`;
-}
-
-return data;
-
 }
 function calcularParcelas(){
 
@@ -488,7 +495,14 @@ const form=new FormData()
 
 form.append('action','salvarNotaFiscal')
 form.append('empresa',empresa.value)
-form.append('dataCompra',dataCompra.value)
+function corrigirDataBrasil(data){
+  if(!data) return "";
+
+  // força meio-dia pra não voltar o dia
+  return data + "T12:00:00";
+}
+
+form.append('dataCompra', corrigirDataBrasil(dataCompra.value))
 form.append('numeroNota',numeroNota.value)
 form.append('fornecedor',fornecedor.value)
 form.append('valorTotal',moedaParaNumero(valorTotal.value))
@@ -498,7 +512,10 @@ form.append('qtdParcelas',qtdParcelas.value)
 for(let i=1;i<=10;i++){
 
 form.append('valorParcela'+i,moedaParaNumero(document.getElementById('valorParcela'+i).value))
-form.append('vencimento'+i,document.getElementById('vencimento'+i).value)
+form.append(
+  'vencimento'+i,
+  corrigirDataBrasil(document.getElementById('vencimento'+i).value)
+) 
 
 }
 

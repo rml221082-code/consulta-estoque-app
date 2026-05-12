@@ -231,10 +231,13 @@ color:#888
 
 </div>
 
+
+
+<script src="config.js"></script>
 <script>
-
-const GAS_URL="https://script.google.com/macros/s/AKfycbzxdnIzDmsjy06njan7yro4BO78sZ-n9tpp1yTjshrQmdhHu03L7rYnP5ppQtg90wwbng/exec"
-
+const API_URL = window.CONFIG.API_URL;
+</script>
+<script>
 let dados=[]
 
 function hoje(){
@@ -244,7 +247,7 @@ return new Date(h.getFullYear(), h.getMonth(), h.getDate(), 0,0,0,0)
 
 function carregar(){
 
-fetch(GAS_URL+"?action=listarnotasfiscais")
+fetch(API_URL+"?action=listarnotasfiscais")
 .then(r=>r.json())
 .then(json=>{
 
@@ -298,7 +301,7 @@ saldo: total - pago
 
 function pagarParcela(id,parcela){
 
-fetch(GAS_URL+`?action=pagarparcela&id=${id}&parcela=${parcela}&t=`+Date.now())
+fetch(API_URL+`?action=pagarparcela&id=${id}&parcela=${parcela}&t=`+Date.now())
 .then(()=>carregar())
 
 }
@@ -307,7 +310,7 @@ function cancelarNota(id){
 
 if(!confirm("Cancelar esta nota?")) return
 
-fetch(GAS_URL+`?action=cancelarnota&id=${id}`)
+fetch(API_URL+`?action=cancelarnota&id=${id}`)
 .then(r=>r.json())
 .then(r=>{
 if(r.success){
@@ -496,9 +499,16 @@ for(let i=1;i<=n.qtdParcelas;i++){
   parcelasHTML+=`
   <div class="parcelaBox">
 
-    <button class="btn ${classe}" onclick="pagarParcela('${n.id}',${i})">
-      ${textoBotao}
-    </button>
+    <button class="btn ${classe}" onclick="abrirUpload('${n.id}',${i},'${n.empresa}','${n.numeroNota}','${n.fornecedor}')">
+  ${textoBotao}
+</button>
+
+<input type="file" 
+  id="file_${n.id}_${i}" 
+  style="display:none" 
+  accept="application/pdf,image/*"
+  onchange="enviarComprovante(event,'${n.id}',${i},${n.valorTotal},'${n.empresa}','${n.numeroNota}','${n.fornecedor}')"
+/>
 
     <div class="parcelaValor">
       R$ ${Number(valor||0).toFixed(2)}
@@ -532,7 +542,7 @@ ${n.emergencial}
 </td>
 
 <td>
-<a href="${n.pdf}" target="_blank">PDF</a>
+  ${gerarLinkPDF(n)}
 </td>
 
 <td>
@@ -568,7 +578,111 @@ setTimeout(()=>{
 filtroHoje()
 },500)
 let notaEditando = null
+function gerarLinkPDF(n){
 
+  if(!n.pdf) return "-";
+
+  const texto = String(n.pdf);
+
+  // pega todas as linhas
+  const linhas = texto.split("\n");
+
+  let html = "";
+
+  linhas.forEach(linha => {
+
+    const match = linha.match(/https?:\/\/\S+/);
+
+    if(match){
+
+      // tenta pegar número da parcela
+      const parcelaMatch = linha.match(/Parcela\s*(\d+)/i);
+      const parcela = parcelaMatch ? parcelaMatch[1] : "?";
+
+      html += `
+        <div>
+          <a href="${match[0]}" target="_blank">
+            📄 Parcela ${parcela}
+          </a>
+        </div>
+      `;
+    }
+
+  });
+
+  // fallback → PDF original
+  if(!html){
+    return `<a href="${n.pdf}" target="_blank">PDF</a>`;
+  }
+
+  return html;
+}
+function abrirUpload(id, parcela, empresa, nota, fornecedor){
+
+  const input = document.getElementById(`file_${id}_${parcela}`);
+
+  if(!input){
+    alert("Erro ao abrir upload");
+    return;
+  }
+
+  input.click();
+}
+function enviarComprovante(event, id, parcela, total, empresa, nota, fornecedor){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const hoje = new Date();
+  const dataFormatada =
+    hoje.getFullYear() + "-" +
+    String(hoje.getMonth()+1).padStart(2,'0') + "-" +
+    String(hoje.getDate()).padStart(2,'0');
+
+ function limparTexto(txt){
+  return txt
+    .replace(/[^\w\s-]/g, "") // remove caracteres inválidos
+    .replace(/\s+/g, "_");    // troca espaço por _
+}
+
+const fornecedorLimpo = limparTexto(fornecedor);
+
+const nomeArquivo = `${nota}_${fornecedorLimpo}_PARCELA_${parcela}_${dataFormatada}.pdf`;
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+
+    const base64 = reader.result.split(",")[1];
+
+    const formData = new FormData();
+
+    formData.append("action", "uploadcomprovante");
+    formData.append("fileBase64", base64);
+    formData.append("fileType", file.type);
+    formData.append("fileName", nomeArquivo);
+
+    formData.append("id", id);
+    formData.append("parcela", parcela);
+    formData.append("total", total);
+    formData.append("empresa", empresa);
+    formData.append("nota", nota);
+    formData.append("fornecedor", fornecedor);
+
+    fetch(API_URL, {
+      method: "POST",
+      body: formData
+    })
+    .then(r => r.json())
+    .then(r => {
+      alert(r.success ? "✅ Pago e comprovante salvo!" : r.erro);
+      carregar();
+    });
+
+  };
+
+  reader.readAsDataURL(file);
+}
 function abrirEdicao(id){
 
 const nota = dados.find(n => String(n.id) === String(id))
@@ -645,7 +759,7 @@ dadosEnvio["vencimento"+i] = document.getElementById("eVenc"+i).value
 
 }
 
-fetch(GAS_URL,{
+fetch(API_URL,{
 method:"POST",
 body:JSON.stringify(dadosEnvio)
 })
@@ -655,7 +769,7 @@ body:JSON.stringify(dadosEnvio)
 if(r.success){
 
 // 🔴 cancela antiga automaticamente
-fetch(GAS_URL+`?action=cancelarnota&id=${notaEditando.id}`)
+fetch(API_URL+`?action=cancelarnota&id=${notaEditando.id}`)
 
 fecharModal()
 carregar()
@@ -671,32 +785,32 @@ function converterDataBR(data){
 
 if(!data) return null
 
-// já é Date
+// 🔥 se já for Date
 if(data instanceof Date){
 return new Date(data.getFullYear(), data.getMonth(), data.getDate())
 }
 
-// timestamp
+// 🔥 se for número (timestamp)
 if(typeof data === "number"){
 let d = new Date(data)
 return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
-// string
+// 🔥 se for string
 if(typeof data === "string"){
 
 data = data.trim()
 
-// formato BR
+// formato BR 17/04/2026
 if(data.includes("/")){
 const [dia, mes, ano] = data.split("/")
 return new Date(Number(ano), Number(mes)-1, Number(dia))
 }
 
-// 🔥 ISO com T (CORRIGIDO)
+// formato ISO completo 2026-04-17T00:00:00.000Z
 if(data.includes("T")){
-const [ano, mes, dia] = data.split("T")[0].split("-")
-return new Date(Number(ano), Number(mes)-1, Number(dia))
+let d = new Date(data)
+return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
 // formato YYYY-MM-DD
@@ -708,6 +822,73 @@ return new Date(Number(ano), Number(mes)-1, Number(dia))
 }
 
 return null
+}
+function enviarComprovante(event, id, parcela, total, empresa, nota, fornecedor){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+
+    const base64 = reader.result.split(",")[1];
+
+    const formData = new FormData();
+
+    formData.append("action", "uploadcomprovante");
+    formData.append("fileBase64", base64);
+    formData.append("fileType", file.type);
+    formData.append("fileName", file.name);
+
+    formData.append("id", id);
+    formData.append("parcela", parcela);
+    formData.append("total", total);
+    formData.append("empresa", empresa);
+    formData.append("nota", nota);
+    formData.append("fornecedor", fornecedor);
+
+    fetch(API_URL, {
+      method: "POST",
+      body: formData
+    })
+    .then(r => r.json())
+    .then(r => {
+      console.log(r);
+      if(r.success){
+  alert(`✅ Pagamento realizado!
+
+📄 Arquivo salvo:
+${r.arquivo}`);
+}else{
+  alert("Erro: " + r.erro);
+}
+      carregar();
+    });
+
+  };
+
+  reader.readAsDataURL(file);
+}
+function abrirModalSucesso(nomeArquivo, link){
+
+  document.getElementById("modalTexto").innerText =
+    "Arquivo salvo:\n" + nomeArquivo;
+
+  const linkEl = document.getElementById("modalLink");
+
+  if(link){
+    linkEl.href = link;
+    linkEl.style.display = "inline-block";
+  }else{
+    linkEl.style.display = "none";
+  }
+
+  document.getElementById("modalSucesso").style.display = "flex";
+}
+
+function fecharModalSucesso(){
+  document.getElementById("modalSucesso").style.display = "none";
 }
 </script>
 <div id="modalEditar" style="
@@ -762,6 +943,60 @@ overflow:auto;
 
 <button class="btn pago" onclick="salvarEdicao()">Salvar</button>
 <button class="btn cancelar" onclick="fecharModal()">Fechar</button>
+
+</div>
+</div>
+<div id="modalSucesso" style="
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+<div style="
+background:#fff;
+padding:25px;
+border-radius:10px;
+width:400px;
+max-width:90%;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+">
+
+<h2 style="color:#16a34a;margin-bottom:10px;">✅ Pagamento realizado</h2>
+
+<p id="modalTexto" style="margin-bottom:15px;"></p>
+
+<a id="modalLink" href="#" target="_blank" style="
+display:none;
+background:#0078d4;
+color:#fff;
+padding:8px 12px;
+border-radius:6px;
+text-decoration:none;
+font-size:13px;
+">
+Abrir comprovante
+</a>
+
+<br><br>
+
+<button onclick="fecharModalSucesso()" style="
+background:#444;
+color:#fff;
+border:none;
+padding:8px 15px;
+border-radius:6px;
+cursor:pointer;
+">
+Fechar
+</button>
 
 </div>
 </div>

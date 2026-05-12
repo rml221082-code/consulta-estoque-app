@@ -159,6 +159,12 @@ td {
         const db = firebase.firestore();
 
         let usuarioLogado = null;
+        let mostrarEntregues = false;
+        let filtroStatus = "PENDENTE"; // padrão
+        let buscaTexto = "";
+        let filtroData = "";
+        let filtroEmergencial = false;
+        let dadosGlobal = [];
 
         // 🔐 CONTROLE COMPLETO DE LOGIN
     auth.onAuthStateChanged(async user => {
@@ -295,9 +301,30 @@ headerRight.appendChild(userBox);
 </div>
 
 </form>
+
 </div>
 
 <h2>Pedidos</h2>
+<div style="background:#fff;padding:15px;border-radius:8px;margin-bottom:15px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;">
+
+  <!-- STATUS -->
+  <button type="button" onclick="filtrarStatus('PENDENTE')" id="btnPendente">🟡 Pendente</button>
+  <button type="button" onclick="filtrarStatus('COMPRADO')" id="btnComprado">🔵 Comprado</button>
+  <button type="button" onclick="filtrarStatus('ENTREGUE')" id="btnEntregue">🟢 Entregue</button>
+  <button type="button" onclick="filtrarStatus('TODOS')" id="btnTodos">📋 Todos</button>
+
+  <!-- BUSCA -->
+  <input type="text" placeholder="🔍 Buscar..." oninput="buscarTexto(this.value)">
+
+  <!-- DATA -->
+  <input type="date" onchange="filtrarData(this.value)">
+
+  <!-- EMERGENCIAL -->
+  <button type="button" onclick="toggleEmergencial()" id="btnEmergencial">
+    🚨 Emergencial
+  </button>
+
+</div>
 
 <table>
 <thead>
@@ -324,13 +351,60 @@ const el = document.getElementById("usuarioNome");
 if (el) {
   el.innerText = "👤 " + localStorage.getItem("usuarioLogado");
 }
+function filtrarStatus(status){
+  filtroStatus = status;
+  atualizarBotoes();
+  renderTabela();
+}
+
+function buscarTexto(valor){
+  buscaTexto = valor.toLowerCase();
+  renderTabela();
+}
+
+function filtrarData(valor){
+  filtroData = valor;
+  renderTabela();
+}
+
+function toggleEmergencial(){
+  filtroEmergencial = !filtroEmergencial;
+
+  document.getElementById("btnEmergencial").style.background =
+    filtroEmergencial ? "#e74c3c" : "#ccc";
+
+  renderTabela();
+}
+function atualizarBotoes(){
+
+  const ids = ["btnPendente","btnComprado","btnEntregue","btnTodos"];
+
+  ids.forEach(id => {
+    document.getElementById(id).style.background = "#ccc";
+  });
+
+  if(filtroStatus === "PENDENTE") document.getElementById("btnPendente").style.background = "#f1c40f";
+  if(filtroStatus === "COMPRADO") document.getElementById("btnComprado").style.background = "#3498db";
+  if(filtroStatus === "ENTREGUE") document.getElementById("btnEntregue").style.background = "#2ecc71";
+  if(filtroStatus === "TODOS") document.getElementById("btnTodos").style.background = "#1f6feb";
+}
 function logout(){
   localStorage.removeItem("usuarioLogado");
   window.location.href = "login.html";
 }
 </script>
 <script>
+function toggleEntregues(){
+  mostrarEntregues = !mostrarEntregues;
 
+  const btn = document.getElementById("btnEntregues");
+
+  btn.innerText = mostrarEntregues
+    ? "Ocultar Entregues"
+    : "Mostrar Entregues";
+
+  carregarPedidos();
+}
 // ===== FORMATAR DATA =====
 function formatarDataBR(data){
   if(!data) return "";
@@ -373,39 +447,34 @@ function entregar(linha){
   }).then(()=>carregarPedidos());
 }
 
-function salvarPrevisao(linha,data){
+function salvarPrevisao(linha, data){
 
-  if(!data) return;
-
-  // 1. Salva a data
   fetch(API_URL,{
     method:"POST",
     body:new URLSearchParams({
-  action:"salvarprevisao",
-  linha:linha,
-  previsao:data,
-  tipo: usuarioLogado?.tipo || ""
-})
+      action:"salvarprevisao",
+      linha:linha,
+      previsao: data || "", // permite limpar
+      tipo: usuarioLogado?.tipo || ""
+    })
   })
   .then(() => {
 
-    // 2. MUDA STATUS PARA COMPRADO AUTOMATICAMENTE
-   return fetch(API_URL,{
-  method:"POST",
-  body:new URLSearchParams({
-    action:"marcarcomprado",
-    linha:linha,
-    tipo: usuarioLogado?.tipo || ""
-  })
-});
+    // só muda status se tiver data
+    if(data){
+      return fetch(API_URL,{
+        method:"POST",
+        body:new URLSearchParams({
+          action:"marcarcomprado",
+          linha:linha,
+          tipo: usuarioLogado?.tipo || ""
+        })
+      });
+    }
 
   })
-  .then(() => {
+  .then(() => carregarPedidos());
 
-    // 3. Atualiza a tela
-    carregarPedidos();
-
-  });
 }
 
 // ===== SALVAR FORM =====
@@ -415,7 +484,7 @@ async function carregarPedidos(){
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="8">Carregando...</td>
+      <td colspan="9">Carregando...</td>
     </tr>
   `;
 
@@ -424,79 +493,137 @@ async function carregarPedidos(){
     const res = await fetch(API_URL + "?action=listarpedidos");
     const resJson = await res.json();
 
-    console.log("PEDIDOS:", resJson);
-
     const dados = Array.isArray(resJson)
       ? resJson
       : (resJson.rows || resJson.dados || []);
 
-    tbody.innerHTML = "";
-
     if(dados.length === 0){
       tbody.innerHTML = `
         <tr>
-          <td colspan="8">Nenhum pedido encontrado</td>
+          <td colspan="9">Nenhum pedido encontrado</td>
         </tr>
       `;
       return;
     }
 
-    dados.forEach(p => {
+    dadosGlobal = dados;
 
-      tbody.innerHTML += `
-        <tr>
-          <td>${formatarDataBR(p.dataHora)}</td>
-          <td>${p.funcionario || ""}</td>
-          <td>${p.departamento || ""}</td>
-          <td>${p.observacao || ""}</td>
-          <td>${p.pedido|| ""}</td>
-          <td>${p.emergencial === "SIM" ? "🚨SIM🚨" : "NÃO"}</td>
-          <td class="${
-  p.status === "PENDENTE" ? "status-pendente" :
-  p.status === "COMPRADO" ? "status-comprado" :
-  "status-entregue"
-}">
-  ${
-    p.status === "PENDENTE" ? "🟡 PENDENTE" :
-    p.status === "COMPRADO" ? "🔵 COMPRADO" :
-    "🟢 ENTREGUE"
-  }
-</td>
-         <td>
-  ${
-    podeEditar
-    ? `<input type="date"
-        value="${formatarDataISO(p.previsao)}"
-        onchange="salvarPrevisao(${p.linha}, this.value)">`
-    : `<input type="date"
-        value="${formatarDataISO(p.previsao)}"
-        disabled>`
-  }
-</td>
+    renderTabela();
+    atualizarContadores();
 
-<td>
-  ${
-    podeEditar
-    ? (
-        p.status === "PENDENTE"
-        ? `<button onclick="comprar(${p.linha})">Comprar</button>`
-        : `<button onclick="entregar(${p.linha})">Entregue</button>`
-      )
-    : `<span style="color:#999;">🔒 Bloqueado</span>`
-  }
-</td>
-        </tr>
-      `;
-    });
-
-  }catch(err){
+  } catch(err){
     console.error(err);
+
     tbody.innerHTML = `
       <tr>
-        <td colspan="8">Erro ao carregar pedidos</td>
+        <td colspan="9">Erro ao carregar pedidos</td>
       </tr>
     `;
   }
+} 
+function renderTabela(){
+
+  const tbody = document.getElementById("tbodyPedidos");
+  tbody.innerHTML = "";
+
+  let filtrados = dadosGlobal;
+
+  if (filtroStatus !== "TODOS") {
+  filtrados = filtrados.filter(p => {
+    const status = (p.status || "")
+      .toString()
+      .trim()
+      .toUpperCase();
+
+    return status === filtroStatus;
+  });
+}
+
+  if(buscaTexto){
+  filtrados = filtrados.filter(p =>
+    String(p.funcionario || "").toLowerCase().includes(buscaTexto) ||
+    String(p.pedido || "").toLowerCase().includes(buscaTexto) ||
+    String(p.observacao || "").toLowerCase().includes(buscaTexto)
+  );
+}
+
+  if(filtroData){
+    filtrados = filtrados.filter(p =>
+      formatarDataISO(p.previsao) === filtroData
+    );
+  }
+
+  if(filtroEmergencial){
+    filtrados = filtrados.filter(p => p.emergencial === "SIM");
+  }
+
+  if(filtrados.length === 0){
+    tbody.innerHTML = `<tr><td colspan="9">Nenhum resultado</td></tr>`;
+    return;
+  }
+
+  filtrados.forEach(p => {
+
+  const status = (p.status || "")
+    .toString()
+    .trim()
+    .toUpperCase(); 
+
+    tbody.innerHTML += `
+      <tr class="${p.emergencial === "SIM" ? "linha-emergencial" : ""}">
+        <td>${formatarDataBR(p.dataHora)}</td>
+        <td>${p.funcionario || ""}</td>
+        <td>${p.departamento || ""}</td>
+        <td>${p.observacao || ""}</td>
+        <td>${p.pedido|| ""}</td>
+        <td>${p.emergencial === "SIM" ? "🚨SIM🚨" : "NÃO"}</td>
+
+        <td class="${
+  status === "PENDENTE" ? "status-pendente" :
+  status === "COMPRADO" ? "status-comprado" :
+  "status-entregue"
+}">
+  ${
+    status === "PENDENTE" ? "🟡 PENDENTE" :
+    status === "COMPRADO" ? "🔵 COMPRADO" :
+    "🟢 ENTREGUE"
+  }
+</td> 
+        <td>
+          ${
+            podeEditar
+            ? `<input type="date"
+                value="${formatarDataISO(p.previsao)}"
+                onchange="salvarPrevisao(${p.linha}, this.value)">`
+            : `<input type="date" value="${formatarDataISO(p.previsao)}" disabled>`
+          }
+        </td>
+
+        <td>
+          ${
+            podeEditar
+              ? (
+                  status === "PENDENTE"
+                    ? `<button onclick="comprar(${p.linha})">🛒 Comprar</button>`
+                    : p.status === "COMPRADO"
+                    ? `<button onclick="entregar(${p.linha})">📦 Entregar</button>`
+                    : `<span style="color:green;">✔ Finalizado</span>`
+                )
+              : `<span style="color:#999;">🔒</span>`
+          }
+        </td>
+      </tr>
+    `;
+  });
+}
+function atualizarContadores(){
+const totalP = dadosGlobal.filter(p => (p.status || "").toUpperCase().trim() === "PENDENTE").length;
+const totalC = dadosGlobal.filter(p => (p.status || "").toUpperCase().trim() === "COMPRADO").length;
+const totalE = dadosGlobal.filter(p => (p.status || "").toUpperCase().trim() === "ENTREGUE").length;
+
+  document.getElementById("btnPendente").innerText = `🟡 Pendente (${totalP})`;
+  document.getElementById("btnComprado").innerText = `🔵 Comprado (${totalC})`;
+  document.getElementById("btnEntregue").innerText = `🟢 Entregue (${totalE})`;
 }
 // ===== ENVIAR PEDIDO (FORMULÁRIO) =====
 document.getElementById("formPedidos").addEventListener("submit", async function(e){
@@ -542,6 +669,7 @@ document.getElementById("formPedidos").addEventListener("submit", async function
 });
 // ===== INICIAR =====
 carregarPedidos();
+atualizarBotoes();
 </script>
 
 </body>
