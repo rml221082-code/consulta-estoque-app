@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Retirada de Mercadoria</title>
+
+<style>
+body{
+  font-family:Arial;
+  background:#f4f6f8;
+  padding:20px;
+}
+
+.container{
+  max-width:1000px;
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+}
+
+h1{margin-bottom:20px}
+
+/* FORM */
+.form{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:10px;
+  margin-bottom:20px;
+}
+
+input,select{
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+
+/* TABELA */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+}
+
+th{background:#f0f2f5}
+
+/* BOTÕES */
+.btn{
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+  color:#fff;
+}
+
+.salvar{background:#0078d4}
+.retirar{background:#16a34a}
+.retirado{background:#555}
+
+/* BADGE */
+.badge{
+  padding:3px 7px;
+  border-radius:10px;
+  font-size:11px;
+}
+
+.sim{background:#ffdede;color:#b30000}
+.nao{background:#e3f3ff;color:#005a9e}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Retirada de Mercadoria</h1>
+
+<div class="form">
+
+<input id="empresa" placeholder="Empresa">
+<input id="produto" placeholder="Produto / Máquina">
+
+<select id="emergencial">
+  <option value="NAO">Emergencial NÃO</option>
+  <option value="SIM">Emergencial SIM</option>
+</select>
+
+<button onclick="salvar()" class="btn salvar">Salvar</button>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+<th>Data</th>
+<th>Empresa</th>
+<th>Produto/Máquina</th>
+<th>🚨Emergencial</th>
+<th>Status</th>
+<th>Ação</th>
+</tr>
+</thead>
+
+<tbody id="lista"></tbody>
+
+</table>
+
+</div>
+
+<script>
+
+let dados = []
+
+// 🔥 SIMULA LOGIN
+let usuarioLogado = "Robson"
+
+// 🔥 SALVAR
+function salvar(){
+
+  const item = {
+    id: Date.now(),
+    data: new Date().toLocaleString("pt-BR"),
+    empresa: empresa.value,
+    produto: produto.value,
+    emergencial: emergencial.value,
+    status: "PENDENTE",
+    retiradoPor: "",
+    dataRetirada: "",
+    localizacao: ""
+  }
+
+  dados.push(item)
+
+  empresa.value=""
+  produto.value=""
+
+  render()
+}
+
+// 📍 PEGAR LOCALIZAÇÃO
+function pegarLocalizacao(){
+
+  return new Promise((resolve)=>{
+
+    if(!navigator.geolocation){
+      resolve("Localização não suportada")
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        resolve(`Lat:${lat} | Lng:${lng}`)
+      },
+      err=>{
+        resolve("Sem permissão de localização")
+      }
+    )
+
+  })
+}
+
+// 🔥 RETIRAR
+async function retirar(id){
+
+  const item = dados.find(d=>d.id===id)
+
+  if(!item) return
+
+  const local = await pegarLocalizacao()
+
+  item.status = "RETIRADO"
+  item.retiradoPor = usuarioLogado
+  item.dataRetirada = new Date().toLocaleString("pt-BR")
+  item.localizacao = local
+
+  render()
+}
+
+// 🔥 RENDER
+function render(){
+
+  lista.innerHTML=""
+
+  dados.forEach(n=>{
+
+    lista.innerHTML += `
+    <tr>
+
+      <td>${n.data}</td>
+      <td>${n.empresa}</td>
+      <td>${n.produto}</td>
+
+      <td>
+        <span class="badge ${n.emergencial=="SIM"?"sim":"nao"}">
+          ${n.emergencial}
+        </span>
+      </td>
+
+      <td>
+        ${n.status}
+        ${n.status==="RETIRADO" ? `<br><small>${n.retiradoPor}</small>` : ""}
+      </td>
+
+      <td>
+        ${
+          n.status==="RETIRADO"
+          ? `<button class="btn retirado">✔ Retirado</button>`
+          : `<button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>`
+        }
+      </td>
+
+    </tr>
+    `
+  })
+}
+
+</script>
+
+</body>
+</html>
