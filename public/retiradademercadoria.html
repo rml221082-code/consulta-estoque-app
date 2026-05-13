@@ -164,11 +164,11 @@ th{background:#f0f2f5}
   <div class="form">
     <input id="empresa" placeholder="Empresa">
     <input id="produto" placeholder="Produto / Máquina">
-
-    <select id="emergencial" placeholder="Emergencial">
-      <option value="NÃO">NÃO</option>
-      <option value="SIM">SIM</option>
-    </select>
+    <select id="emergencial" required>
+  <option value="" disabled selected>Selecione Emergencial</option>
+  <option value="NÃO">NÃO</option>
+  <option value="SIM">SIM</option>
+</select>
 
     <button onclick="salvar()" class="btn salvar">Salvar</button>
   </div>
