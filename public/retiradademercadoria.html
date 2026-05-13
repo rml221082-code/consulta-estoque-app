@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Retirada de Mercadoria</title>
 
 <style>
@@ -15,7 +16,7 @@ body{
 header{
   background:#1b5500;
   color:#fff;
-  padding:15px 20px;
+  padding:12px 15px;
   position:fixed;
   width:100%;
   top:0;
@@ -28,14 +29,15 @@ header{
   align-items:center;
 }
 
-.usuario{
-  font-size:14px;
+h2{
+  font-size:18px;
+  margin:0;
 }
 
 /* CONTAINER */
 .container{
-  margin-top:90px;
-  padding:20px;
+  margin-top:80px;
+  padding:15px;
 }
 
 /* FORM */
@@ -46,30 +48,31 @@ header{
   margin-bottom:20px;
 
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
   gap:10px;
 }
 
 input,select{
-  padding:10px;
+  padding:12px;
   border:1px solid #ccc;
-  border-radius:6px;
+  border-radius:8px;
+  font-size:16px;
 }
 
 /* BOTÕES */
 .btn{
   border:none;
-  padding:10px;
-  border-radius:6px;
+  padding:12px;
+  border-radius:8px;
   cursor:pointer;
   color:#fff;
+  font-size:16px;
 }
 
 .salvar{background:#0078d4}
 .retirar{background:#16a34a}
 .retirado{background:#555}
 
-/* TABELA */
+/* ===== DESKTOP TABELA ===== */
 table{
   width:100%;
   border-collapse:collapse;
@@ -86,7 +89,7 @@ th,td{
 
 th{background:#f0f2f5}
 
-/* BADGE */
+/* ===== BADGE ===== */
 .badge{
   padding:4px 8px;
   border-radius:10px;
@@ -96,9 +99,52 @@ th{background:#f0f2f5}
 .sim{background:#ffdede;color:#b30000}
 .nao{background:#e3f3ff;color:#005a9e}
 
-/* LINHA EMERGENCIAL */
-tr.emergencial{
-  background:#fff5f5;
+/* ===== MOBILE CARDS ===== */
+.cards{
+  display:none;
+}
+
+.card{
+  background:#fff;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.card p{
+  margin:5px 0;
+  font-size:14px;
+}
+
+.card .linha{
+  display:flex;
+  justify-content:space-between;
+}
+
+.card .acoes{
+  margin-top:10px;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px){
+
+  table{
+    display:none;
+  }
+
+  .cards{
+    display:block;
+  }
+
+  header{
+    padding:10px;
+  }
+
+  h2{
+    font-size:16px;
+  }
+
 }
 </style>
 </head>
@@ -107,25 +153,45 @@ tr.emergencial{
 
 <header>
   <div class="header-top">
-    <h2>Retirada de Mercadoria</h2>
-    <div class="usuario" id="usuarioNome"></div>
+    <h2>Retirada</h2>
+    <div id="userBox"></div>
   </div>
 </header>
 
 <div class="container">
 
+  <!-- FORM -->
   <div class="form">
     <input id="empresa" placeholder="Empresa">
     <input id="produto" placeholder="Produto / Máquina">
 
     <select id="emergencial">
-      <option value="NAO">NÃO</option>
+      <option value="NÃO">NÃO</option>
       <option value="SIM">SIM</option>
     </select>
 
     <button onclick="salvar()" class="btn salvar">Salvar</button>
   </div>
 
+  <!-- DESKTOP -->
+   <div style="margin-bottom:10px; display:flex; gap:10px; flex-wrap:wrap;">
+  
+  <select id="filtroStatus" onchange="render()"
+    style="padding:10px;border-radius:8px;border:1px solid #ccc;">
+    <option value="TODOS">Todos</option>
+    <option value="PENDENTE">Pendentes</option>
+    <option value="RETIRADO">Retirados</option>
+  </select>
+  <select id="filtroDias" onchange="render()"
+  style="padding:10px;border-radius:8px;border:1px solid #ccc;">
+  
+  <option value="1">Hoje</option>
+  <option value="7">7 dias</option>
+  <option value="10">Últimos 10 dias</option>
+  <option value="30">30 dias</option>
+</select>
+
+</div>
   <table>
     <thead>
       <tr>
@@ -133,29 +199,85 @@ tr.emergencial{
         <th>Solicitante</th>
         <th>Empresa</th>
         <th>Produto</th>
-        <th>🚨Emergencial</th>
+        <th>🚨EMERGENCIAL</th>
         <th>Status</th>
+        <th>Local</th>
         <th>Ação</th>
       </tr>
     </thead>
     <tbody id="lista"></tbody>
   </table>
 
+  <!-- MOBILE -->
+  <div id="cards" class="cards"></div>
+
 </div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="config.js"></script>
-  <script>
-  const API_URL = window.CONFIG.API_URL;
-  </script>
+
 <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+  authDomain: "consulta-estoque-app.firebaseapp.com",
+  projectId: "consulta-estoque-app",
+};
 
+firebase.initializeApp(firebaseConfig);
 
-/* 🔥 USUÁRIO LOGADO (MESMO PADRÃO DO SEU SISTEMA) */
-const usuarioLogado = localStorage.getItem("usuario") || "Sem usuário";
-document.getElementById("usuarioNome").innerText = "👤 " + usuarioLogado;
+const auth = firebase.auth();
+const db = firebase.firestore();
+const API_URL = window.CONFIG.API_URL;
 
+let usuarioLogado = null;
 let dados = [];
 
-/* 🔥 SALVAR */
+/* LOGIN */
+auth.onAuthStateChanged(async user => {
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const doc = await db.collection("usuarios").doc(user.uid).get();
+
+  usuarioLogado = doc.exists ? doc.data() : {
+    nome: user.displayName || "Usuário"
+  };
+
+  criarUserBox(user);
+  carregar();
+});
+
+/* USER BOX */
+function criarUserBox(user){
+
+  const box = document.getElementById("userBox");
+  box.innerHTML = "";
+
+  const avatar = document.createElement("img");
+  avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
+  avatar.style.width = "30px";
+  avatar.style.height = "30px";
+  avatar.style.borderRadius = "50%";
+
+  const nome = document.createElement("span");
+  nome.innerText = usuarioLogado.nome;
+
+  const sair = document.createElement("button");
+  sair.innerText = "Sair";
+  sair.onclick = () => auth.signOut();
+
+  box.appendChild(avatar);
+  box.appendChild(nome);
+  box.appendChild(sair);
+}
+
+/* SALVAR */
 function salvar(){
 
   if(!empresa.value || !produto.value){
@@ -166,30 +288,22 @@ function salvar(){
   const formData = new FormData();
 
   formData.append("action","novaRetirada");
-  formData.append("solicitante", usuarioLogado); // ✅ NOVO
+  formData.append("solicitante", usuarioLogado.nome);
   formData.append("empresa", empresa.value);
   formData.append("produto", produto.value);
   formData.append("emergencial", emergencial.value);
 
-  fetch(API_URL,{
-    method:"POST",
-    body:formData
-  })
+  fetch(API_URL,{ method:"POST", body:formData })
   .then(()=>{
-
-    alert("Salvo com sucesso!");
-
+    alert("Salvo!");
     empresa.value="";
     produto.value="";
-
     carregar();
-
   })
 }
 
-/* 🔥 CARREGAR */
+/* CARREGAR */
 function carregar(){
-
   fetch(API_URL+"?action=listarretirada")
   .then(r=>r.json())
   .then(lista=>{
@@ -198,61 +312,87 @@ function carregar(){
   })
 }
 
-/* 📍 LOCALIZAÇÃO */
-function pegarLocalizacao(){
-  return new Promise((resolve)=>{
+/* RETIRAR */
+function retirar(id){
 
-    if(!navigator.geolocation){
-      resolve({lat:"",lng:""});
-      return;
-    }
+  navigator.geolocation.getCurrentPosition(pos => {
 
-    navigator.geolocation.getCurrentPosition(
-      pos=>{
-        resolve({
-          lat:pos.coords.latitude,
-          lng:pos.coords.longitude
-        });
-      },
-      ()=> resolve({lat:"",lng:""})
-    );
+    const formData = new FormData();
+    formData.append("action","retirar");
+    formData.append("id", id);
+    formData.append("funcionario", usuarioLogado.nome);
+    formData.append("lat", pos.coords.latitude);
+    formData.append("lng", pos.coords.longitude);
 
-  })
+    fetch(API_URL,{ method:"POST", body:formData })
+    .then(()=> carregar());
+
+  });
 }
 
-/* 🔥 RETIRAR */
-async function retirar(id){
 
-  const loc = await pegarLocalizacao();
+</script>
+<script>
+function converterData(dataStr){
+  if(!dataStr) return new Date(0);
 
-  const formData = new FormData();
+  const partes = dataStr.split(" ");
+  const [d,m,a] = partes[0].split("/");
+  const [h,min] = (partes[1] || "00:00").split(":");
 
-  formData.append("action","retirar");
-  formData.append("id", id);
-  formData.append("funcionario", usuarioLogado);
-  formData.append("lat", loc.lat);
-  formData.append("lng", loc.lng);
-
-  fetch(API_URL,{
-    method:"POST",
-    body:formData
-  })
-  .then(()=>{
-    alert("Retirada registrada!");
-    carregar();
-  })
+  return new Date(a, m-1, d, h, min);
 }
 
-/* 🔥 RENDER */
 function render(){
 
   lista.innerHTML="";
+  cards.innerHTML="";
 
-  dados.forEach(n=>{
+  const filtroStatus = document.getElementById("filtroStatus").value;
+  const dias = Number(document.getElementById("filtroDias").value);
 
+  // 🔥 DATA ATUAL (final do dia)
+  const hoje = new Date();
+hoje.setHours(23,59,59,999);
+
+const inicio = new Date();
+inicio.setHours(0,0,0,0); // 🔥 começa no início do dia
+inicio.setDate(inicio.getDate() - (dias - 1));
+console.log("🔍 Dias:", dias);
+  console.log("📅 Inicio:", inicio);
+  console.log("📅 Hoje:", hoje);
+  // 🔥 ORDENA ANTES DE FILTRAR
+  const dadosOrdenados = [...dados].sort((a,b)=>{
+    return converterData(b.data) - converterData(a.data);
+  });
+
+  dadosOrdenados.forEach(n=>{
+
+    if(!n.data) return;
+
+    const dataItem = converterData(n.data);
+
+    // 🔥 FILTRO CORRETO
+    if(dataItem < inicio || dataItem > hoje) return;
+
+    // 🔥 STATUS
+    if(filtroStatus !== "TODOS" && n.status !== filtroStatus) return;
+
+    let statusHtml = "";
+
+    if(n.status === "RETIRADO"){
+      statusHtml = `
+        <b style="color:green">RETIRADO</b><br>
+        <small>${n.funcionario || ""}</small><br>
+        <small>${n.dataRetirada || ""}</small>
+      `;
+    } else {
+      statusHtml = `<b style="color:#b30000">PENDENTE</b>`;
+    }
+
+    // ===== DESKTOP =====
     lista.innerHTML += `
-    <tr class="${n.emergencial==="SIM" ? "emergencial":""}">
-
+    <tr>
       <td>${n.data}</td>
       <td>${n.solicitante || "-"}</td>
       <td>${n.empresa}</td>
@@ -264,27 +404,52 @@ function render(){
         </span>
       </td>
 
+      <td>${statusHtml}</td>
+
       <td>
-        ${n.status}
-        ${n.status==="RETIRADO" ? `<br><small>${n.funcionario}</small>` : ""}
+        ${
+          n.local
+          ? `<a href="${n.local}" target="_blank">📍</a>`
+          : "-"
+        }
       </td>
 
       <td>
         ${
           n.status==="RETIRADO"
-          ? `<button class="btn retirado">✔ Retirado</button>`
+          ? "✔"
           : `<button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>`
         }
       </td>
+    </tr>`;
 
-    </tr>
-    `;
+    // ===== MOBILE =====
+    cards.innerHTML += `
+    <div class="card">
+      <p><b>${n.produto}</b></p>
+      <p>${n.empresa}</p>
+
+      <div class="linha">
+        <span>${n.data}</span>
+        <span class="badge ${n.emergencial==="SIM"?"sim":"nao"}">
+          ${n.emergencial}
+        </span>
+      </div>
+
+      <p>${statusHtml}</p>
+
+      <div class="acoes">
+        ${
+          n.status==="RETIRADO"
+          ? `<button class="btn retirado">✔ Retirado</button>`
+          : `<button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>`
+        }
+      </div>
+    </div>`;
   });
 
 }
 
-window.onload = carregar;
 </script>
-
 </body>
 </html>

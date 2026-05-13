@@ -57,6 +57,7 @@ h1 {
 .acoes {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 button {
@@ -70,10 +71,12 @@ button {
 
 /* CORES */
 .btn-admin { background: #007bff; }
-.btn-adm { background: #8e44ad; /* roxo */}
+.btn-adm { background: #8e44ad; }
 .btn-func { background: #6c757d; }
 .btn-bloquear { background: #dc3545; }
 .btn-desbloquear { background: #28a745; }
+.btn-whats { background: #25d366; }
+.btn-salvar { background: #002352; }
 
 button:hover {
   opacity: 0.85;
@@ -88,17 +91,16 @@ button:hover {
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <script>
 // ⏱ tempo máximo = 12 horas
 const TEMPO_MAX = 12 * 60 * 60 * 1000;
-
 const loginTime = localStorage.getItem("loginTime");
 
 if (loginTime) {
   const agora = Date.now();
 
   if (agora - loginTime > TEMPO_MAX) {
-    // ⛔ sessão expirada
     localStorage.removeItem("loginTime");
 
     if (window.firebase) {
@@ -109,14 +111,12 @@ if (loginTime) {
   }
 }
 </script>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
   authDomain: "consulta-estoque-app.firebaseapp.com",
   projectId: "consulta-estoque-app",
-  storageBucket: "consulta-estoque-app.firebasestorage.app",
-  messagingSenderId: "1065893590092",
-  appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -171,13 +171,25 @@ async function carregarUsuarios() {
 
     div.innerHTML = `
       <div class="info">
-        <b>${u.nome}</b><br>
-        ${u.email}<br>
-        Tipo: ${u.tipo}<br>
-        <div class="status ${u.ativo === false ? "bloqueado" : "ativo"}">
-          ${u.ativo === false ? "🔴 Bloqueado" : "🟢 Ativo"}
-        </div>
-      </div>
+  <b>${u.nome}</b><br>
+  ${u.email}<br>
+
+  📱 WhatsApp:<br>
+  <input id="wpp_${doc.id}" 
+    value="${u.whatsapp || ""}" 
+    placeholder="Ex: 11999999999">
+
+  <button class="btn-salvar" onclick="salvarWhats('${doc.id}')">
+    Salvar
+  </button>
+
+  <br><br>
+  Tipo: ${u.tipo}<br>
+
+  <div class="status ${u.ativo === false ? "bloqueado" : "ativo"}">
+    ${u.ativo === false ? "🔴 Bloqueado" : "🟢 Ativo"}
+  </div>
+</div>
 
       <div class="acoes">
         <button class="btn-admin" onclick="tornarAdmin('${doc.id}')">Admin</button>
@@ -185,6 +197,12 @@ async function carregarUsuarios() {
         <button class="btn-func" onclick="tornarFunc('${doc.id}')">Funcionário</button>
         <button class="btn-bloquear" onclick="bloquear('${doc.id}')">Bloquear</button>
         <button class="btn-desbloquear" onclick="desbloquear('${doc.id}')">Desbloquear</button>
+
+        ${u.whatsapp ? `
+          <button class="btn-whats" onclick="abrirWhats('${u.whatsapp}')">
+            WhatsApp
+          </button>
+        ` : ""}
       </div>
     `;
 
@@ -199,11 +217,13 @@ function tornarAdmin(id) {
   alert("Agora é ADMIN");
   carregarUsuarios();
 }
+
 function tornarAdministrativo(id) {
   db.collection("usuarios").doc(id).update({ tipo: "administrativo" });
   alert("Agora é ADMINISTRATIVO");
   carregarUsuarios();
 }
+
 function tornarFunc(id) {
   db.collection("usuarios").doc(id).update({ tipo: "funcionario" });
   alert("Agora é FUNCIONÁRIO");
@@ -221,7 +241,36 @@ function desbloquear(id) {
   alert("Usuário desbloqueado");
   carregarUsuarios();
 }
-</script>
 
+/* 🔥 ABRIR WHATSAPP */
+function abrirWhats(numero){
+  const num = numero.replace(/\D/g, "");
+  window.open(`https://wa.me/55${num}`, "_blank");
+}
+</script>
+<script>
+function salvarWhats(id){
+
+  const input = document.getElementById("wpp_" + id);
+
+  let numero = input.value.replace(/\D/g, "");
+
+  if(numero.length < 10){
+    alert("Número inválido!");
+    return;
+  }
+
+  db.collection("usuarios").doc(id).update({
+    whatsapp: numero
+  })
+  .then(()=>{
+    alert("WhatsApp salvo!");
+  })
+  .catch(err=>{
+    console.error(err);
+    alert("Erro ao salvar");
+  });
+}
+</script>
 </body>
 </html>
