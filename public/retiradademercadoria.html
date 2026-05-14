@@ -248,7 +248,7 @@ auth.onAuthStateChanged(async user => {
   usuarioLogado = doc.exists ? doc.data() : {
     nome: user.displayName || "Usuário"
   };
-
+  await carregarFuncionarios();
   criarUserBox(user);
   carregar();
 });
@@ -330,7 +330,58 @@ function retirar(id){
   });
 }
 
+let funcionarios = [];
 
+async function carregarFuncionarios(){
+  const snap = await db.collection("usuarios").get();
+
+  funcionarios = [];
+
+  snap.forEach(doc => {
+    const u = doc.data();
+
+    if(u.nome && u.whatsapp){
+      funcionarios.push({
+        nome: u.nome,
+        numero: u.whatsapp
+      });
+    }
+  });
+
+  console.log("Funcionários carregados:", funcionarios);
+}
+/* lista funcionario whatsapp */
+function montarSelectFuncionarios(id){
+
+  let html = `<select onchange="enviarWhatsPorFuncionario(${id}, this.value)">
+                <option value="">Enviar para...</option>`;
+
+  funcionarios.forEach(f => {
+    html += `<option value="${f.numero}">${f.nome}</option>`;
+  });
+
+  html += `</select>`;
+
+  return html;
+}
+/* mensagem para whatsapp */
+function enviarWhatsPorFuncionario(id, numero){
+
+  if(!numero) return;
+
+  const n = dados.find(x => x.id == id);
+
+  let msg = `📦 *RETIRADA DE MERCADORIA*\n
+👤 Solicitante: ${n.solicitante || "-"}
+🏢 Empresa: ${n.empresa}
+🔧 Produto: ${n.produto}
+🚨 Emergencial: ${n.emergencial}
+📅 Data: ${n.data}`;
+
+  let url = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
+
+  window.open(url, "_blank");
+}
 </script>
 <script>
 function converterData(dataStr){
