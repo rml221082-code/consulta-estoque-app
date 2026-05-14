@@ -248,9 +248,10 @@ auth.onAuthStateChanged(async user => {
   usuarioLogado = doc.exists ? doc.data() : {
     nome: user.displayName || "Usuário"
   };
-  await carregarFuncionarios();
-  criarUserBox(user);
-  carregar();
+
+  carregarFuncionarios(); // 🔥 sem await
+criarUserBox(user);
+carregar();
 });
 
 /* USER BOX */
@@ -303,13 +304,17 @@ function salvar(){
 }
 
 /* CARREGAR */
+
 function carregar(){
+  lista.innerHTML = `<tr><td colspan="8">⏳ Carregando...</td></tr>`;
+  cards.innerHTML = `<p>⏳ Carregando...</p>`;
+
   fetch(API_URL+"?action=listarretirada")
   .then(r=>r.json())
   .then(lista=>{
     dados = lista;
     render();
-  })
+  });
 }
 
 /* RETIRAR */
@@ -349,20 +354,24 @@ async function carregarFuncionarios(){
   });
 
   console.log("Funcionários carregados:", funcionarios);
+
+  render(); // 🔥 ESSENCIAL
 }
 /* lista funcionario whatsapp */
 function montarSelectFuncionarios(id){
 
-  let html = `<select onchange="enviarWhatsPorFuncionario(${id}, this.value)">
-                <option value="">Enviar para...</option>`;
+  if(funcionarios.length === 0){
+    return `<small>Carregando contatos...</small>`;
+  }
 
-  funcionarios.forEach(f => {
-    html += `<option value="${f.numero}">${f.nome}</option>`;
-  });
-
-  html += `</select>`;
-
-  return html;
+  return `
+    <select id="func_${id}" style="width:100%; margin-top:5px;">
+      <option value="">Enviar para...</option>
+      ${funcionarios.map(f => 
+        `<option value="${f.numero}">${f.nome}</option>`
+      ).join("")}
+    </select>
+  `;
 }
 /* mensagem para whatsapp */
 function enviarWhatsPorFuncionario(id, numero){
@@ -371,14 +380,16 @@ function enviarWhatsPorFuncionario(id, numero){
 
   const n = dados.find(x => x.id == id);
 
-  let msg = `📦 *RETIRADA DE MERCADORIA*\n
+  let msg = 
+`📦 *RETIRADA DE MERCADORIA*
+
 👤 Solicitante: ${n.solicitante || "-"}
 🏢 Empresa: ${n.empresa}
 🔧 Produto: ${n.produto}
 🚨 Emergencial: ${n.emergencial}
 📅 Data: ${n.data}`;
 
-  let url = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
+  let url = `https://api.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(msg)}`;
 
   window.open(url, "_blank");
 }
@@ -395,7 +406,11 @@ function converterData(dataStr){
 }
 
 function render(){
-
+if(!dados || dados.length === 0){
+  lista.innerHTML = `<tr><td colspan="8">Nenhum registro</td></tr>`;
+  cards.innerHTML = `<p>Nenhum registro</p>`;
+  return;
+}
   lista.innerHTML="";
   cards.innerHTML="";
 
@@ -460,18 +475,36 @@ console.log("🔍 Dias:", dias);
       <td>
         ${
           n.local
-          ? `<a href="${n.local}" target="_blank">📍</a>`
+          ? `<a href="${n.local}" target="_blank">🗺️ Local:</a>`
           : "-"
         }
       </td>
 
       <td>
-        ${
-          n.status==="RETIRADO"
-          ? "✔"
-          : `<button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>`
-        }
-      </td>
+  ${
+    n.status==="RETIRADO"
+    ? "✔"
+    : `
+      <button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>
+      
+      <br><br>
+
+      ${
+  usuarioLogado.tipo === "admin" || usuarioLogado.tipo === "administrativo"
+  ? `
+    ${montarSelectFuncionarios(n.id)}
+
+    <br><br>
+
+    <button class="btn salvar" onclick="enviarWhatsManual(${n.id})">
+      📲 Enviar Whats
+    </button>
+  `
+  : ""
+}
+    `
+  }
+</td> 
     </tr>`;
 
     // ===== MOBILE =====
@@ -490,15 +523,39 @@ console.log("🔍 Dias:", dias);
       <p>${statusHtml}</p>
 
       <div class="acoes">
-        ${
-          n.status==="RETIRADO"
-          ? `<button class="btn retirado">✔ Retirado</button>`
-          : `<button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>`
-        }
-      </div>
+  ${
+    n.status==="RETIRADO"
+    ? `<button class="btn retirado">✔ Retirado</button>`
+    : `
+      <button class="btn retirar" onclick="retirar(${n.id})">Retirar</button>
+      <br><br>
+      ${montarSelectFuncionarios(n.id)}
+      <br><br>
+      <button class="btn salvar" onclick="enviarWhatsManual(${n.id})">
+        📲 Whats
+      </button>
+    `
+  }
+</div>
     </div>`;
   });
 
+}
+function enviarWhatsManual(id){
+
+  const select = document.getElementById("func_" + id);
+
+  if(!select){
+    alert("Erro ao localizar lista");
+    return;
+  }
+
+  if(!select.value){
+    alert("Selecione um funcionário");
+    return;
+  }
+
+  enviarWhatsPorFuncionario(id, select.value);
 }
 
 </script>
