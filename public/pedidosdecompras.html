@@ -571,7 +571,7 @@ function renderTabela(){
 
     tbody.innerHTML += `
       <tr class="${p.emergencial === "SIM" ? "linha-emergencial" : ""}">
-        <td>${formatarDataBR(p.dataHora)}</td>
+        <td>${p.dataHora}</td>
         <td>${p.funcionario || ""}</td>
         <td>${p.departamento || ""}</td>
         <td>${p.observacao || ""}</td>
