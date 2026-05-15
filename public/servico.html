@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Serviço</title>
 <style>
   /* RESET básico */
@@ -11,13 +12,11 @@
     padding: 0;
   }
 .checklist label {
-  display: flex;
-  align-items: center;
-  margin-bottom: 6px;
-  cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
+  padding: 8px;
+  background: #f9fafc;
+  border-radius: 6px;
 }
-
 .checklist input[type="checkbox"] {
   margin-right: 10px;
   width: 18px;
@@ -109,17 +108,64 @@
   button:hover {
     background-color: #005a9e;
   }
-
+.form-containerbotao button {
+  width: 100%;
+  max-width: 300px;
+}
   /* Responsivo */
-  @media(max-width: 768px) {
-    .container {
-      padding: 20px;
-    }
+ @media(max-width: 768px) {
 
-    th, td {
-      padding: 10px;
-    }
+  body {
+    padding: 10px;
   }
+
+  .container {
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  label {
+    font-size: 14px;
+  }
+
+  input, select {
+    font-size: 16px; /* evita zoom no iPhone */
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  /* TABELA RESPONSIVA (caso use depois) */
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  th {
+    display: none;
+  }
+
+  tr {
+    margin-bottom: 10px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  td {
+    padding: 8px 5px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+  }
+}
 
 </style>
 
@@ -127,7 +173,7 @@
 <body>
 
 <div class="container">
-  <div class="form-containerbotao" style="margin-bottom: 20px; display:flex; justify-content:center;">
+  <div class="form-containerbotao" style="margin-bottom: 15px;">
     <button type="button" onclick="location.href='https://consulta-estoque-app.web.app/veiculo.html'">
       Voltar para Veículos
     </button>
@@ -191,11 +237,13 @@
   </form>
 </div>
 
+<script src="config.js"></script>
+
 
 <script>
 // converte arquivo para Base64
 
-
+const API_URL = window.CONFIG.API_URL;
 document.getElementById("formServico").addEventListener("submit", salvarServico);
 
 async function salvarServico(e) {
@@ -253,10 +301,10 @@ formData.append('checklist', checklist);
 formData.append('fotos', JSON.stringify(fotosBase64));
 
 
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzxdnIzDmsjy06njan7yro4BO78sZ-n9tpp1yTjshrQmdhHu03L7rYnP5ppQtg90wwbng/exec";
+  
 
   try {
-    const res = await fetch(GAS_URL, {
+    const res = await fetch(API_URL, {
       method: "POST",
       body: formData
     });
