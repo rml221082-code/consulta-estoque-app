@@ -648,43 +648,78 @@ window.modoTodos = false
   let notaEditando = null
   function gerarLinkPDF(n){
 
-    if(!n.pdf) return "-";
+  if(!n.pdf) return "-";
 
-    const texto = String(n.pdf);
+  const texto = String(n.pdf);
+  const linhas = texto.split("\n");
 
-    // pega todas as linhas
-    const linhas = texto.split("\n");
+  let html = "";
 
-    let html = "";
+  linhas.forEach(linha => {
 
-    linhas.forEach(linha => {
+    const match = linha.match(/https?:\/\/\S+/);
 
-      const match = linha.match(/https?:\/\/\S+/);
+    if(match){
 
-      if(match){
+      const url = match[0];
 
-        // tenta pegar número da parcela
-        const parcelaMatch = linha.match(/Parcela\s*(\d+)/i);
-        const parcela = parcelaMatch ? parcelaMatch[1] : "?";
+      // pega número da parcela
+      const parcelaMatch = linha.match(/Parcela\s*(\d+)/i);
+      const parcela = parcelaMatch ? parcelaMatch[1] : "?";
 
-        html += `
-          <div>
-            <a href="${match[0]}" target="_blank">
-              📄 Parcela ${parcela}
-            </a>
-          </div>
-        `;
-      }
+      html += `
+        <div style="display:flex;align-items:center;gap:5px;justify-content:center">
 
-    });
+          <a href="${url}" target="_blank">
+            📄 Parcela ${parcela}
+          </a>
 
-    // fallback → PDF original
-    if(!html){
-      return `<a href="${n.pdf}" target="_blank">PDF</a>`;
+          <button 
+            class="btn cancelar"
+            onclick="deletarComprovante('${n.id}', '${parcela}', '${url}')"
+            title="Excluir comprovante"
+          >
+            🗑️Apagar!
+          </button>
+
+        </div>
+      `;
     }
 
-    return html;
+  });
+
+  if(!html){
+    return `<a href="${n.pdf}" target="_blank">PDF</a>`;
   }
+
+  return html;
+}
+function deletarComprovante(id, parcela, url){
+
+  if(!confirm("Deseja realmente excluir este comprovante?")) return;
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "deletarcomprovante",
+      id: id,
+      parcela: parcela,
+      url: url
+    })
+  })
+  .then(r => r.json())
+  .then(r => {
+
+    if(r.success){
+      alert("✅ Comprovante excluído!");
+      carregar();
+    }else{
+      alert("Erro ao excluir: " + r.erro);
+    }
+
+  });
+
+}
   function abrirUpload(id, parcela, empresa, nota, fornecedor){
 
     const input = document.getElementById(`file_${id}_${parcela}`);
