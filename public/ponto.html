@@ -1,257 +1,257 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bater Ponto</title>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bater Ponto</title>
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#f4f6f8;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
+    <style>
+    body{
+    margin:0;
+    font-family:Arial;
+    background:#f4f6f8;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    }
 
-.container{
-  width:100%;
-  max-width:400px;
-  background:#fff;
-  padding:25px;
-  border-radius:12px;
-  box-shadow:0 8px 25px rgba(0,0,0,.1);
-  text-align:center;
-}
+    .container{
+    width:100%;
+    max-width:400px;
+    background:#fff;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 8px 25px rgba(0,0,0,.1);
+    text-align:center;
+    }
 
-h2{margin-bottom:20px}
+    h2{margin-bottom:20px}
 
-.btn{
-  width:100%;
-  padding:20px;
-  font-size:18px;
-  border:none;
-  border-radius:10px;
-  background:#16a34a;
-  color:#fff;
-  cursor:pointer;
-}
+    .btn{
+    width:100%;
+    padding:20px;
+    font-size:18px;
+    border:none;
+    border-radius:10px;
+    background:#16a34a;
+    color:#fff;
+    cursor:pointer;
+    }
 
-.status{
-  margin-top:15px;
-  font-size:14px;
-}
-</style>
-</head>
+    .status{
+    margin-top:15px;
+    font-size:14px;
+    }
+    </style>
+    </head>
 
-<body>
+    <body>
 
-<div class="container">
-<h3 id="nomeFuncionario"></h3>
-<h2>Bater Ponto</h2>
+    <div class="container">
+    <h3 id="nomeFuncionario"></h3>
+    <h2>Bater Ponto</h2>
 
-<button class="btn" onclick="baterPonto()">📍 Bater Ponto</button>
+    <button class="btn" onclick="baterPonto()">📍 Bater Ponto</button>
 
-<div class="status" id="status"></div>
+    <div class="status" id="status"></div>
 
-<!-- 🔥 LISTA FORA DO SCRIPT -->
-<div id="listaPontos" style="margin-top:20px; text-align:left;"></div>
+    <!-- 🔥 LISTA FORA DO SCRIPT -->
+    <div id="listaPontos" style="margin-top:20px; text-align:left;"></div>
 
-</div>
+    </div>
 
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<script src="config.js"></script>
+    <script src="config.js"></script>
 
-<script>
-const API_URL = window.CONFIG.API_URL;
+    <script>
+    const API_URL = window.CONFIG.API_URL;
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
-  authDomain: "consulta-estoque-app.firebaseapp.com",
-  projectId: "consulta-estoque-app"
-};
+    const firebaseConfig = {
+    apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+    authDomain: "consulta-estoque-app.firebaseapp.com",
+    projectId: "consulta-estoque-app"
+    };
 
-firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-let usuarioLogado = null;
+    let usuarioLogado = null;
 
-// 🔐 LOGIN
-auth.onAuthStateChanged(async user => {
+    // 🔐 LOGIN
+    auth.onAuthStateChanged(async user => {
 
-  if(!user){
-    window.location.href="login.html";
-    return;
-  }
+    if(!user){
+        window.location.href="login.html";
+        return;
+    }
 
-  const doc = await db.collection("usuarios").doc(user.uid).get();
-  usuarioLogado = doc.data();
+    const doc = await db.collection("usuarios").doc(user.uid).get();
+    usuarioLogado = doc.data();
 
-  carregarPontos(); // 🔥 carrega ao entrar
+    carregarPontos(); // 🔥 carrega ao entrar
 
-});
+    });
 
-// 📍 BATER PONTO
-function baterPonto(){
+    // 📍 BATER PONTO
+    function baterPonto(){
 
-  const status = document.getElementById("status");
+    const status = document.getElementById("status");
 
-  if(!usuarioLogado){
-    status.innerText = "Aguarde login...";
-    return;
-  }
+    if(!usuarioLogado){
+        status.innerText = "Aguarde login...";
+        return;
+    }
 
-  status.innerText = "Obtendo localização...";
+    status.innerText = "Obtendo localização...";
 
-  navigator.geolocation.getCurrentPosition(pos => {
+    navigator.geolocation.getCurrentPosition(pos => {
 
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
 
-    const local = `Lat:${lat} Lng:${lng}`;
+        const local = `Lat:${lat} Lng:${lng}`;
+
+        fetch(API_URL,{
+        method:"POST",
+        body: JSON.stringify({
+            action:"registrarponto",
+            funcionario: usuarioLogado.nome,
+            localizacao: local
+        })
+        })
+        .then(r=>r.json())
+        .then(r=>{
+
+        console.log(r);
+
+        if(r.success){
+            status.innerText = "✅ Ponto registrado!";
+            carregarPontos(); // 🔥 atualiza lista
+        }else{
+            status.innerText = "Erro: " + r.erro;
+        }
+
+        });
+
+    }, err => {
+        status.innerText = "Erro ao pegar localização";
+    });
+
+    }
+
+    // 📊 LISTAR PONTOS
+    function carregarPontos(){
+
+    if(!usuarioLogado) return;
+
+    document.getElementById("nomeFuncionario").innerText =
+        "👤 " + usuarioLogado.nome;
 
     fetch(API_URL,{
-      method:"POST",
-      body: JSON.stringify({
-        action:"registrarponto",
-        funcionario: usuarioLogado.nome,
-        localizacao: local
-      })
+        method:"POST",
+        body: JSON.stringify({
+        action:"listarpontodia",
+        funcionario: usuarioLogado.nome
+        })
     })
     .then(r=>r.json())
     .then(r=>{
 
-      console.log(r);
+        const div = document.getElementById("listaPontos");
 
-      if(r.success){
-        status.innerText = "✅ Ponto registrado!";
-        carregarPontos(); // 🔥 atualiza lista
-      }else{
-        status.innerText = "Erro: " + r.erro;
-      }
+        if(!r.rows || r.rows.length === 0){
+        div.innerHTML = "<p>Nenhum ponto hoje</p>";
+        return;
+        }
 
-    });
+        let html = "<h3>Pontos de Hoje</h3>";
 
-  }, err => {
-    status.innerText = "Erro ao pegar localização";
-  });
+        r.rows.forEach(p=>{
 
-}
+        const cor = p.tipo === "ENTRADA" ? "#16a34a" : "#dc2626";
 
-// 📊 LISTAR PONTOS
-function carregarPontos(){
-
-  if(!usuarioLogado) return;
-
-  document.getElementById("nomeFuncionario").innerText =
-    "👤 " + usuarioLogado.nome;
-
-  fetch(API_URL,{
-    method:"POST",
-    body: JSON.stringify({
-      action:"listarpontodia",
-      funcionario: usuarioLogado.nome
-    })
-  })
-  .then(r=>r.json())
-  .then(r=>{
-
-    const div = document.getElementById("listaPontos");
-
-    if(!r.rows || r.rows.length === 0){
-      div.innerHTML = "<p>Nenhum ponto hoje</p>";
-      return;
-    }
-
-    let html = "<h3>Pontos de Hoje</h3>";
-
-    r.rows.forEach(p=>{
-
-      const cor = p.tipo === "ENTRADA" ? "#16a34a" : "#dc2626";
-
-      html += `
-        <div style="padding:10px; border-bottom:1px solid #ddd;">
-          <b style="color:${cor}">${p.tipo}</b><br>
-          🕒 ${p.dataHora}
-        </div>
-      `;
-    });
-
-    html += `
-      <div style="margin-top:15px; font-weight:bold;">
-        ⏱ Total: ${r.totalHoras}
-      </div>
-    `;
-
-    if(r.horaExtra){
-      html += `
-        <div style="color:#dc2626; font-weight:bold;">
-          🔥 ${r.horaExtra}
-        </div>
-      `;
-    }
-
-    div.innerHTML = html;
-
-  });
-
-}
-function converterParaSegundos(hora){
-  const [h,m,s] = hora.split(":").map(Number);
-  return h*3600 + m*60 + s;
-}
-
-// 🔧 segundos → HH:mm:ss
-function formatarTempo(seg){
-
-  const h = String(Math.floor(seg / 3600)).padStart(2,'0');
-  const m = String(Math.floor((seg % 3600) / 60)).padStart(2,'0');
-  const s = String(seg % 60).padStart(2,'0');
-
-  return `${h}:${m}:${s}`;
-}
-function carregarAdmin(){
-
-  fetch(API_URL,{
-    method:"POST",
-    body: JSON.stringify({
-      action:"listarpontoadmin",
-      data: document.getElementById("dataFiltro").value
-    })
-  })
-  .then(r=>r.json())
-  .then(r=>{
-
-    let html = "";
-
-    for(let nome in r.dados){
-
-      html += `<h3>👤 ${nome}</h3>`;
-
-      r.dados[nome].forEach(p=>{
         html += `
-          <div>
-            ${p.tipo} - ${p.hora}
-          </div>
+            <div style="padding:10px; border-bottom:1px solid #ddd;">
+            <b style="color:${cor}">${p.tipo}</b><br>
+            🕒 ${p.dataHora}
+            </div>
         `;
-      });
+        });
+
+        html += `
+        <div style="margin-top:15px; font-weight:bold;">
+            ⏱ Total: ${r.totalHoras}
+        </div>
+        `;
+
+        if(r.horaExtra){
+        html += `
+            <div style="color:#dc2626; font-weight:bold;">
+            🔥 ${r.horaExtra}
+            </div>
+        `;
+        }
+
+        div.innerHTML = html;
+
+    });
 
     }
+    function converterParaSegundos(hora){
+    const [h,m,s] = hora.split(":").map(Number);
+    return h*3600 + m*60 + s;
+    }
 
-    document.getElementById("resultado").innerHTML = html;
+    // 🔧 segundos → HH:mm:ss
+    function formatarTempo(seg){
 
-  });
+    const h = String(Math.floor(seg / 3600)).padStart(2,'0');
+    const m = String(Math.floor((seg % 3600) / 60)).padStart(2,'0');
+    const s = String(seg % 60).padStart(2,'0');
 
-}
-</script>
+    return `${h}:${m}:${s}`;
+    }
+    function carregarAdmin(){
 
-</body>
-</html>
+    fetch(API_URL,{
+        method:"POST",
+        body: JSON.stringify({
+        action:"listarpontoadmin",
+        data: document.getElementById("dataFiltro").value
+        })
+    })
+    .then(r=>r.json())
+    .then(r=>{
+
+        let html = "";
+
+        for(let nome in r.dados){
+
+        html += `<h3>👤 ${nome}</h3>`;
+
+        r.dados[nome].forEach(p=>{
+            html += `
+            <div>
+                ${p.tipo} - ${p.hora}
+            </div>
+            `;
+        });
+
+        }
+
+        document.getElementById("resultado").innerHTML = html;
+
+    });
+
+    }
+    </script>
+
+    </body>
+    </html>
