@@ -6,77 +6,215 @@
 <title>Relatório de Ponto</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#f4f6f8;
-  padding:15px;
-}
 
-.container{
-  max-width:700px;
-  margin:auto;
-  background:#fff;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 8px 25px rgba(0,0,0,.1);
-}
-
-h2{
-  text-align:center;
-  margin-bottom:20px;
-}
-
-input, button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:16px;
+*{
   box-sizing:border-box;
 }
 
-button{
-  background:#1f6feb;
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#eef2f7;
+  padding:20px;
+  color:#1f2937;
+}
+
+.container{
+  max-width:1400px;
+  margin:auto;
+}
+
+.topo{
+  background:#111827;
   color:#fff;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:20px;
+  box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+.topo h2{
+  margin:0;
+}
+
+.filtros{
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:20px;
+  box-shadow:0 5px 20px rgba(0,0,0,.05);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+@media(max-width:900px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+}
+
+label{
+  display:block;
+  margin-bottom:5px;
+  font-weight:bold;
+  color:#374151;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:15px;
+}
+
+button{
+  width:100%;
+  padding:13px;
   border:none;
+  border-radius:10px;
+  background:#2563eb;
+  color:#fff;
+  font-size:15px;
   cursor:pointer;
+  font-weight:bold;
+  transition:.2s;
 }
 
 button:hover{
-  opacity:.9;
+  transform:translateY(-1px);
+  opacity:.95;
 }
 
 .card{
-  background:#f9fafb;
-  padding:12px;
-  margin-top:15px;
-  border-radius:8px;
-  border-left:5px solid #1f6feb;
+  background:#fff;
+  border-radius:14px;
+  margin-bottom:25px;
+  box-shadow:0 5px 20px rgba(0,0,0,.06);
+  overflow:hidden;
 }
 
-.total{
+.funcionario{
+  background:linear-gradient(
+    90deg,
+    #1f2937,
+    #374151
+  );
+
+  color:#fff;
+  padding:16px 20px;
+  font-size:18px;
   font-weight:bold;
-  margin-top:8px;
 }
 
-.divisor{
-  margin-top:20px;
+.tabela{
+  overflow:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:900px;
+}
+
+th{
+  background:#2563eb;
+  color:#fff;
+  padding:14px;
+  text-align:left;
+  font-size:14px;
+}
+
+td{
+  padding:12px 14px;
+  border-bottom:1px solid #e5e7eb;
+  font-size:14px;
+}
+
+tr:nth-child(even){
+  background:#f9fafb;
+}
+
+.badge-entrada{
+  display:inline-block;
+  background:#dcfce7;
+  color:#166534;
+  padding:4px 10px;
+  border-radius:20px;
+  margin:2px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.badge-saida{
+  display:inline-block;
+  background:#fee2e2;
+  color:#991b1b;
+  padding:4px 10px;
+  border-radius:20px;
+  margin:2px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.normal{
+  color:#16a34a;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.extra{
+  color:#dc2626;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.total-final{
+  background:#111827;
+  color:#fff;
+  font-weight:bold;
+}
+
+.total-final td{
+  border:none;
+  padding:15px;
+}
+
+.resumo{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
   margin-bottom:20px;
-  border-top:1px solid #ddd;
 }
 
-.item{
-  padding:5px 0;
-  border-bottom:1px solid #eee;
+.box{
+  background:#fff;
+  padding:20px;
+  border-radius:14px;
+  box-shadow:0 5px 20px rgba(0,0,0,.05);
+}
+
+.box small{
+  color:#6b7280;
+  display:block;
+  margin-bottom:8px;
+}
+
+.box strong{
+  font-size:24px;
 }
 
 .admin{
-  color:#16a34a;
-  font-weight:bold;
-  margin-bottom:15px;
+  margin-top:10px;
+  color:#93c5fd;
 }
+
 </style>
 </head>
 
@@ -84,33 +222,54 @@ button:hover{
 
 <div class="container">
 
-<h2>📊 Relatório de Ponto</h2>
+<div class="topo">
 
-<div class="admin" id="adminNome"></div>
+  <h2>📊 Relatório de Ponto</h2>
 
-<!-- 🔎 FILTRO POR DIA -->
-<label>Filtrar por Data</label>
-<input type="date" id="dataFiltro">
+  <div class="admin" id="adminNome"></div>
 
-<button onclick="carregarDia()">
-Buscar por Dia
+</div>
+
+<div class="filtros">
+
+  <div class="grid">
+
+    <div>
+
+      <label>Filtrar por Data</label>
+
+      <input type="date" id="dataFiltro">
+
+      <button onclick="carregarDia()">
+        Buscar por Dia
+      </button>
+
+    </div>
+
+    <div>
+
+      <label>Relatório Mensal</label>
+
+      <input type="month" id="mesFiltro">
+
+      <button onclick="carregarMes()">
+        Gerar Relatório
+      </button>
+
+    </div>
+<button onclick="exportarExcel()">
+  📥 Exportar Excel
 </button>
+  </div>
 
-<div class="divisor"></div>
-
-<!-- 📅 FILTRO POR MÊS -->
-<label>Relatório Mensal</label>
-<input type="month" id="mesFiltro">
-
-<button onclick="carregarMes()">
-Gerar Relatório
-</button>
+</div>
 
 <div id="resultado"></div>
 
 </div>
 
 <!-- FIREBASE -->
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -127,49 +286,52 @@ const API_URL = window.CONFIG.API_URL;
 // ========================================
 
 const firebaseConfig = {
+
   apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+
   authDomain: "consulta-estoque-app.firebaseapp.com",
+
   projectId: "consulta-estoque-app"
+
 };
 
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
+
 const db = firebase.firestore();
 
 let usuarioLogado = null;
 
 // ========================================
-// LOGIN + BLOQUEIO
+// LOGIN
 // ========================================
 
 auth.onAuthStateChanged(async user => {
 
   if(!user){
+
     window.location.href = "login.html";
+
     return;
   }
 
-  const doc = await db.collection("usuarios").doc(user.uid).get();
+  const doc = await db.collection("usuarios")
+  .doc(user.uid)
+  .get();
 
   usuarioLogado = doc.data();
 
   if(!usuarioLogado){
+
     alert("Usuário não encontrado");
+
     return;
   }
 
   const tipo = (usuarioLogado.tipo || "").toUpperCase();
 
-  // 🔒 SOMENTE ADMIN
-  if(tipo !== "ADMIN" && tipo !== "ADMINISTRATIVO"){
-
-    alert("Acesso restrito!");
-
-    window.location.href = "ponto.html";
-
-    return;
-  }
+ window.tipoUsuario = tipo;
 
   document.getElementById("adminNome").innerText =
     "👤 " + usuarioLogado.nome;
@@ -177,19 +339,37 @@ auth.onAuthStateChanged(async user => {
 });
 
 // ========================================
-// 📊 RELATÓRIO POR DIA
+// FORMATAR MINUTOS
+// ========================================
+
+function minutosParaHora(min){
+
+  min = Number(min) || 0;
+
+  const h = Math.floor(min / 60);
+
+  const m = min % 60;
+
+  return String(h).padStart(2,"0") + ":" +
+         String(m).padStart(2,"0");
+}
+
+// ========================================
+// RELATÓRIO POR DIA
 // ========================================
 
 function carregarDia(){
 
-  const dataInput = document.getElementById("dataFiltro").value;
+  const dataInput =
+    document.getElementById("dataFiltro").value;
 
   if(!dataInput){
+
     alert("Selecione uma data");
+
     return;
   }
 
-  // yyyy-MM-dd → dd/MM/yyyy
   const partes = dataInput.split("-");
 
   const dataFormatada =
@@ -207,11 +387,15 @@ function carregarDia(){
 
     console.log(r);
 
-    let html = "<h3>📅 Resultado do Dia</h3>";
+    let html = `
+      <h3>📅 Resultado do Dia</h3>
+    `;
 
     if(!r.dados || Object.keys(r.dados).length === 0){
 
-      html += "<p>Nenhum registro encontrado</p>";
+      html += `
+        <p>Nenhum registro encontrado</p>
+      `;
 
       document.getElementById("resultado").innerHTML = html;
 
@@ -220,38 +404,110 @@ function carregarDia(){
 
     for(let nome in r.dados){
 
-      html += `<div class="card">`;
+  // FUNCIONÁRIO VE SOMENTE O DELE
+  if(
+    window.tipoUsuario === "FUNCIONARIO" &&
+    nome !== usuarioLogado.nome
+  ){
+    continue;
+  }
 
-      html += `<b>👤 ${nome}</b>`;
-
-      r.dados[nome].registros.forEach(p=>{
-
-        const cor =
-          p.tipo === "ENTRADA"
-          ? "#16a34a"
-          : "#dc2626";
-
-        html += `
-  <div class="total">
-    ⏱ Total:
-    ${r.dados[nome].totalFormatado}
-  </div>
-
-  <div class="total" style="color:#dc2626;">
-    🔥 Hora Extra:
-    ${r.dados[nome].horaExtra}
-  </div>
-`;
-      });
+      const dados = r.dados[nome];
 
       html += `
-        <div class="total">
-          ⏱ Total:
-          ${r.dados[nome].totalFormatado}
-        </div>
-      `;
 
-      html += `</div>`;
+      <div class="card">
+
+        <div class="funcionario">
+          👤 ${nome}
+        </div>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Batidas</th>
+              <th>Horas</th>
+              <th>Horas Extras</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr>
+
+              <td>
+
+${(dados.batidas || []).map(b=>{
+
+  const texto = b.texto || "";
+
+  const local = b.localizacao || "";
+
+  let classe = "badge-saida";
+
+  if(texto.includes("ENTRADA")){
+    classe = "badge-entrada";
+  }
+
+  let conteudo = texto;
+
+  // SOMENTE ADMIN
+  if(
+    (
+      window.tipoUsuario === "ADMIN" ||
+      window.tipoUsuario === "ADMINISTRATIVO"
+    )
+    &&
+    local
+  ){
+
+    conteudo = `
+      <a
+        href="https://maps.google.com/?q=${encodeURIComponent(local)}"
+        target="_blank"
+        style="
+          color:inherit;
+          text-decoration:none;
+          font-weight:bold;
+        "
+      >
+        📍 ${texto}
+      </a>
+    `;
+  }
+
+  return `
+    <span class="${classe}">
+      ${conteudo}
+    </span>
+  `;
+
+}).join("")}
+
+</td>
+
+              <td class="total-normal">
+                ${dados.totalFormatado || "00:00"}
+              </td>
+
+              <td class="total-extra">
+                ${dados.horaExtra || "00:00"}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      `;
     }
 
     document.getElementById("resultado").innerHTML = html;
@@ -268,15 +524,18 @@ function carregarDia(){
 }
 
 // ========================================
-// 📅 RELATÓRIO MENSAL
+// RELATÓRIO MENSAL
 // ========================================
 
 function carregarMes(){
 
-  const mes = document.getElementById("mesFiltro").value;
+  const mes =
+    document.getElementById("mesFiltro").value;
 
   if(!mes){
+
     alert("Selecione um mês");
+
     return;
   }
 
@@ -292,11 +551,15 @@ function carregarMes(){
 
     console.log(r);
 
-    let html = "<h3>📊 Relatório Mensal</h3>";
+    let html = `
+      <h3>📊 Relatório Mensal</h3>
+    `;
 
     if(!r.dados || Object.keys(r.dados).length === 0){
 
-      html += "<p>Nenhum registro encontrado</p>";
+      html += `
+        <p>Nenhum registro encontrado</p>
+      `;
 
       document.getElementById("resultado").innerHTML = html;
 
@@ -305,16 +568,162 @@ function carregarMes(){
 
     for(let nome in r.dados){
 
+  // FUNCIONÁRIO VE SOMENTE O DELE
+  if(
+    window.tipoUsuario === "FUNCIONARIO" &&
+    nome !== usuarioLogado.nome
+  ){
+    continue;
+  }
+
+      const funcionario = r.dados[nome];
+
+      let totalMes = 0;
+
+      let totalExtraMes = 0;
+
       html += `
-        <div class="card">
 
-          <b>👤 ${nome}</b>
+      <div class="card">
 
-          <div class="total">
-            ⏱ ${r.dados[nome]}
-          </div>
-
+        <div class="funcionario">
+          👤 ${nome}
         </div>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Data</th>
+
+              <th>Batidas</th>
+
+              <th>Horas Normais</th>
+
+              <th>Horas Extras</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+      `;
+
+      (funcionario.dias || []).forEach(dia=>{
+
+        totalMes += Number(dia.totalMinutos || 0);
+
+        totalExtraMes += Number(dia.extraMinutos || 0);
+
+        html += `
+
+        <tr>
+
+          <td>
+            ${dia.data || ""}
+          </td>
+
+         <td>
+
+${(dia.batidas || []).map(b=>{
+
+  const texto = b.texto || "";
+
+  const local = b.localizacao || "";
+
+  let classe = "badge-saida";
+
+  if(texto.includes("ENTRADA")){
+    classe = "badge-entrada";
+  }
+
+  let conteudo = texto;
+
+  // SOMENTE ADMIN
+  if(
+    (
+      window.tipoUsuario === "ADMIN" ||
+      window.tipoUsuario === "ADMINISTRATIVO"
+    )
+    &&
+    local
+  ){
+
+    conteudo = `
+      <a
+        href="https://maps.google.com/?q=${encodeURIComponent(local)}"
+        target="_blank"
+        style="
+          color:inherit;
+          text-decoration:none;
+          font-weight:bold;
+        "
+      >
+        📍 ${texto}
+      </a>
+    `;
+  }
+
+  return `
+    <span class="${classe}">
+      ${conteudo}
+    </span>
+  `;
+
+}).join("")}
+
+</td>
+
+          <td class="total-normal">
+            ${dia.totalFormatado || "00:00"}
+          </td>
+
+          <td class="total-extra">
+            ${dia.extraFormatado || "00:00"}
+          </td>
+
+        </tr>
+
+        `;
+      });
+
+      html += `
+
+          </tbody>
+
+          <tfoot>
+
+            <tr class="total-final">
+
+              <td colspan="2">
+
+                TOTAL DO MÊS
+
+              </td>
+
+              <td>
+
+                ${minutosParaHora(totalMes)}
+
+              </td>
+
+              <td>
+
+                ${minutosParaHora(totalExtraMes)}
+
+              </td>
+
+            </tr>
+
+          </tfoot>
+
+        </table>
+
+      </div>
+
       `;
     }
 
@@ -330,8 +739,135 @@ function carregarMes(){
   });
 
 }
+function exportarExcel(){
 
+  const mes =
+    document.getElementById("mesFiltro").value;
+
+  if(!mes){
+
+    alert("Selecione um mês");
+
+    return;
+  }
+
+  fetch(API_URL,{
+    method:"POST",
+    body: JSON.stringify({
+      action:"relatoriomensal",
+      mes:mes
+    })
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    if(!r.dados){
+
+      alert("Nenhum dado encontrado");
+
+      return;
+    }
+
+    let linhas = [];
+
+    for(let nome in r.dados){
+
+      // FUNCIONÁRIO VE SOMENTE O DELE
+      if(
+        window.tipoUsuario === "FUNCIONARIO" &&
+        nome !== usuarioLogado.nome
+      ){
+        continue;
+      }
+
+      const funcionario = r.dados[nome];
+
+      let totalMes = 0;
+
+      let totalExtraMes = 0;
+
+      linhas.push([
+        "FUNCIONÁRIO",
+        nome
+      ]);
+
+      linhas.push([
+        "DATA",
+        "BATIDAS",
+        "HORAS",
+        "EXTRA"
+      ]);
+
+      (funcionario.dias || []).forEach(dia=>{
+
+        totalMes += Number(dia.totalMinutos || 0);
+
+        totalExtraMes += Number(dia.extraMinutos || 0);
+
+        linhas.push([
+
+          dia.data,
+
+          (dia.batidas || [])
+  .map(b => b.texto || "")
+  .join(" | "),
+
+          dia.totalFormatado || "00:00",
+
+          dia.extraFormatado || "00:00"
+
+        ]);
+
+      });
+
+      linhas.push([
+        "",
+        "TOTAL MÊS",
+        minutosParaHora(totalMes),
+        minutosParaHora(totalExtraMes)
+      ]);
+
+      linhas.push([]);
+      linhas.push([]);
+
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    const ws = XLSX.utils.aoa_to_sheet(linhas);
+
+    // LARGURA COLUNAS
+    ws["!cols"] = [
+
+      { wch:15 },
+      { wch:60 },
+      { wch:15 },
+      { wch:15 }
+
+    ];
+
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      "Relatorio"
+    );
+
+    XLSX.writeFile(
+      wb,
+      `Relatorio_Ponto_${mes}.xlsx`
+    );
+
+  })
+  .catch(err=>{
+
+    console.log(err);
+
+    alert("Erro ao exportar Excel");
+
+  });
+
+}
 </script>
-
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </body>
 </html>

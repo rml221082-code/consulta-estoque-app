@@ -116,7 +116,7 @@
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
 
-        const local = `Lat:${lat} Lng:${lng}`;
+        const local = `${lat},${lng}`;
 
         fetch(API_URL,{
         method:"POST",
