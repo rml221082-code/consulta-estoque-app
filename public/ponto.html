@@ -43,13 +43,33 @@
     margin-top:15px;
     font-size:14px;
     }
+    .btn-relatorio{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.btn-relatorio:hover{
+  transform:translateY(-1px);
+  opacity:.95;
+}
     </style>
     </head>
 
     <body>
 
     <div class="container">
-    <h3 id="nomeFuncionario"></h3>
+        <h3 id="nomeFuncionario"></h3>
+
+        <button onclick="abrirRelatorioPonto()" class="btn-relatorio">📊 Relatório de Ponto</button>
+    
     <h2>Bater Ponto</h2>
 
     <button class="btn" onclick="baterPonto()">📍 Bater Ponto</button>
@@ -94,6 +114,9 @@
 
     const doc = await db.collection("usuarios").doc(user.uid).get();
     usuarioLogado = doc.data();
+
+    document.getElementById("nomeFuncionario").innerText =
+        "👤 " + usuarioLogado.nome;
 
     carregarPontos(); // 🔥 carrega ao entrar
 
@@ -252,6 +275,13 @@
 
     }
     </script>
+<script>
+function abrirRelatorioPonto(){
 
+  window.location.href =
+    "https://consulta-estoque-app.web.app/relatoriodeponto.html";
+
+}
+</script>
     </body>
     </html>
