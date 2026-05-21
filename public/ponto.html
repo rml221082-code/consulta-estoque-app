@@ -1,49 +1,55 @@
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bater Ponto</title>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bater Ponto</title>
 
-    <style>
-    body{
-    margin:0;
-    font-family:Arial;
-    background:#f4f6f8;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    }
+<style>
 
-    .container{
-    width:100%;
-    max-width:400px;
-    background:#fff;
-    padding:25px;
-    border-radius:12px;
-    box-shadow:0 8px 25px rgba(0,0,0,.1);
-    text-align:center;
-    }
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f4f6f8;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  padding:20px;
+}
 
-    h2{margin-bottom:20px}
+.container{
+  width:100%;
+  max-width:400px;
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 8px 25px rgba(0,0,0,.1);
+  text-align:center;
+}
 
-    .btn{
-    width:100%;
-    padding:20px;
-    font-size:18px;
-    border:none;
-    border-radius:10px;
-    background:#16a34a;
-    color:#fff;
-    cursor:pointer;
-    }
+h2{
+  margin-bottom:20px;
+}
 
-    .status{
-    margin-top:15px;
-    font-size:14px;
-    }
-    .btn-relatorio{
+.btn{
+  width:100%;
+  padding:20px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:#16a34a;
+  color:#fff;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.status{
+  margin-top:15px;
+  font-size:14px;
+}
+
+.btn-relatorio{
   width:100%;
   padding:14px;
   border:none;
@@ -54,234 +60,549 @@
   font-weight:bold;
   cursor:pointer;
   transition:.2s;
+  margin-bottom:15px;
 }
 
 .btn-relatorio:hover{
   transform:translateY(-1px);
   opacity:.95;
 }
-    </style>
-    </head>
 
-    <body>
+.offline{
+  background:#dc2626;
+  color:#fff;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:15px;
+  display:none;
+}
 
-    <div class="container">
-        <h3 id="nomeFuncionario"></h3>
+.online{
+  background:#16a34a;
+  color:#fff;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:15px;
+  display:none;
+}
 
-        <button onclick="abrirRelatorioPonto()" class="btn-relatorio">📊 Relatório de Ponto</button>
-    
-    <h2>Bater Ponto</h2>
+</style>
+</head>
 
-    <button class="btn" onclick="baterPonto()">📍 Bater Ponto</button>
+<body>
 
-    <div class="status" id="status"></div>
+<div class="container">
 
-    <!-- 🔥 LISTA FORA DO SCRIPT -->
-    <div id="listaPontos" style="margin-top:20px; text-align:left;"></div>
+  <div class="offline" id="offlineMsg">
+    📴 Você está offline
+  </div>
 
+  <div class="online" id="onlineMsg">
+    🌐 Conexão restaurada
+  </div>
+
+  <h3 id="nomeFuncionario"></h3>
+
+  <button onclick="abrirRelatorioPonto()" class="btn-relatorio">
+    📊 Relatório de Ponto
+  </button>
+
+  <h2>Bater Ponto</h2>
+
+  <button class="btn" onclick="baterPonto()">
+    📍 Bater Ponto
+  </button>
+
+  <div class="status" id="status"></div>
+
+  <div id="listaPontos" style="margin-top:20px; text-align:left;"></div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+
+
+<!-- CONFIG -->
+<script src="config.js"></script>
+
+<script>
+
+const API_URL = window.CONFIG.API_URL;
+
+// ========================================
+// FIREBASE
+// ========================================
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+
+  authDomain: "consulta-estoque-app.firebaseapp.com",
+
+  projectId: "consulta-estoque-app"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+const db = firebase.firestore();
+
+// 🔥 manter login salvo
+auth.setPersistence(
+  firebase.auth.Auth.Persistence.LOCAL
+)
+.then(()=>{
+
+  console.log("Persistência ativada");
+
+})
+.catch(err=>{
+
+  console.log("Erro persistência", err);
+
+});
+
+let usuarioLogado = null;
+
+// ========================================
+// SERVICE WORKER OFFLINE
+// ========================================
+
+if("serviceWorker" in navigator){
+
+  window.addEventListener("load", ()=>{
+
+    navigator.serviceWorker.register("./sw.js")
+    .then(()=>{
+
+      console.log("Service Worker registrado");
+
+    })
+    .catch(err=>{
+
+      console.log("Erro SW", err);
+
+    });
+
+  });
+
+}
+
+// ========================================
+// STATUS INTERNET
+// ========================================
+
+function atualizarStatusInternet(){
+
+  const offline = document.getElementById("offlineMsg");
+  const online = document.getElementById("onlineMsg");
+
+  if(navigator.onLine){
+
+    offline.style.display = "none";
+
+    online.style.display = "block";
+
+    setTimeout(()=>{
+      online.style.display = "none";
+    },3000);
+
+  }else{
+
+    offline.style.display = "block";
+
+  }
+
+}
+
+window.addEventListener("online", atualizarStatusInternet);
+window.addEventListener("offline", atualizarStatusInternet);
+
+atualizarStatusInternet();
+
+// ========================================
+// LOGIN
+// ========================================
+
+let usuarioCache = null;
+
+try{
+
+  usuarioCache =
+    JSON.parse(
+      localStorage.getItem("usuarioLogado")
+    );
+
+}catch(e){
+
+  console.log(e);
+
+}
+
+// ========================================
+// CARREGA CACHE IMEDIATO
+// ========================================
+
+if(usuarioCache){
+
+  usuarioLogado = usuarioCache;
+
+  document.getElementById("nomeFuncionario").innerText =
+    "👤 " + usuarioLogado.nome;
+
+  document.getElementById("status").innerText =
+    navigator.onLine
+    ? "🌐 Online"
+    : "📴 Offline";
+
+  console.log("Login cache OK");
+
+  // já libera sistema
+  carregarPontos();
+
+}else{
+
+  document.getElementById("status").innerText =
+    "Aguardando login...";
+
+}
+
+// ========================================
+// FIREBASE AUTH
+// ========================================
+
+auth.onAuthStateChanged(async user => {
+
+  console.log("Firebase:", user);
+
+  // usuário autenticado
+  if(user){
+
+    try{
+
+      const doc = await db.collection("usuarios")
+      .doc(user.uid)
+      .get();
+
+      const dadosUsuario = doc.data();
+
+      if(dadosUsuario){
+
+        usuarioLogado = dadosUsuario;
+
+        // salva cache
+        localStorage.setItem(
+          "usuarioLogado",
+          JSON.stringify(dadosUsuario)
+        );
+
+        document.getElementById("nomeFuncionario").innerText =
+          "👤 " + dadosUsuario.nome;
+
+        document.getElementById("status").innerText =
+          "🌐 Online";
+
+        carregarPontos();
+
+        console.log("Firebase login OK");
+
+      }
+
+    }catch(err){
+
+      console.log(err);
+
+    }
+
+    return;
+
+  }
+
+  // sem firebase mas tem cache
+  if(usuarioCache){
+
+    console.log("Usando cache offline");
+
+    return;
+
+  }
+
+  // sem login
+  if(navigator.onLine){
+
+    window.location.href =
+      "login.html";
+
+  }
+
+});
+// ========================================
+// BATER PONTO
+// ========================================
+
+function baterPonto(){
+
+  const status = document.getElementById("status");
+
+  if(!usuarioLogado){
+
+    status.innerText = "Aguarde login...";
+    return;
+
+  }
+
+  status.innerText = "Obtendo localização...";
+
+  navigator.geolocation.getCurrentPosition(pos => {
+
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+
+    const local = `${lat},${lng}`;
+    // 🔥 pega horário exato do clique
+const agora = new Date().toISOString();
+
+
+const dados = {
+
+  action:"registrarponto",
+  funcionario: usuarioLogado.nome,
+  localizacao: local,
+  dataHora: agora
+
+};
+
+    // OFFLINE
+    if(!navigator.onLine){
+
+      let fila =
+        JSON.parse(
+          localStorage.getItem("filaPontos") || "[]"
+        );
+
+      fila.push(dados);
+
+      localStorage.setItem(
+        "filaPontos",
+        JSON.stringify(fila)
+      );
+
+      status.innerText =
+        "📴 Ponto salvo offline";
+
+      return;
+
+    }
+
+    enviarPonto(dados);
+
+  }, err => {
+
+    status.innerText =
+      "Erro ao pegar localização";
+
+  });
+
+}
+
+// ========================================
+// ENVIAR PONTO
+// ========================================
+
+function enviarPonto(dados){
+
+  const status =
+    document.getElementById("status");
+
+  fetch(API_URL,{
+
+    method:"POST",
+
+    body: JSON.stringify(dados)
+
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    if(r.success){
+
+      status.innerText =
+        "✅ Ponto registrado";
+
+      carregarPontos();
+
+    }else{
+
+      status.innerText =
+        "Erro: " + r.erro;
+
+    }
+
+  })
+  .catch(err=>{
+
+    console.log(err);
+
+    status.innerText =
+      "Erro ao enviar";
+
+  });
+
+}
+// ========================================
+// LISTAR PONTOS
+// ========================================
+
+function carregarPontos(){
+
+  if(!usuarioLogado) return;
+
+  fetch(API_URL,{
+
+    method:"POST",
+
+    body: JSON.stringify({
+
+      action:"listarpontodia",
+      funcionario: usuarioLogado.nome
+
+    })
+
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    const div =
+      document.getElementById("listaPontos");
+
+    if(!r.rows || r.rows.length === 0){
+
+      div.innerHTML =
+        "<p>Nenhum ponto hoje</p>";
+
+      return;
+
+    }
+
+    let html =
+      "<h3>Pontos de Hoje</h3>";
+
+    r.rows.forEach(p=>{
+
+      const cor =
+        p.tipo === "ENTRADA"
+        ? "#16a34a"
+        : "#dc2626";
+
+      html += `
+
+      <div style="
+        padding:10px;
+        border-bottom:1px solid #ddd;
+      ">
+
+        <b style="color:${cor}">
+          ${p.tipo}
+        </b><br>
+
+        🕒 ${p.dataHora}
+
+      </div>
+
+      `;
+
+    });
+
+    html += `
+
+    <div style="
+      margin-top:15px;
+      font-weight:bold;
+    ">
+      ⏱ Total: ${r.totalHoras}
     </div>
 
-    <!-- FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    `;
 
-    <script src="config.js"></script>
+    if(r.horaExtra){
 
-    <script>
-    const API_URL = window.CONFIG.API_URL;
+      html += `
 
-    const firebaseConfig = {
-    apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
-    authDomain: "consulta-estoque-app.firebaseapp.com",
-    projectId: "consulta-estoque-app"
-    };
+      <div style="
+        color:#dc2626;
+        font-weight:bold;
+      ">
+        🔥 ${r.horaExtra}
+      </div>
 
-    firebase.initializeApp(firebaseConfig);
-
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let usuarioLogado = null;
-
-    // 🔐 LOGIN
-    auth.onAuthStateChanged(async user => {
-
-    if(!user){
-        window.location.href="login.html";
-        return;
-    }
-
-    const doc = await db.collection("usuarios").doc(user.uid).get();
-    usuarioLogado = doc.data();
-
-    document.getElementById("nomeFuncionario").innerText =
-        "👤 " + usuarioLogado.nome;
-
-    carregarPontos(); // 🔥 carrega ao entrar
-
-    });
-
-    // 📍 BATER PONTO
-    function baterPonto(){
-
-    const status = document.getElementById("status");
-
-    if(!usuarioLogado){
-        status.innerText = "Aguarde login...";
-        return;
-    }
-
-    status.innerText = "Obtendo localização...";
-
-    navigator.geolocation.getCurrentPosition(pos => {
-
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        const local = `${lat},${lng}`;
-
-        fetch(API_URL,{
-        method:"POST",
-        body: JSON.stringify({
-            action:"registrarponto",
-            funcionario: usuarioLogado.nome,
-            localizacao: local
-        })
-        })
-        .then(r=>r.json())
-        .then(r=>{
-
-        console.log(r);
-
-        if(r.success){
-            status.innerText = "✅ Ponto registrado!";
-            carregarPontos(); // 🔥 atualiza lista
-        }else{
-            status.innerText = "Erro: " + r.erro;
-        }
-
-        });
-
-    }, err => {
-        status.innerText = "Erro ao pegar localização";
-    });
+      `;
 
     }
 
-    // 📊 LISTAR PONTOS
-    function carregarPontos(){
+    div.innerHTML = html;
 
-    if(!usuarioLogado) return;
+  });
 
-    document.getElementById("nomeFuncionario").innerText =
-        "👤 " + usuarioLogado.nome;
+}
 
-    fetch(API_URL,{
-        method:"POST",
-        body: JSON.stringify({
-        action:"listarpontodia",
-        funcionario: usuarioLogado.nome
-        })
-    })
-    .then(r=>r.json())
-    .then(r=>{
+// ========================================
+// RELATÓRIO
+// ========================================
 
-        const div = document.getElementById("listaPontos");
-
-        if(!r.rows || r.rows.length === 0){
-        div.innerHTML = "<p>Nenhum ponto hoje</p>";
-        return;
-        }
-
-        let html = "<h3>Pontos de Hoje</h3>";
-
-        r.rows.forEach(p=>{
-
-        const cor = p.tipo === "ENTRADA" ? "#16a34a" : "#dc2626";
-
-        html += `
-            <div style="padding:10px; border-bottom:1px solid #ddd;">
-            <b style="color:${cor}">${p.tipo}</b><br>
-            🕒 ${p.dataHora}
-            </div>
-        `;
-        });
-
-        html += `
-        <div style="margin-top:15px; font-weight:bold;">
-            ⏱ Total: ${r.totalHoras}
-        </div>
-        `;
-
-        if(r.horaExtra){
-        html += `
-            <div style="color:#dc2626; font-weight:bold;">
-            🔥 ${r.horaExtra}
-            </div>
-        `;
-        }
-
-        div.innerHTML = html;
-
-    });
-
-    }
-    function converterParaSegundos(hora){
-    const [h,m,s] = hora.split(":").map(Number);
-    return h*3600 + m*60 + s;
-    }
-
-    // 🔧 segundos → HH:mm:ss
-    function formatarTempo(seg){
-
-    const h = String(Math.floor(seg / 3600)).padStart(2,'0');
-    const m = String(Math.floor((seg % 3600) / 60)).padStart(2,'0');
-    const s = String(seg % 60).padStart(2,'0');
-
-    return `${h}:${m}:${s}`;
-    }
-    function carregarAdmin(){
-
-    fetch(API_URL,{
-        method:"POST",
-        body: JSON.stringify({
-        action:"listarpontoadmin",
-        data: document.getElementById("dataFiltro").value
-        })
-    })
-    .then(r=>r.json())
-    .then(r=>{
-
-        let html = "";
-
-        for(let nome in r.dados){
-
-        html += `<h3>👤 ${nome}</h3>`;
-
-        r.dados[nome].forEach(p=>{
-            html += `
-            <div>
-                ${p.tipo} - ${p.hora}
-            </div>
-            `;
-        });
-
-        }
-
-        document.getElementById("resultado").innerHTML = html;
-
-    });
-
-    }
-    </script>
-<script>
 function abrirRelatorioPonto(){
 
   window.location.href =
-    "https://consulta-estoque-app.web.app/relatoriodeponto.html";
+    "./relatoriodeponto.html";
 
 }
+async function enviarFilaOffline(){
+
+  if(!navigator.onLine) return;
+
+  let fila =
+    JSON.parse(
+      localStorage.getItem("filaPontos") || "[]"
+    );
+
+  if(fila.length === 0) return;
+
+  for(const item of fila){
+
+    try{
+
+      await fetch(API_URL,{
+
+        method:"POST",
+
+        body: JSON.stringify(item)
+
+      });
+
+    }catch(e){
+
+      console.log(e);
+
+      return;
+
+    }
+
+  }
+
+  localStorage.removeItem("filaPontos");
+
+  carregarPontos();
+
+}
+
+// executa após criar função
+enviarFilaOffline();
 </script>
-    </body>
-    </html>
+
+</body>
+</html>

@@ -8,7 +8,7 @@
 
 
 window.CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbw3erF74yYTFrd042UGr-lqxFXDfihVM4Jqbknvhkr67wMnYD3ed55CczJlfWwetE0j4Q/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbysD12tX7M94yEH470ygB2KGDFqmXnwHRfSSx0dxzcXY0RuYRmMoILo1BNRn6lAifYSxw/exec",
   VERSION: "1.0",
   TIMEOUT: 5000
 };

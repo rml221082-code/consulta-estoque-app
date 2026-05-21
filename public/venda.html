@@ -308,7 +308,20 @@
             <body>
 
             <header id="topo">
-
+<div id="alerta" style="
+  display:none;
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#16a34a;
+  color:#fff;
+  padding:15px 20px;
+  border-radius:10px;
+  z-index:9999;
+  font-family:Arial;
+">
+</div>
         <div class="header-left">
         <span class="logo">Venda de Produtos</span>
         </div>
@@ -527,7 +540,7 @@ const API_URL = window.CONFIG.API_URL;
     function enviarPedido() {
 
     if (carrinho.length === 0) {
-        alert("Carrinho vazio");
+        mostrarAlerta("Carrinho vazio");
         return;
     }
 
@@ -553,19 +566,19 @@ const API_URL = window.CONFIG.API_URL;
     .then(r => r.json())
     .then(res => {
         if(res.success){
-        alert("Pedido enviado com sucesso!");
+        mostrarAlerta("Pedido enviado com sucesso!");
 
         carrinho = [];
         atualizarIcone();
         fecharCarrinho();
 
         } else {
-        alert("Erro ao enviar pedido");
+        mostrarAlerta("Erro ao enviar pedido");
         }
     })
     .catch(err => {
         console.error(err);
-        alert("Erro na conexão");
+        mostrarAlerta("Erro na conexão");
     });
 
     }
@@ -831,6 +844,19 @@ const API_URL = window.CONFIG.API_URL;
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
         <script>
+            function mostrarAlerta(msg){
+
+  const alerta = document.getElementById("alerta");
+
+  alerta.innerText = msg;
+
+  alerta.style.display = "block";
+
+  setTimeout(() => {
+    alerta.style.display = "none";
+  }, 2000);
+
+}
         const firebaseConfig = {
         apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
         authDomain: "consulta-estoque-app.firebaseapp.com",
@@ -877,7 +903,7 @@ const API_URL = window.CONFIG.API_URL;
 
         // 🔒 BLOQUEIA SE NÃO FOR ADMIN OU ADMINISTRATIVO
         if (tipo !== "admin" && tipo !== "administrativo") {
-        alert("Acesso permitido somente para Administrador!");
+        mostrarAlerta("Acesso permitido somente para Administrador!");
 
         await auth.signOut();
         window.location.href = "login.html";
@@ -887,7 +913,7 @@ const API_URL = window.CONFIG.API_URL;
 
         // 🔒 BLOQUEIO
         if (usuarioLogado.ativo === false) {
-            alert("Seu acesso está aguardando liberação do administrador.");
+            mostrarAlerta("Seu acesso está aguardando liberação do administrador.");
 
             await auth.signOut();
             window.location.href = "login.html";
@@ -984,7 +1010,7 @@ const API_URL = window.CONFIG.API_URL;
     vendaEmProcesso = true;
 
     if (carrinho.length === 0) {
-        alert("Carrinho vazio");
+        mostrarAlerta("Carrinho vazio");
         vendaEmProcesso = false;
         return;
     }
@@ -1027,7 +1053,7 @@ const API_URL = window.CONFIG.API_URL;
         console.log("RESPOSTA DO GAS:", res);
 
         if (res.erro) {
-        alert("Erro: " + res.erro);
+        mostrarAlerta("Erro: " + res.erro);
         return;
         }
 
@@ -1041,7 +1067,7 @@ const API_URL = window.CONFIG.API_URL;
         if (res.pdf) {
             window.open(res.pdf, "_blank");
         } else {
-            alert("Venda salva! PDF foi gerado no Drive.");
+            mostrarAlerta("Venda salva! PDF foi gerado no Drive.");
         }
     }, 2000);
 }
@@ -1051,12 +1077,12 @@ const API_URL = window.CONFIG.API_URL;
         fecharCarrinho();
         proximoIdVenda++;
 
-        alert("Venda finalizada com sucesso!");
+        mostrarAlerta("Venda finalizada com sucesso!");
         carregarDados(true);
     })
     .catch(err => {
         console.error(err);
-        alert("Erro ao salvar venda");
+        mostrarAlerta("Erro ao salvar venda");
     })
     .finally(() => {
         vendaEmProcesso = false;
@@ -1071,7 +1097,7 @@ const API_URL = window.CONFIG.API_URL;
             vendaEmProcesso = true;
 
             if (carrinho.length === 0) {
-            alert("Carrinho vazio");
+            mostrarAlerta("Carrinho vazio");
             vendaEmProcesso = false;
             return;
             }
@@ -1114,7 +1140,7 @@ const API_URL = window.CONFIG.API_URL;
             .then(res => {
 
             if (res.erro) {
-                alert("Erro: " + res.erro);
+                mostrarAlerta("Erro: " + res.erro);
                 return;
             }
 
@@ -1128,12 +1154,12 @@ const API_URL = window.CONFIG.API_URL;
             fecharCarrinho();
             proximoIdVenda++;
 
-            alert("Orçamento gerado com sucesso!");
+            mostrarAlerta("Orçamento gerado com sucesso!");
             carregarDados(true);
             })
             .catch(err => {
             console.error(err);
-            alert("Erro ao gerar orçamento");
+            mostrarAlerta("Erro ao gerar orçamento");
             })
             .finally(() => {
             vendaEmProcesso = false;
