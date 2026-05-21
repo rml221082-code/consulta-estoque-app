@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Justificativa de Ponto</title>
+
+<style>
+
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f3f4f6;
+  padding:20px;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+}
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+.topo{
+  background:#111827;
+  color:#fff;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+}
+
+h2,h3{
+  margin-top:0;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+@media(max-width:700px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+}
+
+label{
+  display:block;
+  margin-bottom:5px;
+  font-weight:bold;
+  color:#374151;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #d1d5db;
+  font-size:15px;
+  box-sizing:border-box;
+}
+
+textarea{
+  resize:none;
+  min-height:100px;
+}
+
+button{
+  border:none;
+  border-radius:10px;
+  padding:12px;
+  font-size:14px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn-enviar{
+  width:100%;
+  background:#2563eb;
+  color:#fff;
+  margin-top:15px;
+}
+
+.btn-aprovar{
+  background:#16a34a;
+  color:#fff;
+  width:100%;
+}
+
+.btn-rejeitar{
+  background:#dc2626;
+  color:#fff;
+  width:100%;
+  margin-top:10px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+}
+
+th{
+  background:#111827;
+  color:#fff;
+  padding:12px;
+  text-align:left;
+  font-size:14px;
+}
+
+td{
+  padding:12px;
+  border-bottom:1px solid #e5e7eb;
+  font-size:14px;
+  vertical-align:top;
+}
+
+.status{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.pendente{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.aprovado{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.rejeitado{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.link-anexo{
+  color:#2563eb;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="topo">
+
+  <h2>
+    📄 Justificativa de Ponto
+  </h2>
+
+  <div id="nomeFuncionario"></div>
+
+</div>
+
+<!-- SOLICITAÇÃO -->
+
+<div class="card">
+
+  <h3>
+    👨‍🔧 Solicitar Ajuste
+  </h3>
+
+  <div class="grid">
+
+    <div>
+
+      <label>Data</label>
+
+      <input type="date" id="data">
+
+    </div>
+
+    <div>
+
+      <label>Horário</label>
+
+      <input type="time" id="hora">
+
+    </div>
+
+    <div>
+
+      <label>Tipo</label>
+
+      <select id="tipo">
+
+        <option value="ENTRADA">
+          Entrada
+        </option>
+
+        <option value="SAIDA">
+          Saída
+        </option>
+
+      </select>
+
+    </div>
+
+    <div>
+
+      <label>Motivo</label>
+
+      <select id="motivo">
+
+        <option>
+          Esqueceu bater ponto
+        </option>
+
+        <option>
+          Celular sem internet
+        </option>
+
+        <option>
+          Problema aplicativo
+        </option>
+
+        <option>
+          Serviço externo
+        </option>
+
+        <option>
+          Outro
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+  <div style="margin-top:15px;">
+
+    <label>
+      Justificativa
+    </label>
+
+    <textarea id="justificativa"></textarea>
+
+  </div>
+
+  <!-- FOTO -->
+
+  <div style="margin-top:15px;">
+
+    <label>
+      📷 Anexar Foto / Atestado
+    </label>
+
+    <input
+      type="file"
+      id="foto"
+      accept="image/*,.pdf"
+    >
+
+  </div>
+
+  <button
+    class="btn-enviar"
+    onclick="enviarJustificativa()"
+  >
+    📤 Enviar Solicitação
+  </button>
+
+</div>
+
+<!-- LISTA -->
+
+<div class="card">
+
+  <h3>
+    🧑‍💼 Solicitações
+  </h3>
+
+  <div id="listaSolicitacoes">
+
+    <p>
+      Carregando...
+    </p>
+
+  </div>
+
+</div>
+
+</div>
+
+<!-- FIREBASE -->
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script src="config.js"></script>
+
+<script>
+
+const API_URL = window.CONFIG.API_URL;
+
+// FIREBASE
+
+const firebaseConfig = {
+
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID"
+
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+
+const db = firebase.firestore();
+
+let usuarioLogado = null;
+
+// LOGIN
+
+auth.onAuthStateChanged(async user => {
+
+  if(!user){
+
+    window.location.href = "login.html";
+
+    return;
+
+  }
+
+  const doc = await db.collection("usuarios")
+  .doc(user.uid)
+  .get();
+
+  usuarioLogado = doc.data();
+
+  document.getElementById("nomeFuncionario")
+  .innerText =
+    "👤 " + usuarioLogado.nome;
+
+  carregarSolicitacoes();
+
+});
+
+// BASE64
+
+function converterBase64(file){
+
+  return new Promise((resolve,reject)=>{
+
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+
+    reader.onload = () => {
+      resolve(reader.result);
+    };
+
+    reader.onerror = error => {
+      reject(error);
+    };
+
+  });
+
+}
+
+// ENVIAR
+
+async function enviarJustificativa(){
+
+  const data =
+    document.getElementById("data").value;
+
+  const hora =
+    document.getElementById("hora").value;
+
+  const tipo =
+    document.getElementById("tipo").value;
+
+  const motivo =
+    document.getElementById("motivo").value;
+
+  const justificativa =
+    document.getElementById("justificativa").value;
+
+  const arquivo =
+    document.getElementById("foto").files[0];
+
+  if(
+    !data ||
+    !hora ||
+    !justificativa
+  ){
+
+    alert("Preencha os campos");
+
+    return;
+
+  }
+
+  let fotoBase64 = "";
+
+  if(arquivo){
+
+    fotoBase64 =
+      await converterBase64(arquivo);
+
+  }
+
+  fetch(API_URL,{
+
+    method:"POST",
+
+    body: JSON.stringify({
+
+      action:"salvarjustificativa",
+
+      funcionario:
+        usuarioLogado.nome,
+
+      data:data,
+
+      hora:hora,
+
+      tipo:tipo,
+
+      motivo:motivo,
+
+      justificativa:justificativa,
+
+      foto:fotoBase64,
+
+      nomeArquivo:
+        arquivo
+        ? arquivo.name
+        : ""
+
+    })
+
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    if(r.success){
+
+      alert("Solicitação enviada");
+
+      document.getElementById("justificativa").value = "";
+
+      document.getElementById("foto").value = "";
+
+      carregarSolicitacoes();
+
+    }else{
+
+      alert("Erro ao enviar");
+
+    }
+
+  });
+
+}
+
+// LISTAR
+
+function carregarSolicitacoes(){
+
+  fetch(API_URL,{
+
+    method:"POST",
+
+    body: JSON.stringify({
+
+      action:"listarjustificativas"
+
+    })
+
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    const div =
+      document.getElementById("listaSolicitacoes");
+
+    if(!r.rows || r.rows.length === 0){
+
+      div.innerHTML =
+        "<p>Nenhuma solicitação</p>";
+
+      return;
+
+    }
+
+    let html = `
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Funcionário</th>
+          <th>Data</th>
+          <th>Hora</th>
+          <th>Tipo</th>
+          <th>Motivo</th>
+          <th>Justificativa</th>
+          <th>Anexo</th>
+          <th>Status</th>
+          <th>Observação</th>
+          <th>Ações</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+    `;
+
+    r.rows.forEach(item=>{
+
+      let classe = "pendente";
+
+      if(item.status === "APROVADO"){
+        classe = "aprovado";
+      }
+
+      if(item.status === "REJEITADO"){
+        classe = "rejeitado";
+      }
+
+      html += `
+
+      <tr>
+
+        <td>
+          ${item.funcionario}
+        </td>
+
+        <td>
+          ${item.data}
+        </td>
+
+        <td>
+          ${item.hora}
+        </td>
+
+        <td>
+          ${item.tipo}
+        </td>
+
+        <td>
+          ${item.motivo || ""}
+        </td>
+
+        <td>
+          ${item.justificativa}
+        </td>
+
+        <td>
+
+          ${
+            item.foto
+            ?
+            `
+            <a
+              href="${item.foto}"
+              target="_blank"
+              class="link-anexo"
+            >
+              📎 Visualizar
+            </a>
+            `
+            :
+            "Sem anexo"
+          }
+
+        </td>
+
+        <td>
+
+          <span class="status ${classe}">
+            ${item.status || "PENDENTE"}
+          </span>
+
+        </td>
+
+        <td>
+
+          <textarea
+            id="obs_${item.id}"
+            placeholder="Observação admin"
+          >${item.observacao || ""}</textarea>
+
+        </td>
+
+        <td>
+
+          <button
+            class="btn-aprovar"
+            onclick="aprovar('${item.id}')"
+          >
+            Aprovar
+          </button>
+
+          <button
+            class="btn-rejeitar"
+            onclick="rejeitar('${item.id}')"
+          >
+            Rejeitar
+          </button>
+
+        </td>
+
+      </tr>
+
+      `;
+
+    });
+
+    html += `
+      </tbody>
+    </table>
+    `;
+
+    div.innerHTML = html;
+
+  });
+
+}
+
+// APROVAR
+
+function aprovar(id){
+
+  const obs =
+    document.getElementById("obs_"+id).value;
+
+  fetch(API_URL,{
+
+    method:"POST",
+
+    body: JSON.stringify({
+
+      action:"aprovarjustificativa",
+
+      id:id,
+
+      observacao:obs,
+
+      aprovadoPor:
+        usuarioLogado.nome
+
+    })
+
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    alert("Aprovado");
+
+    carregarSolicitacoes();
+
+  });
+
+}
+
+// REJEITAR
+
+function rejeitar(id){
+
+  const obs =
+    document.getElementById("obs_"+id).value;
+
+  fetch(API_URL,{
+
+    method:"POST",
+
+    body: JSON.stringify({
+
+      action:"rejeitarjustificativa",
+
+      id:id,
+
+      observacao:obs,
+
+      aprovadoPor:
+        usuarioLogado.nome
+
+    })
+
+  })
+  .then(r=>r.json())
+  .then(r=>{
+
+    alert("Rejeitado");
+
+    carregarSolicitacoes();
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
