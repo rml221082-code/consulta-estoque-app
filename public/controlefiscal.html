@@ -143,7 +143,20 @@
   </head>
 
   <body>
-
+<div id="alerta" style="
+  display:none;
+  position:fixed;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#16a34a;
+  color:#fff;
+  padding:15px 20px;
+  border-radius:10px;
+  z-index:9999;
+  font-family:Arial;
+">
+</div>
   <div class="container">
 
   <h1>Controle Fiscal PRO V3</h1>
@@ -318,7 +331,7 @@ window.modoTodos = false
   if(r.success){
   carregar()
   }else{
-  alert("Erro ao cancelar")
+  mostrarAlerta("Erro ao cancelar")
   }
   })
 
@@ -711,10 +724,10 @@ function deletarComprovante(id, parcela, url){
   .then(r => {
 
     if(r.success){
-      alert("✅ Comprovante excluído!");
+      mostrarAlerta("✅ Comprovante excluído!");
       carregar();
     }else{
-      alert("Erro ao excluir: " + r.erro);
+      mostrarAlerta("Erro ao excluir: " + r.erro);
     }
 
   });
@@ -725,7 +738,7 @@ function deletarComprovante(id, parcela, url){
     const input = document.getElementById(`file_${id}_${parcela}`);
 
     if(!input){
-      alert("Erro ao abrir upload");
+      mostrarAlerta("Erro ao abrir upload");
       return;
     }
 
@@ -778,7 +791,7 @@ function deletarComprovante(id, parcela, url){
       })
       .then(r => r.json())
       .then(r => {
-        alert(r.success ? "✅ Pago e comprovante salvo!" : r.erro);
+        mostrarAlerta(r.success ? "✅ Pago e comprovante salvo!" : r.erro);
         carregar();
       });
 
@@ -791,7 +804,7 @@ function deletarComprovante(id, parcela, url){
   const nota = dados.find(n => String(n.id) === String(id));
 
   if(!nota){
-    alert("Nota não encontrada");
+    mostrarAlerta("Nota não encontrada");
     return;
   }
 
@@ -990,7 +1003,7 @@ function deletarComprovante(id, parcela, url){
 
     if(r.success){
 
-      alert("✅ Nota editada com sucesso");
+      mostrarAlerta("✅ Nota editada com sucesso");
 
       fecharModal();
 
@@ -998,7 +1011,7 @@ function deletarComprovante(id, parcela, url){
 
     }else{
 
-      alert("Erro ao editar: " + (r.erro || ""));
+      mostrarAlerta("Erro ao editar: " + (r.erro || ""));
 
     }
 
@@ -1007,7 +1020,7 @@ function deletarComprovante(id, parcela, url){
 
     console.error(err);
 
-    alert("Erro ao salvar edição");
+    mostrarAlerta("Erro ao salvar edição");
 
   });
 
@@ -1087,12 +1100,12 @@ function deletarComprovante(id, parcela, url){
       .then(r => {
         console.log(r);
         if(r.success){
-    alert(`✅ Pagamento realizado!
+    mostrarAlerta(`✅ Pagamento realizado!
 
   📄 Arquivo salvo:
   ${r.arquivo}`);
   }else{
-    alert("Erro: " + r.erro);
+    mostrarAlerta("Erro: " + r.erro);
   }
         carregar();
       });
@@ -1122,7 +1135,7 @@ function deletarComprovante(id, parcela, url){
     const lista = filtrar();
 
     if(lista.length === 0){
-      alert("Nenhum dado para exportar");
+      mostrarAlerta("Nenhum dado para exportar");
       return;
     }
 
