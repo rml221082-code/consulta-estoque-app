@@ -184,17 +184,15 @@ td{
 
     <div>
 
-      <label>Data</label>
-
-      <input type="date" id="data">
+      <label for="data">Data</label>
+<input type="date" id="data">
 
     </div>
 
     <div>
 
-      <label>Horário</label>
-
-      <input type="time" id="hora">
+      <label for="hora">Horário</label>
+<input type="time" id="hora">
 
     </div>
 
@@ -318,12 +316,13 @@ const API_URL = window.CONFIG.API_URL;
 // FIREBASE
 
 const firebaseConfig = {
-
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID"
-
-};
+        apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+        authDomain: "consulta-estoque-app.firebaseapp.com",
+        projectId: "consulta-estoque-app",
+        storageBucket: "consulta-estoque-app.firebasestorage.app",
+        messagingSenderId: "1065893590092",
+        appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+        };
 
 firebase.initializeApp(firebaseConfig);
 
@@ -385,116 +384,75 @@ function converterBase64(file){
 
 async function enviarJustificativa(){
 
-  const data =
-    document.getElementById("data").value;
+  const data = document.getElementById("data").value;
+  const hora = document.getElementById("hora").value;
+  const tipo = document.getElementById("tipo").value;
+  const motivo = document.getElementById("motivo").value;
+  const justificativa = document.getElementById("justificativa").value;
+  const arquivo = document.getElementById("foto").files[0];
 
-  const hora =
-    document.getElementById("hora").value;
-
-  const tipo =
-    document.getElementById("tipo").value;
-
-  const motivo =
-    document.getElementById("motivo").value;
-
-  const justificativa =
-    document.getElementById("justificativa").value;
-
-  const arquivo =
-    document.getElementById("foto").files[0];
-
-  if(
-    !data ||
-    !hora ||
-    !justificativa
-  ){
-
+  if(!data || !hora || !justificativa){
     alert("Preencha os campos");
-
     return;
-
   }
 
   let fotoBase64 = "";
+  let nomeArquivo = "";
 
   if(arquivo){
-
-    fotoBase64 =
-      await converterBase64(arquivo);
-
+    fotoBase64 = await converterBase64(arquivo);
+    nomeArquivo = arquivo.name;
   }
 
-  fetch(API_URL,{
+  const formData = new FormData();
 
-    method:"POST",
+formData.append("action", "salvarjustificativa");
+formData.append("funcionario", usuarioLogado.nome);
+formData.append("data", data);
+formData.append("hora", hora);
+formData.append("tipo", tipo);
+formData.append("motivo", motivo);
+formData.append("justificativa", justificativa);
+formData.append("foto", fotoBase64);
+formData.append("nomeArquivo", nomeArquivo);
 
-    body: JSON.stringify({
-
-      action:"salvarjustificativa",
-
-      funcionario:
-        usuarioLogado.nome,
-
-      data:data,
-
-      hora:hora,
-
-      tipo:tipo,
-
-      motivo:motivo,
-
-      justificativa:justificativa,
-
-      foto:fotoBase64,
-
-      nomeArquivo:
-        arquivo
-        ? arquivo.name
-        : ""
-
-    })
-
-  })
-  .then(r=>r.json())
-  .then(r=>{
+fetch(API_URL, {
+  method: "POST",
+  body: formData
+})
+  .then(r => r.json())
+  .then(r => {
 
     if(r.success){
-
-      alert("Solicitação enviada");
-
+      alert("Solicitação enviada com sucesso!");
       document.getElementById("justificativa").value = "";
-
       document.getElementById("foto").value = "";
-
       carregarSolicitacoes();
-
     }else{
-
       alert("Erro ao enviar");
-
     }
 
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Erro de conexão com servidor");
   });
 
 }
-
 // LISTAR
 
 function carregarSolicitacoes(){
 
-  fetch(API_URL,{
+  
 
-    method:"POST",
-
+  fetch(API_URL, {
+    method: "POST",
     body: JSON.stringify({
-
-      action:"listarjustificativas"
-
+      action: "listarjustificativas"
     })
-
   })
-  .then(r=>r.json())
-  .then(r=>{
+  .then(r => r.json())
+  .then(r => {
 
     const div =
       document.getElementById("listaSolicitacoes");
