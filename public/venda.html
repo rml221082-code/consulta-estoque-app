@@ -327,7 +327,7 @@
         </div>
 
         <div class="header-center">
-        <input id="busca" placeholder="Buscar produto..." oninput="buscar()" />
+        <input id="busca" placeholder="Buscar produto, Caixa ou Categoria..." oninput="buscar()" />
         </div>
 
         <div class="header-right">
@@ -601,16 +601,38 @@ const API_URL = window.CONFIG.API_URL;
         }
 
             function buscar() {
-            const termo = document.getElementById("busca").value.toLowerCase();
 
-            const filtrados = todosProdutos.filter(p =>
-        p.CATEGORIA && // 🔴 IGNORA categoria vazia
-        (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-        ((p.PRODUTO || "").toLowerCase().includes(termo))
+    const termo = document
+        .getElementById("busca")
+        .value
+        .toString()
+        .toLowerCase()
+        .trim();
+
+    const filtrados = todosProdutos.filter(p => {
+
+        const produto = String(p.PRODUTO || "")
+            .toLowerCase();
+
+        const caixa = String(p.CAIXA || "")
+            .toLowerCase();
+
+        const categoria = String(p.CATEGORIA || "")
+            .toLowerCase();
+
+        return (
+            (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+            (
+                produto.includes(termo) ||
+                caixa.includes(termo) ||
+                categoria.includes(termo)
+            )
         );
 
-            mostrar(filtrados);
-            }
+    });
+
+    mostrar(filtrados);
+}
 
             function mostrar(lista) {
             const div = document.getElementById("produtos");

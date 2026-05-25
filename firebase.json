@@ -16,6 +16,13 @@
       }
     ],
 
+    "rewrites": [
+      {
+        "source": "/entradanotas",
+        "destination": "/entradanotas.html"
+      }
+    ],
+
     "headers": [
       {
         "source": "/retirada.html",
