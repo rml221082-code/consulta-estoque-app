@@ -1,0 +1,603 @@
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Recebimento de Mercadoria</title>
+
+    <link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
+
+    <style>
+
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+    }
+
+    body{
+        font-family:Arial, sans-serif;
+        background:#f3f4f6;
+        padding-bottom:120px;
+    }
+
+    header{
+        background:#0f172a;
+        color:#fff;
+        padding:18px;
+        text-align:center;
+        position:sticky;
+        top:0;
+        z-index:999;
+        box-shadow:0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .container{
+        padding:15px;
+        max-width:500px;
+        margin:auto;
+    }
+
+    .card{
+        background:#fff;
+        border-radius:16px;
+        padding:15px;
+        margin-bottom:15px;
+        box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    label{
+        display:block;
+        margin-bottom:5px;
+        font-size:14px;
+        font-weight:bold;
+        color:#374151;
+    }
+
+    input, textarea{
+        width:100%;
+        padding:14px;
+        border:1px solid #d1d5db;
+        border-radius:12px;
+        margin-bottom:15px;
+        font-size:15px;
+        outline:none;
+    }
+
+    textarea{
+        resize:none;
+        min-height:90px;
+    }
+
+    button{
+        width:100%;
+        border:none;
+        background:#2563eb;
+        color:#fff;
+        padding:16px;
+        border-radius:14px;
+        font-size:16px;
+        font-weight:bold;
+        cursor:pointer;
+    }
+
+    button:active{
+        transform:scale(0.98);
+    }
+
+    .preview{
+        width:100%;
+        border-radius:16px;
+        margin-top:10px;
+        display:none;
+    }
+
+    .lista{
+        margin-top:20px;
+    }
+
+    .item{
+        background:#fff;
+        border-radius:16px;
+        overflow:hidden;
+        margin-bottom:20px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .item img{
+        width:100%;
+        display:block;
+    }
+
+    .info{
+        padding:15px;
+    }
+
+    .info h3{
+        margin-bottom:10px;
+        color:#111827;
+    }
+
+    .info p{
+        margin-bottom:8px;
+        color:#374151;
+        font-size:14px;
+    }
+
+    .badge{
+        background:#dbeafe;
+        color:#1d4ed8;
+        padding:5px 10px;
+        border-radius:30px;
+        font-size:12px;
+        display:inline-block;
+        margin-bottom:10px;
+    }
+
+    #alerta{
+        display:none;
+        position:fixed;
+        top:20px;
+        left:50%;
+        transform:translateX(-50%);
+        background:#16a34a;
+        color:#fff;
+        padding:14px 20px;
+        border-radius:12px;
+        z-index:99999;
+        font-size:14px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .loading{
+        text-align:center;
+        padding:20px;
+        color:#6b7280;
+    }
+
+    </style>
+    </head>
+    <body>
+
+    <div id="alerta"></div>
+
+    <header>
+        <h2>Recebimento de Mercadoria</h2>
+    </header>
+
+    <div class="container">
+
+        <div class="card">
+
+            <label>Quem entregou</label>
+            <input type="text" id="de" placeholder="Nome de quem entregou">
+
+            <label>Mercadoria</label>
+            <textarea id="mercadoria" placeholder="Descrição da mercadoria"></textarea>
+
+            <label>Para quem</label>
+            <input type="text" id="para" placeholder="Quem vai receber">
+
+            <label>Foto</label>
+            <input type="file" id="foto" accept="image/*" capture="environment">
+
+            <img id="preview" class="preview">
+
+            <button onclick="salvar()">Salvar Recebimento</button>
+
+        </div>
+
+        <div class="lista" id="lista"></div>
+
+    </div>
+
+    <script src="config.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+
+    function mostrarAlerta(msg){
+
+        const alerta = document.getElementById("alerta");
+
+        alerta.innerText = msg;
+
+        alerta.style.display = "block";
+
+        setTimeout(() => {
+            alerta.style.display = "none";
+        }, 2500);
+
+    }
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+        authDomain: "consulta-estoque-app.firebaseapp.com",
+        projectId: "consulta-estoque-app",
+        storageBucket: "consulta-estoque-app.firebasestorage.app",
+        messagingSenderId: "1065893590092",
+        appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let usuarioLogado = null;
+
+    auth.onAuthStateChanged(async user => {
+
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        let doc = await db.collection("usuarios").doc(user.uid).get();
+
+        if (!doc.exists) {
+
+            const novoUsuario = {
+                nome: user.displayName || "Usuário",
+                email: user.email,
+                tipo: "funcionario",
+                ativo: false,
+                nivel: 0
+            };
+
+            await db.collection("usuarios").doc(user.uid).set(novoUsuario);
+
+            usuarioLogado = novoUsuario;
+
+        } else {
+
+            usuarioLogado = doc.data();
+
+            const tipo = (usuarioLogado.tipo || "").toLowerCase();
+
+            if (tipo !== "admin" && tipo !== "administrativo") {
+
+                mostrarAlerta("Acesso permitido somente para Administrador!");
+
+                await auth.signOut();
+
+                window.location.href = "login.html";
+
+                return;
+            }
+        }
+
+        if (usuarioLogado.ativo === false) {
+
+            mostrarAlerta("Seu acesso está aguardando liberação do administrador.");
+
+            await auth.signOut();
+
+            window.location.href = "login.html";
+
+            return;
+        }
+
+        carregarLista();
+
+    });
+
+    const preview = document.getElementById("preview");
+
+    document.getElementById("foto").addEventListener("change", e => {
+
+        const file = e.target.files[0];
+
+        if(!file) return;
+
+        preview.src = URL.createObjectURL(file);
+
+        preview.style.display = "block";
+
+    });
+
+    function formatarDataBrasil(){
+
+        const agora = new Date();
+
+        return agora.toLocaleString("pt-BR", {
+            timeZone:"America/Sao_Paulo"
+        });
+
+    }
+
+
+    async function adicionarTextoNaImagem(file, texto){
+
+        return new Promise(resolve => {
+
+            const img = new Image();
+
+            img.onload = () => {
+
+                const canvas = document.createElement("canvas");
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                const ctx = canvas.getContext("2d");
+
+                ctx.drawImage(img, 0, 0);
+
+                ctx.fillStyle = "rgba(0,0,0,0.7)";
+                ctx.fillRect(20, canvas.height - 120, canvas.width - 40, 90);
+
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 40px Arial";
+
+                ctx.fillText(texto, 40, canvas.height - 60);
+
+                canvas.toBlob(blob => {
+                    resolve(blob);
+                }, "image/jpeg", 0.9);
+
+            };
+
+            img.src = URL.createObjectURL(file);
+
+        });
+
+    }
+
+    async function salvar(){
+
+        try{
+
+            const de = document.getElementById("de").value.trim();
+
+            const mercadoria = document.getElementById("mercadoria").value.trim();
+
+            const para = document.getElementById("para").value.trim();
+
+            const foto = document.getElementById("foto").files[0];
+
+            if(!de || !mercadoria || !para || !foto){
+
+                mostrarAlerta("Preencha todos os campos");
+
+                return;
+
+            }
+
+            mostrarAlerta("Salvando...");
+
+            // =========================================
+            // BUSCA ÚLTIMO ID
+            // =========================================
+
+            const ultimoReq = await fetch(
+                CONFIG.API_URL + "?action=ultimorecebimento"
+            );
+
+            const ultimo = await ultimoReq.json();
+
+            const id = Number(ultimo.id || 0) + 1;
+
+            const dataBrasil = formatarDataBrasil();
+
+            // =========================================
+            // ADICIONA TEXTO FOTO
+            // =========================================
+
+            const textoFoto = `ID ${id} - ${dataBrasil}`;
+
+            const blobEditado = await adicionarTextoNaImagem(
+                foto,
+                textoFoto
+            );
+
+            const base64 = await blobToBase64(blobEditado);
+
+            // =========================================
+            // FORM DATA IGUAL JUSTIFICATIVA
+            // =========================================
+
+            const formData = new FormData();
+
+            formData.append("action", "salvarrecebimento");
+
+            formData.append("id", id);
+
+            formData.append("data", dataBrasil);
+
+            formData.append("de", de);
+
+            formData.append("mercadoria", mercadoria);
+
+            formData.append("para", para);
+
+            formData.append("imagem", base64);
+
+            // =========================================
+            // ENVIA
+            // =========================================
+
+            const response = await fetch(CONFIG.API_URL, {
+
+                method:"POST",
+
+                body: formData
+
+            });
+
+            const result = await response.json();
+
+            console.log(result);
+
+            if(!result.success){
+
+                mostrarAlerta(result.erro || "Erro ao salvar");
+
+                return;
+
+            }
+
+            mostrarAlerta("Recebimento salvo");
+
+            document.getElementById("de").value = "";
+
+            document.getElementById("mercadoria").value = "";
+
+            document.getElementById("para").value = "";
+
+            document.getElementById("foto").value = "";
+
+            preview.style.display = "none";
+
+            carregarLista();
+
+        }catch(e){
+
+            console.error(e);
+
+            mostrarAlerta("Erro ao salvar");
+
+        }
+
+    }
+
+    async function carregarLista(){
+
+    const lista = document.getElementById("lista");
+
+    lista.innerHTML = `
+        <div class="loading">
+            Carregando...
+        </div>
+    `;
+
+    try{
+
+        const response = await fetch(
+            CONFIG.API_URL + "?action=listarrecebimento"
+        );
+
+        const dados = await response.json();
+
+        console.log(dados);
+
+        if(!dados || !Array.isArray(dados)){
+
+            lista.innerHTML = `
+                <div class="loading">
+                    Nenhum recebimento encontrado
+                </div>
+            `;
+
+            return;
+        }
+
+        lista.innerHTML = "";
+
+        dados.reverse().forEach(item => {
+
+            // =========================
+            // FORMATA DATA
+            // =========================
+
+            let dataFormatada = "";
+
+            if(item.data){
+
+                const dataObj = new Date(item.data);
+
+                dataFormatada = dataObj.toLocaleString(
+                    "pt-BR",
+                    {
+                        timeZone:"America/Sao_Paulo"
+                    }
+                );
+
+            }
+
+            // =========================
+            // FOTO
+            // =========================
+
+            let fotoHtml = "";
+
+if(item.linkFoto){
+
+    fotoHtml = `
+        <p style="margin-bottom:10px;">
+            <a
+                href="${item.linkFoto}"
+                target="_blank"
+                style="
+                    color:#2563eb;
+                    font-weight:bold;
+                    text-decoration:none;
+                "
+            >
+                Abrir Foto
+            </a>
+        </p>
+    `;
+
+}
+
+            lista.innerHTML += `
+                <div class="item">
+
+                    <div class="info">
+
+    <div class="badge">
+        ID ${item.id}
+    </div>
+
+    <h3>${item.mercadoria || ""}</h3>
+
+    ${fotoHtml}
+
+    <p>
+        <b>Data:</b>
+        ${dataFormatada}
+    </p>
+
+                    
+                </div>
+            `;
+
+        });
+
+    }catch(e){
+
+        console.error(e);
+
+        lista.innerHTML = `
+            <div class="loading">
+                Erro ao carregar
+            </div>
+        `;
+
+    }
+
+}
+    function blobToBase64(blob){
+
+        return new Promise((resolve,reject)=>{
+
+            const reader = new FileReader();
+
+            reader.onloadend = ()=> resolve(reader.result);
+
+            reader.onerror = reject;
+
+            reader.readAsDataURL(blob);
+
+        });
+
+    }
+    </script>
+
+    </body>
+    </html>

@@ -1,4 +1,38 @@
-const CACHE_NAME = "ponto-cache-v11";
+self.addEventListener("install", event => {
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    self.clients.claim()
+  );
+});
+
+self.addEventListener("fetch", event => {
+
+  event.respondWith(
+
+    fetch(event.request, {
+      cache: "no-store"
+    }).catch(() => {
+
+      return new Response(
+        "Sem conexão",
+        {
+          status: 503,
+          statusText: "Offline"
+        }
+      );
+
+    })
+
+  );
+
+});
+
+//toda a parte de off line do ponto 
+
+/* const CACHE_NAME = "ponto-cache-v13";
 
 // 🔥 SOMENTE arquivos do ponto offline
 const urlsToCache = [
@@ -102,4 +136,4 @@ self.addEventListener("fetch", event => {
 
   );
 
-});
+}); */
