@@ -62,8 +62,15 @@
 <body>
 
 <header></header>
+<br><br>
+<h1 data-tipo="administrativo funcionario admin">Links</h1>
+<div id="btnServico" class="botoes" style="display:none;">
 
-<h1>Links</h1>
+  <a href="https://consulta-estoque-app.web.app/ponto.html" data-tipo="administrativo funcionario admin">
+    <button class="btn btn-azul">Ponto</button>
+  </a>
+
+</div>
 <h1 data-tipo="administrativo funcionario admin">Pedidos</h1>
 <div class="botoes">
    <a href="https://consulta-estoque-app.web.app/pedidosdecompras.html" data-tipo="administrativo funcionario admin">
@@ -129,7 +136,7 @@
     
 </div>
 
-<h1 data-tipo="administrativo funcionario admin">EM TESTE</h1>
+<h1 data-tipo="administrativo funcionario admin">Retirada de Mercadoria</h1>
 <div class="botoes">
 <a href="https://consulta-estoque-app.web.app/retiradademercadoria.html" data-tipo="administrativo funcionario admin">
     <button class="btn btn-azul">Retirada de Mercadoria</button>
@@ -142,6 +149,7 @@
   <a href="https://consulta-estoque-app.web.app/admin.html" data-tipo="admin">
     <button class="btn btn-azul">Admin</button>
   </a>
+  
   <a href="https://consulta-estoque-app.web.app/orcamento.html" data-tipo="admin">
     <button class="btn btn-vermelho">Orçamento</button>
   </a>
@@ -282,6 +290,23 @@ document.querySelectorAll("[data-tipo]").forEach(el => {
 
 });
 </script>
+<script>
+firebase.auth().onAuthStateChanged((user) => {
 
+  if(user){
+
+    const emailsPermitidos = [
+  "dgoncalves1112@gmail.com",
+  "rml221082@gmail.com"
+];
+
+if(emailsPermitidos.includes(user.email)){
+  document.getElementById("btnServico").style.display = "block";
+}
+
+  }
+
+});
+</script>
 </body>
 </html>

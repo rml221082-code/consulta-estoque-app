@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <link rel="icon" href="https://i.imgur.com/PQgJbGG.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedidos de Compras</title>
@@ -126,6 +127,230 @@ td {
 
 .linha-emergencial {
   background: #ffe6e6 !important;
+}
+/* =========================
+   RESPONSIVO MOBILE
+========================= */
+@media screen and (max-width: 900px){
+
+  *{
+    box-sizing:border-box;
+  }
+
+  body{
+    padding:10px;
+    overflow-x:hidden;
+  }
+
+  /* HEADER */
+  header{
+    flex-direction:column;
+    gap:12px;
+    align-items:stretch;
+    padding:12px;
+    border-radius:0 0 14px 14px;
+  }
+
+  header div:first-child{
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+  }
+
+  .header-right{
+    width:100%;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+
+  #userBox{
+    width:100%;
+    justify-content:center;
+    border-radius:14px;
+    padding:10px;
+  }
+
+  #userBox img{
+    width:40px;
+    height:40px;
+  }
+
+  #userBox button{
+    padding:8px 12px;
+    font-size:13px;
+  }
+
+  /* TÍTULOS */
+  h1{
+    font-size:24px;
+    margin-top:20px;
+  }
+
+  h2{
+    font-size:20px;
+    margin-top:25px;
+  }
+
+  /* FORM */
+  .form-container{
+    width:100%;
+    padding:15px;
+    border-radius:14px;
+  }
+
+  label{
+    font-size:14px;
+    font-weight:bold;
+  }
+
+  input,
+  select,
+  textarea{
+    font-size:16px;
+    padding:12px;
+    border-radius:10px;
+    margin-top:6px;
+  }
+
+  textarea{
+    min-height:90px;
+  }
+
+  /* BOTÕES FORM */
+  .botoes{
+    flex-direction:column;
+    width:100%;
+  }
+
+  .botoes button{
+    width:100%;
+    height:48px;
+    font-size:15px;
+  }
+
+  /* FILTROS */
+  .filtros-mobile{
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:10px !important;
+  }
+
+  .filtros-mobile button,
+  .filtros-mobile input{
+    width:100%;
+    min-height:45px;
+    font-size:15px;
+  }
+
+  /* TABELA RESPONSIVA */
+  table{
+    display:block;
+    width:100%;
+    overflow-x:auto;
+    white-space:nowrap;
+    border-radius:12px;
+  }
+
+  thead{
+    font-size:13px;
+  }
+
+  th,
+  td{
+    font-size:13px;
+    padding:10px 8px;
+  }
+
+  td input[type="date"]{
+    min-width:140px;
+  }
+
+  td button{
+    min-width:120px;
+    min-height:40px;
+    font-size:13px;
+  }
+
+  /* STATUS */
+  .status-pendente,
+  .status-comprado,
+  .status-entregue{
+    font-size:12px;
+    padding:6px;
+  }
+
+}
+/* MOBILE PEDIDOS */
+.pedido-card{
+  background:#fff;
+  border-radius:14px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 3px 12px rgba(0,0,0,0.08);
+}
+
+.pedido-topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.pedido-funcionario{
+  font-weight:bold;
+  font-size:16px;
+  color:#1f2937;
+}
+
+.pedido-item{
+  margin-bottom:12px;
+  font-size:14px;
+  color:#374151;
+  word-break:break-word;
+}
+
+.pedido-item b{
+  color:#111827;
+}
+
+.pedido-acoes{
+  margin-top:15px;
+  display:flex;
+  justify-content:center;
+}
+
+.pedido-acoes button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#1f6feb;
+  color:#fff;
+  font-weight:bold;
+  font-size:15px;
+}
+
+/* ESCONDE TABELA NO MOBILE */
+@media(max-width:768px){
+
+  table thead{
+    display:none;
+  }
+
+  table,
+  table tbody,
+  table tr,
+  table td{
+    display:block;
+    width:100%;
+    border:none;
+  }
+
+  table{
+    background:none;
+  }
+
 }
 </style>
 </head>
@@ -305,7 +530,16 @@ headerRight.appendChild(userBox);
 </div>
 
 <h2>Pedidos</h2>
-<div style="background:#fff;padding:15px;border-radius:8px;margin-bottom:15px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center;">
+<div class="filtros-mobile" style="
+background:#fff;
+padding:15px;
+border-radius:8px;
+margin-bottom:15px;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+justify-content:center;
+">
 
   <!-- STATUS -->
   <button type="button" onclick="filtrarStatus('PENDENTE')" id="btnPendente">🟡 Pendente</button>
@@ -476,8 +710,7 @@ function salvarPrevisao(linha, data){
   .then(() => carregarPedidos());
 
 }
-
-// ===== SALVAR FORM =====
+// ===== CARREGAR PEDIDOS =====
 async function carregarPedidos(){
 
   const tbody = document.getElementById("tbodyPedidos");
@@ -497,21 +730,13 @@ async function carregarPedidos(){
       ? resJson
       : (resJson.rows || resJson.dados || []);
 
-    if(dados.length === 0){
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="9">Nenhum pedido encontrado</td>
-        </tr>
-      `;
-      return;
-    }
-
     dadosGlobal = dados;
 
     renderTabela();
     atualizarContadores();
 
-  } catch(err){
+  }catch(err){
+
     console.error(err);
 
     tbody.innerHTML = `
@@ -520,7 +745,21 @@ async function carregarPedidos(){
       </tr>
     `;
   }
-} 
+
+}
+// ===== SALVAR FORM =====
+function quebrarLinha(texto, limite = 65){
+
+  if(!texto) return "";
+
+  let resultado = "";
+
+  for(let i = 0; i < texto.length; i += limite){
+    resultado += texto.substring(i, i + limite) + "<br>";
+  }
+
+  return resultado;
+}
 function renderTabela(){
 
   const tbody = document.getElementById("tbodyPedidos");
@@ -529,23 +768,23 @@ function renderTabela(){
   let filtrados = dadosGlobal;
 
   if (filtroStatus !== "TODOS") {
-  filtrados = filtrados.filter(p => {
-    const status = (p.status || "")
-      .toString()
-      .trim()
-      .toUpperCase();
+    filtrados = filtrados.filter(p => {
+      const status = (p.status || "")
+        .toString()
+        .trim()
+        .toUpperCase();
 
-    return status === filtroStatus;
-  });
-}
+      return status === filtroStatus;
+    });
+  }
 
   if(buscaTexto){
-  filtrados = filtrados.filter(p =>
-    String(p.funcionario || "").toLowerCase().includes(buscaTexto) ||
-    String(p.pedido || "").toLowerCase().includes(buscaTexto) ||
-    String(p.observacao || "").toLowerCase().includes(buscaTexto)
-  );
-}
+    filtrados = filtrados.filter(p =>
+      String(p.funcionario || "").toLowerCase().includes(buscaTexto) ||
+      String(p.pedido || "").toLowerCase().includes(buscaTexto) ||
+      String(p.observacao || "").toLowerCase().includes(buscaTexto)
+    );
+  }
 
   if(filtroData){
     filtrados = filtrados.filter(p =>
@@ -558,44 +797,199 @@ function renderTabela(){
   }
 
   if(filtrados.length === 0){
-    tbody.innerHTML = `<tr><td colspan="9">Nenhum resultado</td></tr>`;
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9">Nenhum resultado</td>
+      </tr>
+    `;
     return;
   }
 
+  // 🔥 MOBILE
+  if(window.innerWidth <= 768){
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" style="padding:0;border:none;background:none;">
+          <div id="cardsPedidos"></div>
+        </td>
+      </tr>
+    `;
+
+    const cards = document.getElementById("cardsPedidos");
+
+    filtrados.forEach(p => {
+
+      const status = (p.status || "")
+        .toString()
+        .trim()
+        .toUpperCase();
+
+      let classeStatus =
+        status === "PENDENTE" ? "status-pendente" :
+        status === "COMPRADO" ? "status-comprado" :
+        "status-entregue";
+
+      let textoStatus =
+        status === "PENDENTE" ? "🟡 PENDENTE" :
+        status === "COMPRADO" ? "🔵 COMPRADO" :
+        "🟢 ENTREGUE";
+
+      cards.innerHTML += `
+        <div class="pedido-card ${p.emergencial === "SIM" ? "linha-emergencial" : ""}">
+
+          <div class="pedido-topo">
+            <div class="pedido-funcionario">
+              👤 ${p.funcionario || ""}
+            </div>
+
+            <div class="${classeStatus}">
+              ${textoStatus}
+            </div>
+          </div>
+
+          <div class="pedido-item">
+            <b>📅 Data:</b><br>
+            ${p.dataHora || ""}
+          </div>
+
+          <div class="pedido-item">
+            <b>🏢 Departamento:</b><br>
+            ${p.departamento || ""}
+          </div>
+
+          <div class="pedido-item" style="
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:break-word;
+">
+  <b>📝 Observação:</b><br>
+  ${p.observacao || ""}
+</div>
+
+          <div class="pedido-item">
+            <b>📦 Pedido:</b><br>
+            ${p.pedido || ""}
+          </div>
+
+          <div class="pedido-item">
+            <b>🚨 Emergencial:</b><br>
+            ${p.emergencial === "SIM" ? "SIM" : "NÃO"}
+          </div>
+
+          <div class="pedido-item">
+            <b>📆 Previsão:</b><br>
+
+            ${
+              podeEditar
+              ? `<input type="date"
+                  value="${formatarDataISO(p.previsao)}"
+                  onchange="salvarPrevisao(${p.linha}, this.value)">`
+              : `<input type="date"
+                  value="${formatarDataISO(p.previsao)}"
+                  disabled>`
+            }
+          </div>
+
+          <div class="pedido-acoes">
+
+            ${
+              podeEditar
+                ? (
+                    status === "PENDENTE"
+                      ? `<button onclick="comprar(${p.linha})">
+                          🛒 Comprar
+                        </button>`
+                      : status === "COMPRADO"
+                      ? `<button onclick="entregar(${p.linha})">
+                          📦 Entregar
+                        </button>`
+                      : `<span style="color:green;font-weight:bold;">
+                          ✔ Finalizado
+                        </span>`
+                  )
+                : `<span style="color:#999;">🔒 Sem permissão</span>`
+            }
+
+          </div>
+
+        </div>
+      `;
+    });
+
+    return;
+  }
+function atualizarContadores(){
+
+  const totalP = dadosGlobal.filter(
+    p => (p.status || "").toUpperCase().trim() === "PENDENTE"
+  ).length;
+
+  const totalC = dadosGlobal.filter(
+    p => (p.status || "").toUpperCase().trim() === "COMPRADO"
+  ).length;
+
+  const totalE = dadosGlobal.filter(
+    p => (p.status || "").toUpperCase().trim() === "ENTREGUE"
+  ).length;
+
+  document.getElementById("btnPendente").innerText =
+    `🟡 Pendente (${totalP})`;
+
+  document.getElementById("btnComprado").innerText =
+    `🔵 Comprado (${totalC})`;
+
+  document.getElementById("btnEntregue").innerText =
+    `🟢 Entregue (${totalE})`;
+
+}
+  // 🔥 DESKTOP NORMAL
   filtrados.forEach(p => {
 
-  const status = (p.status || "")
-    .toString()
-    .trim()
-    .toUpperCase(); 
+    const status = (p.status || "")
+      .toString()
+      .trim()
+      .toUpperCase();
 
     tbody.innerHTML += `
       <tr class="${p.emergencial === "SIM" ? "linha-emergencial" : ""}">
         <td>${p.dataHora}</td>
         <td>${p.funcionario || ""}</td>
         <td>${p.departamento || ""}</td>
-        <td>${p.observacao || ""}</td>
+        <td style="
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  max-width:300px;
+">
+  ${p.observacao || ""}
+</td>
         <td>${p.pedido|| ""}</td>
         <td>${p.emergencial === "SIM" ? "🚨SIM🚨" : "NÃO"}</td>
 
         <td class="${
-  status === "PENDENTE" ? "status-pendente" :
-  status === "COMPRADO" ? "status-comprado" :
-  "status-entregue"
-}">
-  ${
-    status === "PENDENTE" ? "🟡 PENDENTE" :
-    status === "COMPRADO" ? "🔵 COMPRADO" :
-    "🟢 ENTREGUE"
-  }
-</td> 
+          status === "PENDENTE" ? "status-pendente" :
+          status === "COMPRADO" ? "status-comprado" :
+          "status-entregue"
+        }">
+
+          ${
+            status === "PENDENTE" ? "🟡 PENDENTE" :
+            status === "COMPRADO" ? "🔵 COMPRADO" :
+            "🟢 ENTREGUE"
+          }
+
+        </td>
+
         <td>
           ${
             podeEditar
             ? `<input type="date"
                 value="${formatarDataISO(p.previsao)}"
                 onchange="salvarPrevisao(${p.linha}, this.value)">`
-            : `<input type="date" value="${formatarDataISO(p.previsao)}" disabled>`
+            : `<input type="date"
+                value="${formatarDataISO(p.previsao)}"
+                disabled>`
           }
         </td>
 
@@ -605,7 +999,7 @@ function renderTabela(){
               ? (
                   status === "PENDENTE"
                     ? `<button onclick="comprar(${p.linha})">🛒 Comprar</button>`
-                    : p.status === "COMPRADO"
+                    : status === "COMPRADO"
                     ? `<button onclick="entregar(${p.linha})">📦 Entregar</button>`
                     : `<span style="color:green;">✔ Finalizado</span>`
                 )
@@ -615,58 +1009,30 @@ function renderTabela(){
       </tr>
     `;
   });
-}
+};
 function atualizarContadores(){
-const totalP = dadosGlobal.filter(p => (p.status || "").toUpperCase().trim() === "PENDENTE").length;
-const totalC = dadosGlobal.filter(p => (p.status || "").toUpperCase().trim() === "COMPRADO").length;
-const totalE = dadosGlobal.filter(p => (p.status || "").toUpperCase().trim() === "ENTREGUE").length;
 
-  document.getElementById("btnPendente").innerText = `🟡 Pendente (${totalP})`;
-  document.getElementById("btnComprado").innerText = `🔵 Comprado (${totalC})`;
-  document.getElementById("btnEntregue").innerText = `🟢 Entregue (${totalE})`;
+  const totalP = dadosGlobal.filter(
+    p => (p.status || "").toUpperCase().trim() === "PENDENTE"
+  ).length;
+
+  const totalC = dadosGlobal.filter(
+    p => (p.status || "").toUpperCase().trim() === "COMPRADO"
+  ).length;
+
+  const totalE = dadosGlobal.filter(
+    p => (p.status || "").toUpperCase().trim() === "ENTREGUE"
+  ).length;
+
+  document.getElementById("btnPendente").innerText =
+    `🟡 Pendente (${totalP})`;
+
+  document.getElementById("btnComprado").innerText =
+    `🔵 Comprado (${totalC})`;
+
+  document.getElementById("btnEntregue").innerText =
+    `🟢 Entregue (${totalE})`;
 }
-// ===== ENVIAR PEDIDO (FORMULÁRIO) =====
-document.getElementById("formPedidos").addEventListener("submit", async function(e){
-  e.preventDefault();
-
-  const form = e.target;
-
-  const dados = {
-    action: "salvarpedido",
-    funcionario: usuarioLogado?.nome || "Sem nome",
-    departamento: form.departamento.value,
-    observacao: form.observacao.value,
-    pedido: form.pedido.value,
-    emergencial: form.emergencial.value
-  };
-
-  try{
-
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: new URLSearchParams(dados)
-    });
-
-    const json = await res.json();
-
-    if(json.success){
-
-      alert("✅ Pedido enviado com sucesso!");
-
-      form.reset();
-
-      carregarPedidos(); // atualiza tabela
-
-    }else{
-      alert("Erro: " + (json.erro || "Falha ao salvar"));
-    }
-
-  }catch(err){
-    console.error(err);
-    alert("Erro de conexão");
-  }
-
-});
 // ===== INICIAR =====
 carregarPedidos();
 atualizarBotoes();

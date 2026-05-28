@@ -376,8 +376,15 @@ function debounceBuscar() {
     }
 
     function atualizarIcone() {
-      document.getElementById("qtdCarrinho").innerText = carrinho.length;
-    }
+
+  let totalItens = 0;
+
+  carrinho.forEach(item => {
+    totalItens += item.qtd;
+  });
+
+  document.getElementById("qtdCarrinho").innerText = totalItens;
+}
 
     function abrirCarrinho() {
       atualizarCarrinho();
