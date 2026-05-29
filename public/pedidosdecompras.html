@@ -919,30 +919,7 @@ function renderTabela(){
 
     return;
   }
-function atualizarContadores(){
 
-  const totalP = dadosGlobal.filter(
-    p => (p.status || "").toUpperCase().trim() === "PENDENTE"
-  ).length;
-
-  const totalC = dadosGlobal.filter(
-    p => (p.status || "").toUpperCase().trim() === "COMPRADO"
-  ).length;
-
-  const totalE = dadosGlobal.filter(
-    p => (p.status || "").toUpperCase().trim() === "ENTREGUE"
-  ).length;
-
-  document.getElementById("btnPendente").innerText =
-    `🟡 Pendente (${totalP})`;
-
-  document.getElementById("btnComprado").innerText =
-    `🔵 Comprado (${totalC})`;
-
-  document.getElementById("btnEntregue").innerText =
-    `🟢 Entregue (${totalE})`;
-
-}
   // 🔥 DESKTOP NORMAL
   filtrados.forEach(p => {
 
@@ -1033,6 +1010,54 @@ function atualizarContadores(){
   document.getElementById("btnEntregue").innerText =
     `🟢 Entregue (${totalE})`;
 }
+document.getElementById("formPedidos").addEventListener("submit", async (e) => {
+
+  e.preventDefault();
+
+  try {
+
+    const form = e.target;
+
+    const dados = {
+      action: "salvarpedido",
+      funcionario: usuarioLogado?.nome || "Sem nome",
+      departamento: form.departamento.value,
+      pedido: form.pedido.value,
+      observacao: form.observacao.value,
+      emergencial: form.emergencial.value
+    };
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: new URLSearchParams(dados)
+    });
+
+    const json = await res.json();
+
+    console.log(json);
+
+    if (json.success) {
+
+      alert("Pedido salvo com sucesso!");
+
+      form.reset();
+
+      carregarPedidos();
+
+    } else {
+
+      alert("Erro: " + (json.erro || "Falha ao salvar"));
+
+    }
+
+  } catch (erro) {
+
+    console.error(erro);
+    alert("Erro ao enviar pedido.");
+
+  }
+
+});
 // ===== INICIAR =====
 carregarPedidos();
 atualizarBotoes();
