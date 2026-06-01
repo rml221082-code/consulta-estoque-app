@@ -1,0 +1,1027 @@
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+    <meta charset="UTF-8">
+    <title>Inventário</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/PQgJbGG.png">
+
+    <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f4f4;
+    }
+    #sidebar {
+  position: fixed;
+  left: 0;
+  top: 70px;
+  bottom: 0;
+  width: 220px;
+  background: #fff;
+  border-right: 1px solid #ccc;
+  padding: 15px;
+
+  overflow-y: auto; /* 🔥 ISSO AQUI RESOLVE */
+    }
+    /* HEADER */
+    header {
+  background: #0b00a0;
+  color: #fff;
+  padding: 10px 20px;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* LINHA DE CIMA */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.4rem;
+}
+
+/* BOTÕES */
+.acoes button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* BUSCA */
+.header-busca {
+  margin-top: 10px;
+}
+
+.header-busca input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+    #carrinhoBtn {
+      
+      position: fixed;
+      right: 250px;
+      background: #e3e701;
+      border: none;
+      padding: 12px;
+      color: #000000;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #busca-area 
+    input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+    /* SIDEBAR */
+  #sidebar {
+  top: 110px;
+  height: calc(100vh - 110px);
+}
+
+    #categorias a {
+      display: block;
+      padding: 10px;
+      margin-bottom: 4px;
+      text-decoration: none;
+      color: #222;
+      border-radius: 6px;
+    }
+
+    #categorias a:hover,
+    #categorias a.ativo {
+      background: #0b00a0;
+      color: #fff;
+    }
+
+    /* MAIN */
+   main {
+  margin-left: 240px;
+  padding: 130px 30px 30px;
+}
+
+    #produtos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    /* CARD */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,.1);
+      overflow: hidden;
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .card .info {
+      padding: 12px;
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #121111;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    /* MODAL CARRINHO */
+    #modalCarrinho {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      justify-content: center;
+      align-items: center;
+    }
+
+    #boxCarrinho {
+      background: #fff;
+      width: 95%;
+      max-width: 1200px;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background: #eee;
+    }
+
+    input[type=number] {
+      width: 90px;
+    }
+
+    .total-geral {
+      margin-top: 10px;
+      text-align: right;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    button {
+      cursor: pointer;
+    }
+    .tabela-scroll {
+    max-height: 400px; /* altura máxima */
+    overflow-y: auto;  /* ativa scroll vertical */
+    margin-top: 10px;
+  }
+
+  /* opcional: deixa o cabeçalho fixo */
+  .tabela-scroll thead th {
+    position: sticky;
+    top: 0;
+    background: #eee;
+    z-index: 2;
+  }
+    </style>
+    </head>
+
+    <body>
+
+   <header>
+  <div class="header-top">
+    <span>Inventário</span>
+
+    <div class="acoes">
+  
+      <button id="carrinhoBtn" onclick="abrirCarrinho()">
+        🛒 Carrinho (<span id="qtdCarrinho">0</span>)
+      </button>
+    </div>
+  </div>
+
+  <div class="header-busca">
+    <input id="busca" placeholder="Buscar produto, Caixa ou Categoria..." oninput="debounceBuscar()"/>
+  </div>
+  
+</header>
+
+    <aside id="sidebar">
+      <h3>Categorias</h3>
+      <div id="categorias"></div>
+    </aside>
+
+    <main>
+        
+
+        <div id="loading"></div>
+        <div id="erro" class="erro"></div>
+        <div id="produtos"></div>
+      </main>
+  
+      
+    <!-- MODAL CARRINHO -->
+    <div id="modalCarrinho">
+      <div id="boxCarrinho">
+        <h2><center>Carrinho de Entrada</center></h2>
+  <div class="tabela-scroll">
+        <table>
+          <thead>
+<tr>
+  <th>CATEGORIA</th>
+  <th>PRODUTO</th>
+  <th>CAIXA</th>
+  <th>ESTOQUE</th>
+  <th>CONTAGEM</th>
+  <th>DIFERENÇA</th>
+  <th>VALOR COMPRA</th>
+  <th>VALOR VENDA</th>
+  <th>IPI</th>
+  <th>ICMS</th>
+  <th>% VENDA</th>
+  <th>AÇÃO</th>
+</tr>
+</thead>
+          <tbody id="listaCarrinho"></tbody>
+        </table>
+  </div>
+        <div class="total-geral">
+          Total Geral: <span id="totalGeral">R$ 0,00</span>
+        </div>
+
+        <br>
+        <button onclick="fecharCarrinho()">Fechar</button>
+        <button onclick="salvarInventario()" style="background:#0d6efd;color:#fff;padding:10px 20px;border:none;">
+          SALVAR INVENTÁRIO
+        </button>
+      </div>
+    </div>
+  <script>
+  function fecharCarrinho() {
+    document.getElementById("modalCarrinho").style.display = "none";
+  }
+  </script>
+
+   <script src="config.js"></script>
+    <script>
+    const API_URL = window.CONFIG.API_URL;
+    
+    
+    let carrinho = [];
+    let produtos = [];
+    let produtosBase = [];
+    let categoriaAtual = "";
+    let inventario = [];
+
+let timerBusca;
+
+function debounceBuscar() {
+  clearTimeout(timerBusca);
+  timerBusca = setTimeout(buscar, 300);
+}
+    /* ======= RENDERIZA PRODUTOS ======= */
+  function tratarImagem(url) {
+  if (!url) return "https://via.placeholder.com/300";
+
+  // padrão /d/ID/
+  let match = url.match(/\/d\/(.*?)\//);
+  if (match && match[1]) {
+    return `https://lh3.googleusercontent.com/d/${match[1]}=w500`;
+  }
+
+  // padrão id=ID
+  match = url.match(/id=(.*?)(?:&|$)/);
+  if (match && match[1]) {
+    return `https://lh3.googleusercontent.com/d/${match[1]}=w500`;
+  }
+
+  return url;
+}
+  
+  function fecharModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+  function abrirModal(p) {
+      const chave = (p.CATEGORIA || "") + (p.PRODUTO || "");
+
+      document.getElementById("modalImg").src = tratarImagem(p["IMAGEM APP"]);
+
+      document.getElementById("modalDesc").innerHTML = `
+        <h2>${p.PRODUTO}</h2>
+
+        
+        <p><b>Categoria:</b> ${p.CATEGORIA}</p>
+        <p><b>Categoria + Produto:</b> ${chave}</p>
+        <p><b>Quantidade:</b> ${p.QUANTIDADE || '0'}</p>
+        <p><b>Caixa:</b> ${p.CAIXA || ""}</p>
+
+        <h2>
+        <p><b>Valor:</b> ${dinheiro(p.VALOR_VENDA)}</p>
+
+        </h2>
+      `;
+
+      document.getElementById("modal").style.display = "flex";
+    }
+
+      
+
+    /* ======= CARRINHO ======= */
+
+function addInventario(p){
+
+  const existente = inventario.find(
+    x => String(x.ID_PRODUTO) === String(p.ID_PRODUTO)
+  );
+
+  if(existente){
+    alert("Produto já adicionado ao inventário");
+    return;
+  }
+
+  inventario.push({
+
+    ID_PRODUTO: p.ID_PRODUTO,
+
+    PRODUTO: p.PRODUTO,
+
+    CATEGORIA: p.CATEGORIA,
+
+    caixa: p.CAIXA || "",
+
+    estoqueAtual: Number(p.QUANTIDADE || 0),
+
+    contagem: Number(p.QUANTIDADE || 0),
+
+    valorCompra: Number(p.VALOR_COMPRA || 0),
+
+    valorVenda: Number(p.VALOR_VENDA || 0),
+
+    ipi: Number(p.IPI || 0),
+
+    icms: Number(p.ICMS || 0),
+
+    venda: Number(
+      p["PORCENTAGEM DE VENDA"] ||
+      p.VENDA ||
+      0
+    )
+
+  });
+
+  atualizarInventario();
+
+  document.getElementById("qtdCarrinho").innerText =
+    inventario.length;
+}
+
+    function atualizarIcone() {
+
+  let totalItens = 0;
+
+  carrinho.forEach(item => {
+    totalItens += item.qtd;
+  });
+
+  document.getElementById("qtdCarrinho").innerText = totalItens;
+}
+
+    function abrirCarrinho() {
+  atualizarInventario();
+  document.getElementById("modalCarrinho").style.display = "flex";
+}
+function atualizarInventario() {
+
+  const tbody = document.getElementById("listaCarrinho");
+  tbody.innerHTML = "";
+
+  inventario.forEach((i, idx) => {
+
+    const diferenca =
+      Number(i.contagem || 0) -
+      Number(i.estoqueAtual || 0);
+const valorVendaCalculado =
+  Number(i.valorCompra || 0) +
+  (Number(i.valorCompra || 0) * Number(i.ipi || 0) / 100) +
+  (Number(i.valorCompra || 0) * Number(i.icms || 0) / 100) +
+  (Number(i.valorCompra || 0) * Number(i.venda || 0) / 100);
+
+i.valorVenda = valorVendaCalculado;
+    tbody.innerHTML += `
+      <tr>
+
+        <td>${i.CATEGORIA}</td>
+
+        <td>${i.PRODUTO}</td>
+
+        <td>
+  <input
+    type="text"
+    value="${i.caixa || ''}"
+    onchange="
+      inventario[${idx}].caixa=this.value;
+    ">
+</td>
+
+        <td>${i.estoqueAtual}</td>
+
+        <td>
+          <input
+            type="number"
+            value="${i.contagem}"
+            onchange="
+              inventario[${idx}].contagem=
+              Number(this.value)||0;
+              atualizarInventario();
+            ">
+        </td>
+
+        <td>${diferenca}</td>
+
+        <td>
+          <input
+            type="number"
+            value="${i.valorCompra}"
+            onchange="
+  inventario[${idx}].valorCompra=
+  Number(this.value)||0;
+  atualizarInventario();
+">
+        </td>
+
+        <td>
+  <input
+    type="number"
+    value="${valorVendaCalculado.toFixed(2)}"
+    readonly
+    style="background:#f0f0f0;">
+</td>
+
+        <td>
+          <input
+            type="number"
+            value="${i.ipi}"
+            onchange="
+  inventario[${idx}].ipi=
+  Number(this.value)||0;
+  atualizarInventario();
+">
+        </td>
+
+        <td>
+          <input
+            type="number"
+            value="${i.icms}"
+            onchange="
+  inventario[${idx}].icms=
+  Number(this.value)||0;
+  atualizarInventario();
+">
+        </td>
+
+        <td>
+          <input
+            type="number"
+            value="${i.venda}"
+            onchange="
+  inventario[${idx}].venda=
+  Number(this.value)||0;
+  atualizarInventario();
+">
+        </td>
+
+        <td>
+          <button onclick="
+            inventario.splice(${idx},1);
+            atualizarInventario();
+          ">
+            ❌
+          </button>
+        </td>
+
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalGeral").innerText =
+    `Itens: ${inventario.length}`;
+}
+      
+    function dinheiro(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+  function buscar() {
+
+        const termo = document
+            .getElementById("busca")
+            .value
+            .toString()
+            .toLowerCase()
+            .trim();
+
+        const filtrados = todosProdutos.filter(p => {
+
+            const produto = String(p.PRODUTO || "")
+                .toLowerCase();
+
+            const caixa = String(p.CAIXA || "")
+                .toLowerCase();
+
+            const categoria = String(p.CATEGORIA || "")
+                .toLowerCase();
+
+            return (
+                (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+                (
+                    produto.includes(termo) ||
+                    caixa.includes(termo) ||
+                    categoria.includes(termo)
+                )
+            );
+
+        });
+
+        mostrar(filtrados);
+    }
+
+
+    function atualizarCarrinho() {
+      const tbody = document.getElementById("listaCarrinho");
+      tbody.innerHTML = "";
+      let totalGeral = 0;
+
+      carrinho.forEach((i, idx) => {
+        const valorFinal =
+        
+          i.valorCompra +
+          (i.valorCompra * i.ipi / 100) +
+          (i.valorCompra * i.icms / 100) +
+          (i.valorCompra * i.venda / 100);
+
+        i.total = valorFinal;
+        totalGeral += i.total * i.qtd;
+const valorVendaCalculado =
+  Number(i.valorCompra || 0) +
+  (Number(i.valorCompra || 0) * Number(i.ipi || 0) / 100) +
+  (Number(i.valorCompra || 0) * Number(i.icms || 0) / 100) +
+  (Number(i.valorCompra || 0) * Number(i.venda || 0) / 100);
+
+i.valorVenda = valorVendaCalculado;
+    tbody.innerHTML += `
+<tr>
+  <td>${i.CATEGORIA}</td>
+
+  <td style="text-align:left;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      
+      <img src="${tratarImagem(i.IMAGEM)}"
+           onerror="this.src='https://via.placeholder.com/50'"
+           style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+
+      <div>
+        <b>${i.PRODUTO}</b>
+      </div>
+
+    </div>
+  </td>
+
+  <td>${i.CAIXA}</td>
+
+  <td>
+    <input type="number" min="1" value="${i.qtd}" 
+    oninput="carrinho[${idx}].qtd=Number(this.value)||1; agendarAtualizacao()">
+  </td>
+
+  <td><input type="number" value="${i.valorCompra}" onchange="carrinho[${idx}].valorCompra=Number(this.value)||0; atualizarCarrinho()"></td>
+  <td><input type="number" value="${i.ipi}" onchange="carrinho[${idx}].ipi=Number(this.value)||0; atualizarCarrinho()"></td>
+  <td><input type="number" value="${i.icms}" onchange="carrinho[${idx}].icms=Number(this.value)||0; atualizarCarrinho()"></td>
+  <td><input type="number" value="${i.venda}" onchange="carrinho[${idx}].venda=Number(this.value)||0; atualizarCarrinho()"></td>
+
+  <td>${i.total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</td>
+
+  <td>
+    <button onclick="carrinho.splice(${idx},1); atualizarCarrinho(); atualizarIcone()">❌</button>
+  </td>
+</tr>
+`;
+      });
+
+      document.getElementById("totalGeral").innerText = dinheiro(totalGeral);
+    }
+
+
+
+    </script>
+    <!-- 🔥 SOMENTE A PARTE CORRIGIDA -->
+
+  <script>
+  function renderizarProdutos(lista) {
+  const div = document.getElementById("produtos");
+  div.innerHTML = "";
+
+  const fragment = document.createDocumentFragment();
+
+  lista.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const imagem = tratarImagem(p['IMAGEM APP']);
+
+    card.innerHTML = `
+      <img src="${imagem}" 
+ onerror="this.onerror=null; this.src='https://via.placeholder.com/300?text=Sem+Imagem'">
+
+      <div class="info">
+        <b>${p.PRODUTO}</b><br>
+        Categoria: ${p.CATEGORIA || "-"}<br>
+        Estoque: ${p.QUANTIDADE || 0}<br>
+        Caixa: ${p.CAIXA || ''}<br>
+        Compra: ${Number(p.VALOR_COMPRA || 0)
+          .toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+      </div>
+
+      <button class="btn-add">➕ Adicionar</button>
+    `;
+
+    // 🔥 EVENTO NA IMAGEM (correto)
+    card.querySelector("img")
+      .addEventListener("click", () => abrirModal(p));
+
+    // 🔥 BOTÃO
+    card.querySelector(".btn-add")
+      .addEventListener("click", () => addInventario(p));
+
+    fragment.appendChild(card);
+  });
+
+  div.appendChild(fragment);
+}</script>
+    <script>
+  function renderizarCategorias() {
+    const div = document.getElementById("categorias");
+    div.innerHTML = "";
+
+    const categorias = [...new Set(
+      produtosBase
+        .map(p => (p.CATEGORIA || "").trim())
+        .filter(Boolean)
+    )].sort();
+
+    criarLinkCategoria("Todas", "");
+
+    categorias.forEach(cat => criarLinkCategoria(cat, cat));
+
+    function criarLinkCategoria(nome, valor) {
+      const a = document.createElement("a");
+      a.href = "#";
+      a.textContent = nome;
+
+      // ✅ MARCA COMO ATIVO
+      if (valor === categoriaAtual) {
+        a.classList.add("ativo");
+      }
+
+      a.onclick = e => {
+        e.preventDefault();
+
+        categoriaAtual = valor;
+
+        // 🔥 REMOVE ATIVO DE TODOS
+        document.querySelectorAll("#categorias a")
+          .forEach(el => el.classList.remove("ativo"));
+
+        // 🔥 ADICIONA NO CLICADO
+        a.classList.add("ativo");
+
+        buscar();
+      };
+
+      div.appendChild(a);
+    }
+  }
+
+    
+    </script>
+
+
+    <script>
+   async function salvarInventario() {
+
+  if(inventario.length === 0){
+    alert("Nenhum item no inventário");
+    return;
+  }
+
+  const itens = inventario.map(i => ({
+
+  ID_PRODUTO: i.ID_PRODUTO,
+
+  CATEGORIA: i.CATEGORIA,
+
+  PRODUTO: i.PRODUTO,
+
+  CAIXA: i.caixa,
+
+  ESTOQUE_ATUAL: i.estoqueAtual,
+
+  CONTAGEM: i.contagem,
+
+  DIFERENCA:
+    Number(i.contagem) -
+    Number(i.estoqueAtual),
+
+  VALOR_COMPRA: i.valorCompra,
+
+  VALOR_VENDA: i.valorVenda,
+
+  IPI: i.ipi,
+
+  ICMS: i.icms,
+
+  VENDA: i.venda
+
+}));
+
+  const form = new URLSearchParams();
+
+  form.append(
+    "action",
+    "salvarInventario"
+  );
+
+  form.append(
+    "itens",
+    JSON.stringify(itens)
+  );
+
+  try{
+console.log("Inventário:", inventario);
+console.log("Itens enviados:", itens);
+console.log("Action:", "salvarInventario");
+    const res = await fetch(API_URL,{
+  method:"POST",
+  body:form
+});
+
+const texto = await res.text();
+
+console.log("RESPOSTA BRUTA:");
+console.log(texto);
+
+const data = JSON.parse(texto);
+
+    if(data.success){
+
+      alert(
+        "Inventário salvo com sucesso!"
+      );
+
+      inventario = [];
+
+      atualizarInventario();
+
+      fecharCarrinho();
+
+      carregarProdutos();
+
+    }else{
+
+      alert(
+        data.erro || "Erro ao salvar"
+      );
+
+    }
+
+  }catch(e){
+
+    console.error(e);
+
+    alert(
+      "Erro ao salvar inventário"
+    );
+
+  }
+
+}
+    </script>
+    <script>
+    async function carregarProdutos() {
+      try {
+        const url = API_URL + "?action=listarProdutos";
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!data.rows || !Array.isArray(data.rows)) {
+          throw new Error("Resposta inválida da API");
+        }
+
+        produtosBase = data.rows;
+  produtos = [...produtosBase];
+
+  renderizarCategorias();
+  renderizarProdutos(produtos);
+
+   carregarCategoriasManual(); // 🔥 GARANTE atualização
+
+      } catch (e) {
+        console.error("Erro ao carregar produtos:", e);
+        alert("Erro ao carregar produtos. Veja o console.");
+      }
+    }
+    </script>
+
+
+    <script>
+    function addCarrinhoPorId(id) {
+      const produto = produtos.find(p => String(p.ID_PRODUTO) === String(id));
+      if (!produto) return;
+      addCarrinho(produto);
+    }
+    </script>
+    <script>
+    let timerCarrinho;
+    function agendarAtualizacao() {
+      clearTimeout(timerCarrinho);
+      timerCarrinho = setTimeout(atualizarCarrinho, 200);
+    }
+    </script>
+    <script>
+
+    document.addEventListener("DOMContentLoaded", async () => {
+  await carregarProdutos(); // espera carregar os produtos
+  carregarCategoriasManual(); // agora sim funciona
+});
+    </script>
+    <div id="modalNovoProduto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:20px; width:400px; border-radius:10px;">
+      <h3>Novo Produto Manual</h3>
+
+      <label>Categoria</label>
+      <select id="categoriaManual" style="width:100%; padding:8px; margin-bottom:10px;"></select>
+
+      <label>Produto</label>
+      <input id="produtoManual" type="text" placeholder="Nome do produto"
+        style="width:100%; padding:8px; margin-bottom:10px;">
+
+      <label>Valor Compra</label>
+      <input id="valorManual" type="number" value="0"
+        style="width:100%; padding:8px; margin-bottom:10px;">
+
+      <button onclick="adicionarProdutoManual()" style="background:#1b5500;color:#fff;padding:10px;width:100%;border:none;">
+        Adicionar ao Carrinho
+      </button>
+
+      <br><br>
+      <button onclick="fecharNovoProduto()" style="width:100%;">Cancelar</button>
+    </div>
+  </div>
+  <script>
+  function abrirNovoProduto() {
+    document.getElementById("modalNovoProduto").style.display = "flex";
+  }
+
+  function fecharNovoProduto() {
+    document.getElementById("modalNovoProduto").style.display = "none";
+  }
+  </script>
+  <script>
+  function carregarCategoriasManual() {
+  const sel = document.getElementById("categoriaManual");
+  sel.innerHTML = "";
+
+  const categorias = [...new Set(
+    produtosBase
+      .map(p => (p.CATEGORIA || "").trim())
+      .filter(Boolean)
+  )].sort();
+
+  categorias.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+}
+  </script>
+  <script>
+  async function adicionarProdutoManual() {
+    const categoriaEl = document.getElementById("categoriaManual");
+    const produtoEl = document.getElementById("produtoManual");
+    const valorEl = document.getElementById("valorManual");
+
+    const categoria = categoriaEl.value;
+    const nome = produtoEl.value.trim();
+    const valor = Number(valorEl.value) || 0;
+
+    if (!nome) {
+      alert("Informe o nome do produto");
+      return;
+    }
+
+    try {
+      // 🔹 BUSCA O PRÓXIMO ID NO GAS
+      const res = await fetch(API_URL + "?action=obterProximoIdEntrada");
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.erro || "Erro ao obter próximo ID");
+      }
+
+      // 🔹 ADICIONA NO CARRINHO COM ID SEQUENCIAL
+      carrinho.push({
+        ID_PRODUTO: data.proximoId, // ✅ PRÓXIMO ID
+        CATEGORIA: categoria,
+        PRODUTO: nome,
+        qtd: 1,
+        valorCompra: valor,
+        ipi: 0,
+        icms: 0,
+        venda: 100,
+        total: valor
+      });
+
+      atualizarIcone();
+
+      // ✅ LIMPA OS CAMPOS APÓS ENVIAR
+      produtoEl.value = "";
+      valorEl.value = "0";
+      categoriaEl.selectedIndex = 0;
+
+      // fecha o modal
+      fecharNovoProduto();
+
+    } catch (e) {
+      console.error(e);
+      alert("Erro ao gerar ID do produto");
+    }
+  }
+
+  </script>
+
+
+    
+  </div>
+  <div id="modal" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:9999;
+  ">
+
+    <span onclick="fecharModal()" style="
+      position:absolute;
+      top:20px;
+      right:30px;
+      color:white;
+      font-size:30px;
+      cursor:pointer;
+    ">✖</span>
+
+    <img id="modalImg" style="
+      max-width:160%;
+      max-height:60%;
+      border-radius:10px;
+    ">
+
+    <div id="modalDesc" style="
+      color:white;
+      text-align:center;
+      margin-top:15px;
+    "></div>
+  </div>
+
+    </body>
+    
+    </html>

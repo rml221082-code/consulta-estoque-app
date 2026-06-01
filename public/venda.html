@@ -966,49 +966,42 @@
         }
         function enviarPedido() {
 
-        if (carrinho.length === 0) {
-            mostrarAlerta("Carrinho vazio");
-            return;
-        }
+    if (carrinho.length === 0) {
+        mostrarAlerta("Carrinho vazio");
+        return;
+    }
 
-        const funcionario = usuarioLogado?.nome || "Sem nome";
-        const departamento = "Pedido App";
+    const funcionario = usuarioLogado?.nome || "Sem nome";
+    const departamento = "Pedido App";
 
-        const emergencial = document.getElementById("pedidoEmergencial").checked;
+    const emergencial = document.getElementById("pedidoEmergencial").checked;
 
-        const observacao = carrinho.map(p => 
-            `${p.PRODUTO} (x${p.qtdVenda})`
-        ).join(", ");
+    const observacao = carrinho.map(p =>
+        `• ${p.PRODUTO} (Qtd.= ${p.qtdVenda})`
+    ).join("\n");
 
-        fetch(API_URL, {
-            method: "POST",
-            body: new URLSearchParams({
+    fetch(API_URL, {
+        method: "POST",
+        body: new URLSearchParams({
             action: "salvarpedido",
             funcionario,
             departamento,
             observacao,
             emergencial: emergencial ? "SIM" : "NAO"
-            })
         })
-        .then(r => r.json())
-        .then(res => {
-            if(res.success){
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success){
             mostrarAlerta("Pedido enviado com sucesso!");
-
             carrinho = [];
             atualizarIcone();
             fecharCarrinho();
-
-            } else {
+        } else {
             mostrarAlerta("Erro ao enviar pedido");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            mostrarAlerta("Erro na conexão");
-        });
-
         }
+    });
+}
 
                 function filtrarPorCategoria(cat) {
                 categoriaAtual = cat;
