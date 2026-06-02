@@ -12,18 +12,17 @@
       font-family: "Segoe UI", Arial, sans-serif;
       background: #f4f4f4;
     }
-    #sidebar {
-  position: fixed;
-  left: 0;
-  top: 70px;
-  bottom: 0;
-  width: 220px;
-  background: #fff;
-  border-right: 1px solid #ccc;
-  padding: 15px;
-
-  overflow-y: auto; /* 🔥 ISSO AQUI RESOLVE */
-    }
+    #sidebar{
+  position:fixed;
+  left:0;
+  top:110px;
+  width:220px;
+  height:calc(100vh - 110px);
+  background:#fff;
+  border-right:1px solid #ccc;
+  padding:15px;
+  overflow-y:auto;
+}
     /* HEADER */
     header {
   background: #0b00a0;
@@ -47,13 +46,11 @@
 
 /* BOTÕES */
 .acoes button {
-  margin-left: 10px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
-
+  
 /* BUSCA */
 .header-busca {
   margin-top: 10px;
@@ -66,17 +63,20 @@
   border: none;
   font-size: 16px;
 }
-    #carrinhoBtn {
-      
-      position: fixed;
-      right: 250px;
-      background: #e3e701;
-      border: none;
-      padding: 12px;
-      color: #000000;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    #carrinhoBtn{
+  background:#e3e701;
+  color:#000;
+  padding:10px 18px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+  box-shadow:0 4px 10px rgba(0,0,0,.3);
+  position:static;
+}
+
+    
+
     #busca-area 
     input {
     width: 100%;
@@ -86,11 +86,7 @@
     border: 1px solid #ccc;
   }
 
-    /* SIDEBAR */
-  #sidebar {
-  top: 110px;
-  height: calc(100vh - 110px);
-}
+  
 
     #categorias a {
       display: block;
@@ -141,7 +137,7 @@
       width: 100%;
       padding: 12px;
       border: none;
-      background: #121111;
+      background: #0b00a0;
       color: #ffffff;
       cursor: pointer;
     }
@@ -207,27 +203,98 @@
     background: #eee;
     z-index: 2;
   }
+  .header-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo-header{
+  font-size:24px;
+  font-weight:bold;
+}
+
+.acoes{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.acoes button{
+  height:40px;
+  border:none;
+  border-radius:10px;
+  padding:0 15px;
+  font-weight:600;
+}
+
+/*
+#carrinhoBtn{
+  //background:#e3e701;
+  //color:#000;
+} 
+*/
+#btnAdmin{
+  background:#28a745;
+  color:white;
+}
+
+#userBox{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:rgba(255,255,255,.15);
+  padding:5px 12px;
+  border-radius:50px;
+}
+
+#userBox img{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+}
+
+#userBox button{
+  background:#dc3545;
+  color:white;
+}
     </style>
     </head>
 
-    <body>
-
-   <header>
+    <body style="display:none">
+<div id="alerta" style="
+position:fixed;
+top:20px;
+right:20px;
+background:#dc3545;
+color:white;
+padding:12px 20px;
+border-radius:8px;
+display:none;
+z-index:99999;
+"></div>
+ <header>
   <div class="header-top">
-    <span>Inventário</span>
 
-    <div class="acoes">
-  
+    <div class="logo-header">
+      📦 Inventário
+    </div>
+
+    <div class="acoes" id="acoesHeader">
+
       <button id="carrinhoBtn" onclick="abrirCarrinho()">
         🛒 Carrinho (<span id="qtdCarrinho">0</span>)
       </button>
+
     </div>
+
   </div>
 
   <div class="header-busca">
-    <input id="busca" placeholder="Buscar produto, Caixa ou Categoria..." oninput="debounceBuscar()"/>
+    <input id="busca"
+      placeholder="Buscar produto, Caixa ou Categoria..."
+      oninput="debounceBuscar()">
   </div>
-  
 </header>
 
     <aside id="sidebar">
@@ -247,7 +314,7 @@
     <!-- MODAL CARRINHO -->
     <div id="modalCarrinho">
       <div id="boxCarrinho">
-        <h2><center>Carrinho de Entrada</center></h2>
+        <h2><center>Inventário</center></h2>
   <div class="tabela-scroll">
         <table>
           <thead>
@@ -305,7 +372,7 @@ function debounceBuscar() {
 }
     /* ======= RENDERIZA PRODUTOS ======= */
   function tratarImagem(url) {
-  if (!url) return "https://via.placeholder.com/300";
+  if (!url) return "https://i.imgur.com/6VBx3io.png";
 
   // padrão /d/ID/
   let match = url.match(/\/d\/(.*?)\//);
@@ -516,9 +583,10 @@ i.valorVenda = valorVendaCalculado;
 
         <td>
           <button onclick="
-            inventario.splice(${idx},1);
-            atualizarInventario();
-          ">
+  inventario.splice(${idx},1);
+  atualizarInventario();
+  document.getElementById('qtdCarrinho').innerText = inventario.length;
+">
             ❌
           </button>
         </td>
@@ -539,37 +607,38 @@ i.valorVenda = valorVendaCalculado;
     }
   function buscar() {
 
-        const termo = document
-            .getElementById("busca")
-            .value
-            .toString()
-            .toLowerCase()
-            .trim();
+  const termo = document
+    .getElementById("busca")
+    .value
+    .toLowerCase()
+    .trim();
 
-        const filtrados = todosProdutos.filter(p => {
+  const filtrados = produtosBase.filter(p => {
 
-            const produto = String(p.PRODUTO || "")
-                .toLowerCase();
+    const produto = String(p.PRODUTO || "")
+      .toLowerCase();
 
-            const caixa = String(p.CAIXA || "")
-                .toLowerCase();
+    const caixa = String(p.CAIXA || "")
+      .toLowerCase();
 
-            const categoria = String(p.CATEGORIA || "")
-                .toLowerCase();
+    const categoria = String(p.CATEGORIA || "")
+      .toLowerCase();
 
-            return (
-                (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-                (
-                    produto.includes(termo) ||
-                    caixa.includes(termo) ||
-                    categoria.includes(termo)
-                )
-            );
+    const atendeCategoria =
+      !categoriaAtual ||
+      String(p.CATEGORIA || "") === categoriaAtual;
 
-        });
+    const atendeBusca =
+      !termo ||
+      produto.includes(termo) ||
+      caixa.includes(termo) ||
+      categoria.includes(termo);
 
-        mostrar(filtrados);
-    }
+    return atendeCategoria && atendeBusca;
+  });
+
+  renderizarProdutos(filtrados);
+}
 
 
     function atualizarCarrinho() {
@@ -640,7 +709,161 @@ i.valorVenda = valorVendaCalculado;
 
     </script>
     <!-- 🔥 SOMENTE A PARTE CORRIGIDA -->
+  
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+                function mostrarAlerta(msg){
 
+    const alerta = document.getElementById("alerta");
+
+    alerta.innerText = msg;
+
+    alerta.style.display = "block";
+
+    setTimeout(() => {
+        alerta.style.display = "none";
+    }, 2000);
+
+    }
+    
+            const firebaseConfig = {
+            apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+            authDomain: "consulta-estoque-app.firebaseapp.com",
+            projectId: "consulta-estoque-app",
+            storageBucket: "consulta-estoque-app.firebasestorage.app",
+            messagingSenderId: "1065893590092",
+            appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            let usuarioLogado = null;
+
+            // 🔐 CONTROLE COMPLETO DE LOGIN
+        auth.onAuthStateChanged(async user => {
+
+        if (!user) {
+            window.location.href = "login.html";
+            return;
+        }
+
+            let doc = await db.collection("usuarios").doc(user.uid).get();
+
+            // 🔥 CRIA USUÁRIO AUTOMATICO
+            if (!doc.exists) {
+                const novoUsuario = {
+                nome: user.displayName || "Usuário",
+                email: user.email,
+                tipo: "funcionario",
+                ativo: false,
+                nivel: 0
+                };
+
+                await db.collection("usuarios").doc(user.uid).set(novoUsuario);
+                usuarioLogado = novoUsuario;
+
+            } else {
+            usuarioLogado = doc.data();
+
+            const tipo = (usuarioLogado.tipo || "").toLowerCase();
+
+            // 🔒 BLOQUEIA SE NÃO FOR ADMIN OU ADMINISTRATIVO
+            if (tipo !== "admin" && tipo !== "administrativo") {
+            mostrarAlerta("Acesso permitido somente para Administrador!");
+
+            await auth.signOut();
+            window.location.href = "login.html";
+            return;
+            }
+        }
+
+            // 🔒 BLOQUEIO
+            if (usuarioLogado.ativo === false) {
+              document.body.style.display = "block";
+                mostrarAlerta("Seu acesso está aguardando liberação do administrador.");
+
+                await auth.signOut();
+                window.location.href = "login.html";
+                return;
+            }
+            
+
+            // 🔥 HEADER USUÁRIO
+            const header = document.querySelector("header");
+
+            document.getElementById("userBox")?.remove();
+            document.getElementById("btnAdmin")?.remove();
+
+            const userBox = document.createElement("div");
+            userBox.id = "userBox";
+            userBox.style.position = "static";
+            userBox.style.right = "";
+            userBox.style.top = "";
+            userBox.style.display = "flex";
+            userBox.style.alignItems = "center";
+            userBox.style.gap = "10px";
+            userBox.style.background = "rgba(255,255,255,0.1)";
+            userBox.style.padding = "6px 10px";
+            userBox.style.borderRadius = "60px";
+
+            const avatar = document.createElement("img");
+            avatar.src = user.photoURL || "https://i.imgur.com/6VBx3io.png";
+            avatar.style.width = "35px";
+            avatar.style.height = "35px";
+            avatar.style.borderRadius = "50%";
+
+            const info = document.createElement("div");
+            info.style.color = "white";
+            info.innerHTML = `
+                <div><b>${usuarioLogado.nome}</b></div>
+                <div style="font-size:11px;">${usuarioLogado.tipo}</div>
+            `;
+
+            const btn = document.createElement("button");
+            btn.innerText = "Sair";
+
+            btn.onclick = () => {
+                auth.signOut().then(() => {
+                window.location.href = "login.html";
+                });
+            };
+
+            userBox.appendChild(avatar);
+            userBox.appendChild(info);
+            userBox.appendChild(btn);
+
+            document.getElementById("acoesHeader")
+  .appendChild(userBox);
+
+            // 🔥 BOTÃO ADMIN
+            if (usuarioLogado.tipo === "admin") {
+                const btnAdmin = document.createElement("button");
+                btnAdmin.id = "btnAdmin";
+                btnAdmin.innerText = "Admin";
+
+                btnAdmin.style.position = "static";
+                btnAdmin.style.right = "";
+            btnAdmin.style.top = "";
+
+                btnAdmin.onclick = () => {
+                window.location.href = "admin.html";
+                };
+
+                document.getElementById("acoesHeader")
+  .appendChild(btnAdmin);
+            }
+
+            // 🔥 SÓ CARREGA PRODUTOS DEPOIS DO LOGIN
+            await carregarProdutos();
+            document.body.style.display = "block";
+
+            });
+            </script>
   <script>
   function renderizarProdutos(lista) {
   const div = document.getElementById("produtos");
@@ -649,14 +872,22 @@ i.valorVenda = valorVendaCalculado;
   const fragment = document.createDocumentFragment();
 
   lista.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "card";
+
+  if (
+    !String(p.PRODUTO || "").trim() ||
+    !String(p.CATEGORIA || "").trim()
+  ) {
+    return;
+  }
+
+  const card = document.createElement("div");
+  card.className = "card";
 
     const imagem = tratarImagem(p['IMAGEM APP']);
 
     card.innerHTML = `
       <img src="${imagem}" 
- onerror="this.onerror=null; this.src='https://via.placeholder.com/300?text=Sem+Imagem'">
+ onerror="this.onerror=null; this.src='https://i.imgur.com/6VBx3io.png'"
 
       <div class="info">
         <b>${p.PRODUTO}</b><br>
@@ -682,7 +913,13 @@ i.valorVenda = valorVendaCalculado;
   });
 
   div.appendChild(fragment);
-}</script>
+}
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
+</script>
     <script>
   function renderizarCategorias() {
     const div = document.getElementById("categorias");
@@ -799,25 +1036,27 @@ const data = JSON.parse(texto);
 
     if(data.success){
 
-      alert(
-        "Inventário salvo com sucesso!"
-      );
+  alert("Inventário salvo com sucesso!");
 
-      inventario = [];
+  // Limpa o inventário
+  inventario = [];
 
-      atualizarInventario();
+  // Atualiza a tabela
+  atualizarInventario();
 
-      fecharCarrinho();
+  // Atualiza contador
+  document.getElementById("qtdCarrinho").innerText = "0";
+  // Limpa o buscar e mostra todos os produtos
+  document.getElementById("busca").value = "";
+buscar();
 
-      carregarProdutos();
+  // Fecha o modal
+  fecharCarrinho();
 
-    }else{
+  // Recarrega os produtos
+  await carregarProdutos();
 
-      alert(
-        data.erro || "Erro ao salvar"
-      );
-
-    }
+}
 
   }catch(e){
 
@@ -847,7 +1086,7 @@ const data = JSON.parse(texto);
   produtos = [...produtosBase];
 
   renderizarCategorias();
-  renderizarProdutos(produtos);
+  buscar();
 
    carregarCategoriasManual(); // 🔥 GARANTE atualização
 
@@ -875,10 +1114,7 @@ const data = JSON.parse(texto);
     </script>
     <script>
 
-    document.addEventListener("DOMContentLoaded", async () => {
-  await carregarProdutos(); // espera carregar os produtos
-  carregarCategoriasManual(); // agora sim funciona
-});
+   
     </script>
     <div id="modalNovoProduto" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); justify-content:center; align-items:center;">
     <div style="background:#fff; padding:20px; width:400px; border-radius:10px;">
