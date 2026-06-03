@@ -456,8 +456,16 @@ formatarMoeda(document.getElementById("valorParcela"+i))
 }
 
 valorTotal.addEventListener("blur",calcularParcelas)
-qtdParcelas.addEventListener("input",calcularParcelas)
 
+qtdParcelas.addEventListener("blur", () => {
+
+  if(!qtdParcelas.value || Number(qtdParcelas.value) < 1){
+    qtdParcelas.value = 1;
+  }
+
+  calcularParcelas();
+
+});
 document.getElementById('formNota').addEventListener('submit',async e=>{
 
 e.preventDefault()

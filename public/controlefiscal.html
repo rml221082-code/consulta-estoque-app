@@ -592,9 +592,16 @@ window.modoTodos = false
     parcelasHTML+=`
     <div class="parcelaBox">
 
-      <button class="btn ${classe}" onclick="abrirUpload('${n.id}',${i},'${n.empresa}','${n.numeroNota}','${n.fornecedor}')">
-    ${textoBotao}
-  </button>
+      <button class="btn ${classe}"
+onclick="acaoPagamento(
+'${n.id}',
+${i},
+'${n.empresa}',
+'${n.numeroNota}',
+'${n.fornecedor}'
+)">
+${textoBotao}
+</button>
 
   <input type="file" 
     id="file_${n.id}_${i}" 
@@ -811,6 +818,31 @@ function deletarComprovante(id, parcela, url){
 
     reader.readAsDataURL(file);
   }
+  function acaoPagamento(id, parcela, empresa, nota, fornecedor){
+
+  const enviar = confirm(
+    "Deseja anexar comprovante?\n\n" +
+    "OK = Anexar comprovante\n" +
+    "Cancelar = Marcar como pago sem comprovante"
+  );
+
+  if(enviar){
+
+    abrirUpload(
+      id,
+      parcela,
+      empresa,
+      nota,
+      fornecedor
+    );
+
+  }else{
+
+    pagarParcela(id, parcela);
+
+  }
+
+}
   function abrirEdicao(id){
 
   const nota = dados.find(n => String(n.id) === String(id));
@@ -1078,53 +1110,6 @@ function deletarComprovante(id, parcela, url){
   }
 
   return null
-  }
-  function enviarComprovante(event, id, parcela, total, empresa, nota, fornecedor){
-
-    const file = event.target.files[0];
-    if(!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function () {
-
-      const base64 = reader.result.split(",")[1];
-
-      const formData = new FormData();
-
-      formData.append("action", "uploadcomprovante");
-      formData.append("fileBase64", base64);
-      formData.append("fileType", file.type);
-      formData.append("fileName", file.name);
-
-      formData.append("id", id);
-      formData.append("parcela", parcela);
-      formData.append("total", total);
-      formData.append("empresa", empresa);
-      formData.append("nota", nota);
-      formData.append("fornecedor", fornecedor);
-
-      fetch(API_URL, {
-        method: "POST",
-        body: formData
-      })
-      .then(r => r.json())
-      .then(r => {
-        console.log(r);
-        if(r.success){
-    mostrarAlerta(`✅ Pagamento realizado!
-
-  📄 Arquivo salvo:
-  ${r.arquivo}`);
-  }else{
-    mostrarAlerta("Erro: " + r.erro);
-  }
-        carregar();
-      });
-
-    };
-
-    reader.readAsDataURL(file);
   }
   function abrirModalSucesso(nomeArquivo, link){
 
