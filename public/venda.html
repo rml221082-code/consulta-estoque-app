@@ -1185,16 +1185,17 @@
                     <div>${p.CATEGORIA || ''}</div>
                     <div><b>Caixa:</b> ${p.CAIXA || '-'}</div>
 
-                    <div>
-                    Qtd:
-                    <input
-                        type="number"
-                        min="1"
-                        step="1"
-                        value="${p.qtdVenda}"
-                        onchange="alterarQtd(${i}, this.value)"
-                        style="width:70px"
-                    >  % :
+                   <div>
+Qtd:
+<input
+    type="number"
+    min="1"
+    step="1"
+    value="${p.qtdVenda}"
+    onchange="alterarQtd(${i}, this.value)"
+    style="width:70px"
+>
+%:
                     <input
                         type="number"
                         step="0.1"
@@ -1244,7 +1245,43 @@
                 }, 0);
             }
 
+function aumentarQtd(index) {
+    carrinho[index].qtdVenda =
+        Number(carrinho[index].qtdVenda || 0) + 1;
 
+    atualizarIcone();
+    abrirCarrinho();
+}
+
+function diminuirQtd(index) {
+
+    if (carrinho[index].qtdVenda > 1) {
+        carrinho[index].qtdVenda--;
+    } else {
+        carrinho.splice(index, 1);
+    }
+
+    atualizarIcone();
+    abrirCarrinho();
+}
+function alterarQtd(index, valor) {
+
+    let qtd = parseInt(valor);
+
+    // Se for inválido ou menor que 1
+    if (isNaN(qtd) || qtd < 1) {
+        qtd = 1;
+    }
+
+    // Atualiza a quantidade do item
+    carrinho[index].qtdVenda = qtd;
+
+    // Atualiza o ícone do carrinho
+    atualizarIcone();
+
+    // Reabre o carrinho para recalcular subtotal e total
+    abrirCarrinho();
+}
 
             function alterarPercentual(index, valor) {
                 let p = Number(valor);
@@ -1433,14 +1470,78 @@
             let vendaEmProcesso = false;
             </script>
             <script>
-                
-            function alterarQtd(index, valor) {
-                const qtd = Number(valor);
-                if (qtd <= 0 || isNaN(qtd)) return;
+             async function migrarProdutosFirestore() {
 
-                carrinho[index].qtdVenda = qtd;
-                abrirCarrinho();
-            }
+  try {
+
+    mostrarAlerta("Iniciando migração...");
+
+    let pagina = 1;
+    let totalMigrados = 0;
+
+    while (true) {
+
+      const res = await fetch(
+        `${API_URL}?action=listarprodutos&page=${pagina}&limit=500`
+      );
+
+      const data = await res.json();
+
+      if (!data.rows || data.rows.length === 0) {
+        break;
+      }
+
+      for (const produto of data.rows) {
+
+       const produtoLimpo = {};
+
+Object.keys(produto).forEach(chave => {
+
+  const chaveLimpa = String(chave || "").trim();
+
+  if (chaveLimpa !== "") {
+    produtoLimpo[chaveLimpa] = produto[chave];
+  }
+
+});
+
+produtoLimpo.dataMigracao = new Date();
+
+await db.collection("produtos").add(produtoLimpo);
+
+        totalMigrados++;
+      }
+
+      console.log(
+        `Página ${pagina} migrada. Total: ${totalMigrados}`
+      );
+
+      pagina++;
+
+      if ((pagina - 1) * 500 >= data.total) {
+        break;
+      }
+
+    }
+
+    mostrarAlerta(
+      `${totalMigrados} produtos migrados!`
+    );
+
+    console.log("Migração concluída");
+
+  } catch (erro) {
+
+    console.error(erro);
+
+    mostrarAlerta(
+      "Erro ao migrar produtos"
+    );
+
+  }
+
+}
+
             </script>
 
                 
