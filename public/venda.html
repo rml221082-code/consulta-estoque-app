@@ -977,6 +977,7 @@
 
     const observacao = carrinho.map(p =>
         `• ${p.PRODUTO} (Qtd.= ${p.qtdVenda})`
+         /* `• ${p.PRODUTO} Quantidade de Estoque: ${p.QUANTIDADE || '0'} (Qtd.= ${p.qtdVenda})`*/ //coloca a quantidade de estoque no pedido
     ).join("\n");
 
     fetch(API_URL, {
@@ -1184,6 +1185,7 @@
                     <div><b>${p.PRODUTO || ''}</b></div>
                     <div>${p.CATEGORIA || ''}</div>
                     <div><b>Caixa:</b> ${p.CAIXA || '-'}</div>
+                    <p><b>Quantidade de Estoque:</b> ${p.QUANTIDADE || '0'}</p>
 
                    <div>
 Qtd:
