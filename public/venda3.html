@@ -2,7 +2,7 @@
   <html lang="pt-BR">
   <head>
   <meta charset="UTF-8">
-  <title>Controle Fiscal PRO V3</title>
+  <title>Controle Fiscal</title>
 
   <style>
 
@@ -141,7 +141,23 @@
   font-size:10px;
   color:#888
   }
+.spinner{
+  width:60px;
+  height:60px;
+  border:6px solid #ddd;
+  border-top:6px solid #0078d4;
+  border-radius:50%;
+  animation:girar 1s linear infinite;
+}
 
+@keyframes girar{
+  0%{
+    transform:rotate(0deg);
+  }
+  100%{
+    transform:rotate(360deg);
+  }
+}
   </style>
   </head>
 
@@ -162,7 +178,7 @@
 </div>
   <div class="container">
 
-  <h1>Controle Fiscal PRO V3</h1>
+  <h1>Controle Fiscal</h1>
 
   <div class="dashboard">
 
@@ -282,23 +298,38 @@ function parcelaTemComprovante(n, parcela){
 
   return texto.includes(`Parcela ${parcela}`);
 }
-  function carregar(){
+async function carregar(){
 
-  fetch(API_URL+"?action=listarnotasfiscais")
-  .then(r=>r.json())
-  .then(json=>{
+  mostrarLoading("Carregando dados...");
 
-  dados=json.rows || []
+  try {
 
-  popularFiltros()
+    const resposta = await fetch(
+      API_URL + "?action=listarnotasfiscais"
+    );
 
-  render()
+    const json = await resposta.json();
 
-  })
+    dados = json.rows || [];
+
+    popularFiltros();
+
+    render();
+
+  } catch(err){
+
+    console.error(err);
+
+    mostrarAlerta("Erro ao carregar dados");
+
+  } finally {
+
+    esconderLoading();
 
   }
 
-  function popularFiltros(){
+}  
+function popularFiltros(){
 
   const select=document.getElementById("fEmpresa")
 
@@ -336,13 +367,27 @@ function parcelaTemComprovante(n, parcela){
   }
   }
 
-  function pagarParcela(id,parcela){
+ async function pagarParcela(id, parcela){
 
-  fetch(API_URL+`?action=pagarparcela&id=${id}&parcela=${parcela}&t=`+Date.now())
-  .then(()=>carregar())
+  mostrarLoading("Salvando pagamento...");
+
+  try {
+
+    await fetch(
+      API_URL +
+      `?action=pagarparcela&id=${id}&parcela=${parcela}&t=` +
+      Date.now()
+    );
+
+    await carregar();
+
+  } finally {
+
+    esconderLoading();
 
   }
 
+}
   function cancelarNota(id){
 
   if(!confirm("Cancelar esta nota?")) return
@@ -752,11 +797,13 @@ Cancelar
   document.querySelectorAll("#fEmpresa,#fFornecedor,#fNota,#fStatus,#fDataInicio,#fDataFim")
   .forEach(el=>el.addEventListener("input",render))
 
-  carregar()
+  window.addEventListener("DOMContentLoaded", () => {
+  carregar();
 
-  setTimeout(()=>{
-  filtroHoje()
-  },500)
+  setTimeout(() => {
+    filtroHoje();
+  }, 500);
+});
   let notaEditando = null
 
   
@@ -885,21 +932,28 @@ function deletarComprovante(id, parcela, url){
       formData.append("empresa", empresa);
       formData.append("nota", nota);
       formData.append("fornecedor", fornecedor);
-
+mostrarLoading("Enviando comprovante...");
       fetch(API_URL, {
         method: "POST",
         body: formData
       })
+      
       .then(r => r.json())
+      .finally(() => {
+  esconderLoading();
+})
       .then(r => {
         mostrarAlerta(r.success ? "✅ Pago e comprovante salvo!" : r.erro);
         carregar();
+        
       });
 
     };
 
     reader.readAsDataURL(file);
+  
   }
+
   function acaoPagamento(id, parcela, empresa, nota, fornecedor){
 
   const enviar = confirm(
@@ -1282,6 +1336,19 @@ function deletarComprovante(id, parcela, url){
   function fecharModalSucesso(){
     document.getElementById("modalSucesso").style.display = "none";
   }
+  function mostrarLoading(texto = "Carregando dados...") {
+
+  const loading = document.getElementById("loading");
+
+  loading.querySelector("p").innerText = texto;
+
+  loading.style.display = "flex";
+}
+
+function esconderLoading() {
+
+  document.getElementById("loading").style.display = "none";
+}
 
   </script>
   <div id="modalEditar" style="
@@ -1407,5 +1474,27 @@ function deletarComprovante(id, parcela, url){
 
   </div>
   </div>
+  <div id="loading" style="
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.9);
+  display:none;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:99999;
+  font-family:Arial;
+">
+
+  <div class="spinner"></div>
+
+  <p style="margin-top:15px;font-size:18px;color:#333;">
+    Carregando dados...
+  </p>
+
+</div>
   </body>
   </html>

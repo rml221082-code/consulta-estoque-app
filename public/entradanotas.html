@@ -123,6 +123,46 @@ transform:translateX(24px);
 font-weight:600;
 font-size:14px;
 }
+/* Tela de processamento */
+.loading-overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.loading-overlay.show{
+  display: flex;
+}
+
+.spinner{
+  width: 60px;
+  height: 60px;
+  border: 6px solid #e0e0e0;
+  border-top: 6px solid #0078d4;
+  border-radius: 50%;
+  animation: girar 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.loading-text{
+  font-size: 20px;
+  font-weight: bold;
+  color: #0078d4;
+}
+
+@keyframes girar{
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 </style>
 </head>
 
@@ -317,9 +357,11 @@ font-size:14px;
 
 </div>
 
-<script>
-
-const GAS_URL="https://script.google.com/macros/s/AKfycbzxdnIzDmsjy06njan7yro4BO78sZ-n9tpp1yTjshrQmdhHu03L7rYnP5ppQtg90wwbng/exec"
+<script src="config.js"></script>
+    <script>
+    const API_URL = window.CONFIG.API_URL;
+    </script>
+                <script>
 const campoNota = document.getElementById("numeroNota");
 
 // 🔒 BLOQUEIA DIGITAÇÃO
@@ -367,7 +409,7 @@ async function verificarDuplicata(){
 
 try{
 
-const res = await fetch(GAS_URL,{
+const res = await fetch(API_URL,{
   method:'POST',
   body:new URLSearchParams({
     action:'listarnotasfiscais'
@@ -481,7 +523,7 @@ const btn=document.getElementById("btnSalvar")
 btn.disabled=true
 btn.innerText="Salvando..."
 
-
+document.getElementById("loadingOverlay").classList.add("show");
 
 const file=document.getElementById('pdf').files[0]
 
@@ -537,7 +579,7 @@ form.append('arquivo',arquivo)
 
 try{
 
-const res=await fetch(GAS_URL,{
+const res=await fetch(API_URL,{
 method:'POST',
 body:form
 })
@@ -560,7 +602,7 @@ alert('Erro: '+r.erro)
 alert("Erro ao enviar")
 
 }
-
+document.getElementById("loadingOverlay").classList.remove("show");
 btn.disabled=false
 btn.innerText="Salvar Nota"
 
@@ -581,6 +623,10 @@ r.readAsDataURL(file)
 }
 
 </script>
-
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Processando...</div>
+</div>
 </body>
+
 </html>
