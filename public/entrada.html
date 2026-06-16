@@ -228,7 +228,7 @@
   </div>
 
   <div class="header-busca">
-    <input id="busca" placeholder="Buscar produto..." oninput="debounceBuscar()"/>
+    <input id="busca" placeholder="Buscar produto, Caixa ou Categoria..." oninput="debounceBuscar()"/>
   </div>
   
 </header>
@@ -399,16 +399,39 @@ function debounceBuscar() {
         currency: "BRL"
       });
     }
-  function buscar() {
-    const termo = document.getElementById("busca").value.toLowerCase();
+ function buscar() {
 
-    const filtrados = produtosBase.filter(p =>
-      (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
-      (p.PRODUTO || "").toLowerCase().includes(termo)
-    );
+    const termo = document
+        .getElementById("busca")
+        .value
+        .toString()
+        .toLowerCase()
+        .trim();
+
+    const filtrados = produtosBase.filter(p => {
+
+        const produto = String(p.PRODUTO || "")
+            .toLowerCase();
+
+        const caixa = String(p.CAIXA || "")
+            .toLowerCase();
+
+        const categoria = String(p.CATEGORIA || "")
+            .toLowerCase();
+
+        return (
+            (!categoriaAtual || p.CATEGORIA === categoriaAtual) &&
+            (
+                produto.includes(termo) ||
+                caixa.includes(termo) ||
+                categoria.includes(termo)
+            )
+        );
+
+    });
 
     renderizarProdutos(filtrados);
-  }
+}
 
 
     function atualizarCarrinho() {
@@ -672,9 +695,40 @@ function debounceBuscar() {
       <input id="produtoManual" type="text" placeholder="Nome do produto"
         style="width:100%; padding:8px; margin-bottom:10px;">
 
-      <label>Valor Compra</label>
+        <label>Caixa</label>
+        <input id="caixaManual" type="text" value=""
+        style="width:100%; padding:8px; margin-bottom:10px;">
+
+        <label>Valor Compra</label>
       <input id="valorManual" type="number" value="0"
         style="width:100%; padding:8px; margin-bottom:10px;">
+
+        <label>IPI %</label>
+        <input id="ipiManual" type="number" value="0"
+        style="width:100%; padding:8px; margin-bottom:10px;">
+
+        <label>ICMS %</label>
+        <input id="icmsManual" type="number" value="0"
+        style="width:100%; padding:8px; margin-bottom:10px;">
+
+        <label>Venda %</label>
+        <input id="vendaManual" type="number" value="100"
+        style="width:100%; padding:8px; margin-bottom:10px;">
+
+<label>Link da Imagem</label>
+<input id="imagemManual"
+       type="text"
+       placeholder="Cole o link da imagem"
+       oninput="previewImagemManual()"
+       style="width:100%; padding:8px; margin-bottom:10px;">
+
+<div style="text-align:center; margin-bottom:10px;">
+    <img id="previewImagemManual"
+         style="max-width:150px;
+                max-height:150px;
+                display:none;
+                border-radius:8px;">
+</div>
 
       <button onclick="adicionarProdutoManual()" style="background:#1b5500;color:#fff;padding:10px;width:100%;border:none;">
         Adicionar ao Carrinho
@@ -686,9 +740,38 @@ function debounceBuscar() {
   </div>
   <script>
   function abrirNovoProduto() {
-    document.getElementById("modalNovoProduto").style.display = "flex";
-  }
 
+    carregarCategoriasManual();
+
+    document.getElementById("produtoManual").value = "";
+    document.getElementById("valorManual").value = 0;
+    document.getElementById("caixaManual").value = "";
+    document.getElementById("ipiManual").value = 0;
+    document.getElementById("icmsManual").value = 0;
+    document.getElementById("vendaManual").value = 100;
+
+    document.getElementById("modalNovoProduto").style.display = "flex";
+}
+function previewImagemManual() {
+
+    const url = document.getElementById("imagemManual").value.trim();
+    const img = document.getElementById("previewImagemManual");
+
+    if (!url) {
+        img.style.display = "none";
+        return;
+    }
+
+    img.onload = () => {
+        img.style.display = "block";
+    };
+
+    img.onerror = () => {
+        img.style.display = "none";
+    };
+
+    img.src = tratarImagem(url);
+}
   function fecharNovoProduto() {
     document.getElementById("modalNovoProduto").style.display = "none";
   }
@@ -738,23 +821,59 @@ function debounceBuscar() {
 
       // 🔹 ADICIONA NO CARRINHO COM ID SEQUENCIAL
       carrinho.push({
-        ID_PRODUTO: data.proximoId, // ✅ PRÓXIMO ID
-        CATEGORIA: categoria,
-        PRODUTO: nome,
-        qtd: 1,
-        valorCompra: valor,
-        ipi: 0,
-        icms: 0,
-        venda: 100,
-        total: valor
-      });
+    ID_PRODUTO: data.proximoId,
+    CATEGORIA: categoria,
+    PRODUTO: nome,
+    CAIXA: document.getElementById("caixaManual").value || "",
+    IMAGEM: document.getElementById("imagemManual").value || "",
+    qtd: 1,
+    valorCompra: valor,
+    ipi: Number(document.getElementById("ipiManual").value) || 0,
+    icms: Number(document.getElementById("icmsManual").value) || 0,
+    venda: Number(document.getElementById("vendaManual").value) || 100,
+    total: valor
+        
+});
+const imagem = document.getElementById("imagemManual").value.trim();
 
+if (imagem) {
+
+    window.retornoSalvarImagem = function(resposta) {
+        console.log("Imagem salva:", resposta);
+    };
+
+    const script = document.createElement("script");
+
+    script.src =
+        API_URL +
+        "?action=salvarimagemlink" +
+        "&id=" + encodeURIComponent(data.proximoId) +
+        "&url=" + encodeURIComponent(imagem) +
+        "&callback=retornoSalvarImagem" +
+        "&_=" + Date.now();
+
+    document.body.appendChild(script);
+
+    script.onload = () => script.remove();
+
+    script.onerror = () => {
+        console.error("Erro ao salvar imagem");
+        script.remove();
+    };
+}
       atualizarIcone();
 
       // ✅ LIMPA OS CAMPOS APÓS ENVIAR
-      produtoEl.value = "";
-      valorEl.value = "0";
-      categoriaEl.selectedIndex = 0;
+     produtoEl.value = "";
+valorEl.value = "0";
+
+document.getElementById("caixaManual").value = "";
+
+document.getElementById("imagemManual").value = "";
+
+const img = document.getElementById("previewImagemManual");
+img.src = "";
+img.style.display = "none";
 
       // fecha o modal
       fecharNovoProduto();
@@ -764,7 +883,22 @@ function debounceBuscar() {
       alert("Erro ao gerar ID do produto");
     }
   }
+const imagem = document.getElementById("imagemManual").value.trim();
 
+if (imagem) {
+
+    const script = document.createElement("script");
+
+    script.src =
+        CONFIG.API_URL +
+        "?action=salvarimagemlink" +
+        "&id=" + encodeURIComponent(data.proximoId) +
+        "&url=" + encodeURIComponent(imagem) +
+        "&callback=console.log" +
+        "&_=" + Date.now();
+
+    document.body.appendChild(script);
+}
   </script>
 
 

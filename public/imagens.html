@@ -201,50 +201,7 @@ function previewImagem() {
   img.src = url;
 }
 
-/* SALVAR */
-async function salvarImagem(event) {
-  const btn = event.target;
-  btn.textContent = "Salvando...";
 
-  const ids = idsSelecionados;
-  const link = document.getElementById("linkImagem").value;
-
-  if (!ids.length || !link) {
-    alert("Selecione produtos e informe a imagem");
-    btn.textContent = "Salvar Imagem";
-    return;
-  }
-
-  for (let id of ids) {
-    const form = new URLSearchParams();
-    form.append("action", "salvarimagemlink");
-    form.append("id", id);
-    form.append("url", link);
-
-    await fetch(CONFIG.API_URL, {
-      method: "POST",
-      body: form
-    });
-  }
-
-  alert("Imagem salva para todos!");
-
-  // LIMPAR
-  idsSelecionados = [];
-  atualizarListaVisual();
-
-  document.getElementById("idProduto").value = "";
-  document.getElementById("linkImagem").value = "";
-  document.getElementById("buscaProduto").value = "";
-
-  const img = document.getElementById("previewImg");
-  img.src = "";
-  img.style.display = "none";
-
-  document.getElementById("resultadoBusca").style.display = "none";
-
-  btn.textContent = "Salvar Imagem";
-}
 
 /* FECHAR LISTA */
 document.addEventListener("click", (e) => {
@@ -252,32 +209,83 @@ document.addEventListener("click", (e) => {
     document.getElementById("resultadoBusca").style.display = "none";
   }
 });
+
+/* SALVAR */
 function salvarImagem(event) {
   const btn = event.target;
+  btn.disabled = true;
   btn.textContent = "Salvando...";
 
-  const ids = idsSelecionados;
+  const ids = [...idsSelecionados];
   const link = document.getElementById("linkImagem").value;
 
   if (!ids.length || !link) {
     alert("Selecione produtos e informe a imagem");
+    btn.disabled = false;
     btn.textContent = "Salvar Imagem";
     return;
   }
 
-  let contador = 0;
+  let concluidos = 0;
+  const total = ids.length;
+
+  window.retornoSalvar = function(resposta) {
+
+    concluidos++;
+
+    btn.textContent = `Salvando ${concluidos}/${total}...`;
+
+    if (concluidos >= total) {
+
+      alert("Imagem salva para todos!");
+
+      // LIMPAR TUDO
+      idsSelecionados = [];
+      atualizarListaVisual();
+
+      document.getElementById("idProduto").value = "";
+      document.getElementById("linkImagem").value = "";
+      document.getElementById("buscaProduto").value = "";
+
+      const img = document.getElementById("previewImg");
+      img.src = "";
+      img.style.display = "none";
+
+      document.getElementById("resultadoBusca").innerHTML = "";
+      document.getElementById("resultadoBusca").style.display = "none";
+
+      btn.disabled = false;
+      btn.textContent = "Salvar Imagem";
+    }
+  };
 
   ids.forEach(id => {
+
     const script = document.createElement("script");
 
     script.src =
       CONFIG.API_URL +
       "?action=salvarimagemlink" +
-      "&id=" + id +
+      "&id=" + encodeURIComponent(id) +
       "&url=" + encodeURIComponent(link) +
-      "&callback=retornoSalvar";
+      "&callback=retornoSalvar" +
+      "&_=" + Date.now() + Math.random();
 
     document.body.appendChild(script);
+
+    script.onload = () => script.remove();
+    script.onerror = () => {
+      concluidos++;
+
+      if (concluidos >= total) {
+        alert("Algumas imagens podem não ter sido salvas.");
+
+        btn.disabled = false;
+        btn.textContent = "Salvar Imagem";
+      }
+
+      script.remove();
+    };
   });
 }
 </script>
