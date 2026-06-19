@@ -597,6 +597,7 @@ function debounceBuscar() {
       const itens = carrinho.map(i => ({
       ID_PRODUTO: i.ID_PRODUTO,
       CATEGORIA: i.CATEGORIA,
+      CAIXA: i.CAIXA,
       PRODUTO: i.PRODUTO,
       QTD: i.qtd,
       VALOR_COMPRA: i.valorCompra,
@@ -735,7 +736,7 @@ function debounceBuscar() {
       </button>
 
       <br><br>
-      <button onclick="fecharNovoProduto()" style="width:100%;">Cancelar</button>
+      <button onclick="fecharNovoProduto()" style="padding:10px;width:100%;">Cancelar</button>
     </div>
   </div>
   <script>

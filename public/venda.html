@@ -947,6 +947,7 @@
 
                 document.getElementById("loading").textContent = "";
                 carregando = false;
+                console.log(todosProdutos[0]);
                 }
                 
                 function preencherCategorias() {
@@ -1144,12 +1145,16 @@
                 return v + (v * p / 100);
             }
 
-            function atualizarIcone() {
-                const totalItens = carrinho.reduce(
-                (soma, p) => soma + Number(p.qtdVenda || 0), 0
-                );
-                document.getElementById("qtdCarrinho").textContent = totalItens;
-            }
+           const totalItens = carrinho.reduce(
+    (soma, p) => soma + parseFloat(p.qtdVenda || 0), 0
+);
+
+document.getElementById("qtdCarrinho").textContent =
+    totalItens.toLocaleString("pt-BR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 3
+    });
+               
 
 
                 function abrirCarrinho() {
@@ -1192,7 +1197,7 @@ Qtd:
 <input
     type="number"
     min="1"
-    step="1"
+    step="0.001"
     value="${p.qtdVenda}"
     onchange="alterarQtd(${i}, this.value)"
     style="width:70px"
@@ -1268,20 +1273,17 @@ function diminuirQtd(index) {
 }
 function alterarQtd(index, valor) {
 
-    let qtd = parseInt(valor);
+    let qtd = parseFloat(
+        valor.toString().replace(",", ".")
+    );
 
-    // Se for inválido ou menor que 1
-    if (isNaN(qtd) || qtd < 1) {
-        qtd = 1;
+    if (isNaN(qtd) || qtd <= 0) {
+        qtd = 0.001;
     }
 
-    // Atualiza a quantidade do item
     carrinho[index].qtdVenda = qtd;
 
-    // Atualiza o ícone do carrinho
     atualizarIcone();
-
-    // Reabre o carrinho para recalcular subtotal e total
     abrirCarrinho();
 }
 
@@ -1734,6 +1736,7 @@ await db.collection("produtos").add(produtoLimpo);
             window.location.href = "login.html";
         });
         }
+        
             </script>
 
             <div id="spinnerVenda" style="
