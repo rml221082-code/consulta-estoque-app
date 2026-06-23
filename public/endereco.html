@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Endereços dos Clientes</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Segoe UI,Arial;
+    background:#f4f6f8;
+}
+
+header{
+    background:#1b5500;
+    color:#fff;
+    padding:15px;
+    position:sticky;
+    top:0;
+}
+
+h2{
+    margin:0;
+}
+
+.container{
+    padding:15px;
+}
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.cliente{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.btn{
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    cursor:pointer;
+    color:white;
+    font-size:15px;
+    width:100%;
+}
+
+.maps{
+    background:#0078d4;
+}
+
+.whats{
+    background:#16a34a;
+}
+
+select{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-top:10px;
+}
+
+#listaClientes{
+    margin-top:20px;
+}
+
+</style>
+</head>
+<body>
+
+<header>
+    <h2>📍 Endereços dos Fornecedores</h2>
+</header>
+
+<div class="container">
+
+    <div id="listaClientes"></div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCxrHKJhD7sY3msvUrDBbeNNvFeuYsAQuA",
+  authDomain: "consulta-estoque-app.firebaseapp.com",
+  projectId: "consulta-estoque-app",
+  storageBucket: "consulta-estoque-app.firebasestorage.app",
+  messagingSenderId: "1065893590092",
+  appId: "1:1065893590092:web:479ebc4a07cf66457430e9"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let funcionarios = [];
+
+auth.onAuthStateChanged(async user=>{
+
+    if(!user){
+        window.location.href="login.html";
+        return;
+    }
+
+    await carregarFuncionarios();
+
+    renderClientes();
+
+});
+
+async function carregarFuncionarios(){
+
+    const snap = await db.collection("usuarios").get();
+
+    funcionarios=[];
+
+    snap.forEach(doc=>{
+
+        const u = doc.data();
+
+        if(u.nome && u.whatsapp){
+
+            funcionarios.push({
+                nome:u.nome,
+                numero:u.whatsapp
+            });
+
+        }
+
+    });
+
+}
+
+</script>
+<script>
+
+// =============================
+// CLIENTES
+// =============================
+const clientes = [
+
+/*{
+    id:"",
+    nome:"",
+    mapa:""
+}, */
+{
+    id:"RAIMUNDO",
+    nome:"RAIMUNDO SOLDA",
+    mapa:"https://www.google.com.br/maps/@-23.0226264,-46.9899275,3a,72.3y,206.65h,81.39t/data=!3m7!1e1!3m5!1s_PKgnGJhAPggtqgjCt9Cyg!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D8.608312534122234%26panoid%3D_PKgnGJhAPggtqgjCt9Cyg%26yaw%3D206.64565307360834!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id:"TECPOLIMER",
+    nome:"TECPOLIMER / TECFLEX / SOFTGEL",
+    mapa:"https://www.google.com.br/maps/place/TECPOLIMER+%2F+TECFLEX+%2F+SOFTGEL/@-23.43665,-47.9400559,3a,60y,124.65h,78.54t/data=!3m7!1e1!3m5!1s0oW-ad2uW9uyFWCoNv9RtQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D11.460362354864188%26panoid%3D0oW-ad2uW9uyFWCoNv9RtQ%26yaw%3D124.64666190194917!7i16384!8i8192!4m14!1m7!3m6!1s0x94c5d1aff7d62163:0xd5112c1c98997f9!2sTECPOLIMER+%2F+TECFLEX+%2F+SOFTGEL!8m2!3d-23.4409523!4d-47.9404876!16s%2Fg%2F11ght3ccs6!3m5!1s0x94c5d1aff7d62163:0xd5112c1c98997f9!8m2!3d-23.4409523!4d-47.9404876!16s%2Fg%2F11ght3ccs6?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},    
+
+{
+    id:"Globe",
+    nome:"Globe Química",
+    mapa:"https://www.google.com.br/maps/place/Globe+Qu%C3%ADmica/@-22.6864069,-47.1570198,3a,75y,111.62h,79.3t/data=!3m7!1e1!3m5!1sCA9uyRMEviwTG-s4mKFOkw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D10.703056862302418%26panoid%3DCA9uyRMEviwTG-s4mKFOkw%26yaw%3D111.61694634574407!7i16384!8i8192!4m6!3m5!1s0x94c89271fead92e5:0x8c83e80c044467dd!8m2!3d-22.686507!4d-47.1532611!16s%2Fg%2F11byckd__n?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},    
+{
+    id:"OBA",
+    nome:"Oba frigorífico",
+    mapa:"https://www.google.com.br/maps/place/Oba+frigor%C3%ADfico/@-22.9224807,-47.2096648,3a,75y,100.68h,77.39t/data=!3m7!1e1!3m5!1sJLxh1bhZG3aX5suEP6b0Dg!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D12.611662194271489%26panoid%3DJLxh1bhZG3aX5suEP6b0Dg%26yaw%3D100.68091459720975!7i16384!8i8192!4m6!3m5!1s0x94c8b9139e4778af:0xfdaf9fdb18d4f8da!8m2!3d-22.9223083!4d-47.2088434!16s%2Fg%2F11fqdcm5kk?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},    
+
+{
+    id:"COLUMBIA",
+    nome:"Columbia Machine Brasil",
+    mapa:"https://www.google.com.br/maps/place/Columbia+Machine+Brasil/@-22.8688023,-47.1920003,3a,75y,89.03h,84.28t/data=!3m7!1e1!3m5!1sVHXihTyqvZK5S2AOJ4ruXw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D5.722288954022261%26panoid%3DVHXihTyqvZK5S2AOJ4ruXw%26yaw%3D89.02813583763896!7i16384!8i8192!4m6!3m5!1s0x94c8c75d176d8d13:0x47fe04f49e98de0c!8m2!3d-22.8688854!4d-47.1918751!16s%2Fg%2F11j083yf8x?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},  
+{
+    id:"SAKUTY",
+    nome:"AUTO ELÉTRICA SAKUTY",
+    mapa:"https://www.google.com.br/maps/place/AUTO+EL%C3%89TRICA+SAKUTY/@-22.879968,-47.2173965,3a,75y,320.75h,86.5t/data=!3m7!1e1!3m5!1sibnlP8oumQyuJf_damD30w!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D3.4969662021737946%26panoid%3DibnlP8oumQyuJf_damD30w%26yaw%3D320.7465550543832!7i16384!8i8192!4m6!3m5!1s0x94c8bb1e27910f6f:0x9d79604fc9681c9c!8m2!3d-22.8799091!4d-47.2174472!16s%2Fg%2F11f782cbq6?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+    {
+    id:"OSCAR",
+    nome:"OSCAR MERCANICO DE CARROS",
+    mapa:"https://www.google.com.br/maps/place/Tstornearia+Usinagem+em+geral/@-22.8985866,-47.1734082,3a,75y,269.55h,86.38t/data=!3m7!1e1!3m5!1stifHSLLZkyF4VdsXEa0FyQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D3.624609750044627%26panoid%3DtifHSLLZkyF4VdsXEa0FyQ%26yaw%3D269.5454733556873!7i16384!8i8192!4m6!3m5!1s0x94c8b903adcc96a7:0xc9ef06a6ee549db0!8m2!3d-22.8881478!4d-47.1619067!16s%2Fg%2F11ptzdmt38?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+  {
+    id:"GUSTAVO",
+    nome:"GUSTAVO",
+    mapa:"https://www.google.com.br/maps/@-22.8985866,-47.1734082,3a,75y,276.55h,85.5t/data=!3m7!1e1!3m5!1stifHSLLZkyF4VdsXEa0FyQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D4.503233467720065%26panoid%3DtifHSLLZkyF4VdsXEa0FyQ%26yaw%3D276.5487564217187!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id:"GILBERTO",
+    nome:"GILBERTO BOMBAS",
+    mapa:"https://www.google.com.br/maps/@-22.8945758,-47.1025642,3a,75y,180.09h,88.91t/data=!3m7!1e1!3m5!1sKyyn_rq2H6PE0QUXo5hUMw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D1.0941046203163154%26panoid%3DKyyn_rq2H6PE0QUXo5hUMw%26yaw%3D180.09238283098634!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+    {
+    id:"HYPAR",
+    nome:"Hypar Parafusos e Ferramentas",
+    mapa:"https://www.google.com.br/maps/place/Hypar+Parafusos+e+Ferramentas/@-22.9309702,-47.0867875,3a,75y,235.96h,83.35t/data=!3m7!1e1!3m5!1suF8iQib0I8yy7p0C4sVuUw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D6.649917594703098%26panoid%3DuF8iQib0I8yy7p0C4sVuUw%26yaw%3D235.9633700980766!7i16384!8i8192!4m6!3m5!1s0x94c8c8fb3aee5d95:0x9203e7476aae60db!8m2!3d-22.9310184!4d-47.0870043!16s%2Fg%2F1w0r105m?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},    
+{
+    id:"Fercamp",
+    nome:"Fercamp",
+    mapa:"https://www.google.com.br/maps/place/Fercamp/@-22.933266,-47.0909832,3a,75y,167.23h,91.29t/data=!3m7!1e1!3m5!1sIscpHh2GS7b4oXRjchWEAA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D-1.2925233957874838%26panoid%3DIscpHh2GS7b4oXRjchWEAA%26yaw%3D167.22535914509524!7i16384!8i8192!4m6!3m5!1s0x94c8c8fbf3a67bc3:0x3871d0dfe79ea229!8m2!3d-22.9335979!4d-47.0913498!16s%2Fg%2F1td0hm85?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+ 
+ {
+    id:"HIDRODIN",
+    nome:"HIDRODIN",
+    mapa:"https://www.google.com.br/maps/@-22.9335504,-47.0899955,3a,45.8y,206.08h,86.77t/data=!3m7!1e1!3m5!1s6L9Fgzgaik-qbRVhu1FoUw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D3.229145324131693%26panoid%3D6L9Fgzgaik-qbRVhu1FoUw%26yaw%3D206.07931040423676!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id:"WIKA",
+    nome:"Weldintec Instrumentação",
+    mapa:"https://www.google.com.br/maps/place/Weldintec+Instrumenta%C3%A7%C3%A3o/@-22.9459485,-47.0897328,3a,75y,314.9h,84.75t/data=!3m7!1e1!3m5!1sYlwJ0RfJ95-aN40ZrBPnBA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D5.253885757880369%26panoid%3DYlwJ0RfJ95-aN40ZrBPnBA%26yaw%3D314.89634577701344!7i16384!8i8192!4m6!3m5!1s0x94c8c905007470cf:0xa2408a0fa9715989!8m2!3d-22.9458745!4d-47.0899336!16s%2Fg%2F1pt_1vzjz?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id:"OMNI",
+    nome:"OMNI Auttomação ltda",
+    mapa:"https://www.google.com.br/maps/@-22.9281597,-47.0709068,3a,75y,122.6h,87.08t/data=!3m7!1e1!3m5!1s9xbGH4V2GMfWhAiyyJnDWA!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D2.9174338855464725%26panoid%3D9xbGH4V2GMfWhAiyyJnDWA%26yaw%3D122.60282382334964!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id:"Feira da Borracha",
+    nome:"Feira da Borracha Correias e Mangueiras Hidráulicas",
+    mapa:"https://www.google.com.br/maps/@-22.9322139,-47.0710142,3a,75y,99.58h,90t/data=!3m7!1e1!3m5!1s-vy3hfjLmrNiZc7AToz2pg!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D0%26panoid%3D-vy3hfjLmrNiZc7AToz2pg%26yaw%3D99.58132104294131!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id:"JSL",
+    nome:"JSL EQUIPAMENTOS HIDRAULICOS LTDA",
+    mapa:"https://www.google.com.br/maps/@-22.9374482,-47.0683993,3a,75y,30.19h,84.15t/data=!3m7!1e1!3m5!1sr6DDge7TaVqUoXBcwjsBlw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D5.853478388328952%26panoid%3Dr6DDge7TaVqUoXBcwjsBlw%26yaw%3D30.188242556877718!7i16384!8i8192?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+
+
+{
+    id:"Dynamic",
+    nome:"Dynamic Comércio de Hidráulica e Pneumática Ltda",
+    mapa:"https://www.google.com.br/maps/place/R.+Souza+Brito,+48+-+Jardim+do+Trevo,+Campinas+-+SP,+13040-012/@-22.9327815,-47.0678835,3a,60y,294.74h,86.41t/data=!3m7!1e1!3m5!1s6ycC1ZVlW2MmHxcs9ma53w!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D3.587593359415365%26panoid%3D6ycC1ZVlW2MmHxcs9ma53w%26yaw%3D294.7429433865398!7i16384!8i8192!4m6!3m5!1s0x94c8c92875fcc375:0xa3b3f88074ca6688!8m2!3d-22.9327695!4d-47.068!16s%2Fg%2F11c2d7zgcl?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D"
+},
+{
+    id: "2w",
+    nome: "2W Comércio de Plásticos e Borrachas",
+    mapa: "https://www.google.com.br/maps/place/2W+Com%C3%A9rcio+de+Pl%C3%A1sticos+e+Borrachas/@-22.9318987,-47.0692253,3a,75y,91.64h,87.92t/data=!3m7!1e1!3m5!1sH_UpweRCSBMJSqCZcMpAvw!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fcb_client%3Dmaps_sv.tactile%26w%3D900%26h%3D600%26pitch%3D2.075694328878299%26panoid%3DH_UpweRCSBMJSqCZcMpAvw%26yaw%3D91.63680762605597!7i16384!8i8192!4m6!3m5!1s0x94c8c8d81204ad25:0x460c57d70a058527!8m2!3d-22.9319465!4d-47.0690047!16s%2Fg%2F1tdp64bw?entry=ttu"
+}
+
+];
+
+// =============================
+// MOSTRAR CLIENTES
+// =============================
+function renderClientes(){
+
+    let html = "";
+
+    clientes.forEach(c=>{
+
+        html += `
+        <div class="card">
+
+            <div class="cliente">
+                ${c.nome}
+            </div>
+
+            <button
+                class="btn maps"
+                onclick="window.open('${c.mapa}','_blank')">
+                📍 Ver Endereço
+            </button>
+
+            <select id="func_${c.id}">
+                <option value="">
+                    Enviar para...
+                </option>
+
+                ${
+                    funcionarios.map(f=>`
+                        <option value="${f.numero}">
+                            ${f.nome}
+                        </option>
+                    `).join("")
+                }
+
+            </select>
+
+            <button
+                class="btn whats"
+                onclick="enviarWhats('${c.id}')">
+
+                📲 Whats
+
+            </button>
+
+        </div>
+        `;
+
+    });
+
+    document.getElementById("listaClientes").innerHTML = html;
+
+}
+
+// =============================
+// ENVIAR WHATS
+// =============================
+function enviarWhats(id){
+
+    const cliente =
+        clientes.find(c=>c.id===id);
+
+    if(!cliente) return;
+
+    const numero =
+        document
+        .getElementById("func_"+id)
+        .value;
+
+    if(!numero){
+
+        alert("Selecione um funcionário");
+
+        return;
+    }
+
+    let telefone =
+        numero.replace(/\D/g,'');
+
+    if(!telefone.startsWith("55")){
+
+        telefone = "55" + telefone;
+
+    }
+
+    const msg =
+        "📍 ENDEREÇO DO CLIENTE\n\n" +
+        "🏢 Cliente: " + cliente.nome + "\n\n" +
+        "🔗 Google Maps:\n" +
+        cliente.mapa;
+
+    const url =
+        "https://api.whatsapp.com/send?phone=" +
+        telefone +
+        "&text=" +
+        encodeURIComponent(msg);
+
+    window.open(url,"_blank");
+
+}
+
+</script>
+
+</body>
+</html>
