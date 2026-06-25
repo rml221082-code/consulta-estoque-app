@@ -995,7 +995,7 @@
     .then(res => {
         if(res.success){
             mostrarAlerta("Pedido enviado com sucesso!");
-            carrinho = [];
+            carrinho.length = 0;
             atualizarIcone();
             fecharCarrinho();
         } else {
@@ -1145,15 +1145,20 @@
                 return v + (v * p / 100);
             }
 
-           const totalItens = carrinho.reduce(
-    (soma, p) => soma + parseFloat(p.qtdVenda || 0), 0
-);
+           function atualizarIcone() {
 
-document.getElementById("qtdCarrinho").textContent =
-    totalItens.toLocaleString("pt-BR", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 3
-    });
+    const totalItens = carrinho.reduce(
+        (soma, p) => soma + Number(p.qtdVenda || 0),
+        0
+    );
+
+    document.getElementById("qtdCarrinho").textContent =
+        totalItens.toLocaleString("pt-BR", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 3
+        });
+
+}
                
 
 
@@ -1618,7 +1623,7 @@ await db.collection("produtos").add(produtoLimpo);
         }, 2000);
     }
 
-            carrinho = [];
+            carrinho.length = 0;
             atualizarIcone();
             fecharCarrinho();
             proximoIdVenda++;
@@ -1695,7 +1700,7 @@ await db.collection("produtos").add(produtoLimpo);
                 }
 
                 // ✅ Limpa carrinho, fecha modal e atualiza ID
-                carrinho = [];
+                carrinho.length = 0;
                 atualizarIcone();
                 fecharCarrinho();
                 proximoIdVenda++;
