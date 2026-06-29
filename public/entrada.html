@@ -442,10 +442,13 @@ function debounceBuscar() {
       carrinho.forEach((i, idx) => {
         const valorFinal =
         
-          i.valorCompra +
-          (i.valorCompra * i.ipi / 100) +
-          (i.valorCompra * i.icms / 100) +
-          (i.valorCompra * i.venda / 100);
+         
+(
+  i.valorCompra +
+  (i.valorCompra * i.ipi / 100) +
+  ((i.valorCompra + (i.valorCompra * i.ipi / 100)) * i.icms / 100)
+) *
+(1 + i.venda / 100);
 
         i.total = valorFinal;
         totalGeral += i.total * i.qtd;
