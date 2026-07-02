@@ -352,16 +352,140 @@ td {
   }
 
 }
+/* Menu */
+#menuLateral{
+    position:fixed;
+    top:0;
+    left:-280px;
+    width:260px;
+    height:100%;
+    background:#0f172a;
+    transition:.3s;
+    z-index:9999;
+    box-shadow:4px 0 15px rgba(0,0,0,.3);
+}
+
+#menuLateral.aberto{
+    left:0;
+}
+
+#fundoMenu.aberto{
+    display:block;
+}
+
+.menuHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px;
+    color:white;
+    font-size:20px;
+    border-bottom:1px solid #334155;
+}
+
+.menuHeader button{
+    background:none;
+    border:none;
+    color:white;
+    cursor:pointer;
+    font-size:22px;
+}
+
+#menuLateral a{
+    display:block;
+    color:white;
+    text-decoration:none;
+    padding:16px 22px;
+    transition:.2s;
+}
+
+#menuLateral a:hover{
+    background:#2563eb;
+    padding-left:30px;
+}
+#btnMenu{
+    background:#2563eb;
+    color:#fff;
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+}
+
+#btnMenu:hover{
+    background:#1d4ed8;
+}
+#fundoMenu{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    z-index:9998;
+}
+#menuLateral hr{
+    border:0;
+    border-top:1px solid #334155;
+    margin:8px 15px;
+}
 </style>
 </head>
-<header>
-  <div>📦 Pedidos de Compras</div>
-
-  <div class="header-right" id="headerRight">
-    <!-- JS vai preencher -->
-  </div>
-</header>
 <body>
+<header>
+
+    <div style="display:flex;align-items:center;gap:15px;">
+
+        <button id="btnMenu" onclick="abrirMenu()">
+            ☰ Menu
+        </button>
+
+        <div>📦 Pedidos de Compras</div>
+
+    </div>
+
+    <div class="header-right" id="headerRight">
+        <!-- JS vai preencher -->
+    </div>
+
+</header>
+<!-- Fundo escuro -->
+<div id="fundoMenu" onclick="fecharMenu()"></div>
+
+<!-- Menu lateral -->
+<nav id="menuLateral">
+
+    <div class="menuHeader">
+        <span>📋 Menu Principal</span>
+        <button onclick="fecharMenu()">✖</button>
+    </div>
+
+    <a href="index.html">🏠 Menu Principal </a>
+
+    <hr>
+
+    <a href="venda.html">🛒 Venda</a>
+    <a href="retiradademercadoria.html">📥 Retirada de Mercadoria</a>
+    <a href="entrada.html">📦 Entrada de Mercadoria</a>
+    <a href="inventario.html">📋 Inventário</a>
+
+    <hr>
+
+    <a href="controlefiscal.html">🧾 Controle Fiscal</a>
+    <a href="entradanotas.html">🧾 Entrada de Notas</a>
+    <a href="relatoriofiscal.html">📊 Relatório Fiscal</a>
+
+    <hr>
+
+    <a href="endereco.html">📍 Endereços de Fornecedores</a>
+    <a href="controledeveiculo.html">🚚 Controle de Veículos</a>
+
+    <hr>
+
+    <a href="admin.html">⚙️ Administração</a>
+
+</nav>
+
             <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
         <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
@@ -1045,6 +1169,15 @@ function atualizarContadores(){
 
   document.getElementById("btnEntregue").innerText =
     `🟢 Entregue (${totalE})`;
+}
+function abrirMenu(){
+    document.getElementById("menuLateral").classList.add("aberto");
+    document.getElementById("fundoMenu").classList.add("aberto");
+}
+
+function fecharMenu(){
+    document.getElementById("menuLateral").classList.remove("aberto");
+    document.getElementById("fundoMenu").classList.remove("aberto");
 }
 document.getElementById("formPedidos").addEventListener("submit", async (e) => {
 

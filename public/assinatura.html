@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Assinatura</title>
+<script charset="UTF-8"></script><style>
+body{font-family:Segoe UI,Arial;background:#f4f6f8;margin:20px}
+.panel{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px #ccc}
+label{display:block;margin-top:10px;font-weight:bold}
+input{width:100%;padding:8px}
+#assinatura{margin-top:20px}
+</style></head><body>
+<div class="panel">
+<h2>Gerador de Assinatura</h2>
+<label>Nome</label><input id="nome" value="Robson Mariano">
+<label>Setor</label><input id="setor" value="Setor Operacional">
+<label>WhatsApp</label><input id="zap" value="19992367919">
+<div id="assinatura"></div>
+</div>
+<script>
+function fmt(v){let d=v.replace(/\D/g,'').slice(-11);if(d.length<11)return v;
+return '('+d.substr(0,2)+') '+d.substr(2,5)+'-'+d.substr(7,4)}
+function render(){
+let nome=nomeEl.value,setor=setorEl.value;
+let dig=zapEl.value.replace(/\D/g,'').slice(-11);
+let vis = fmt(dig);
+let wa = 'https://wa.me/55' + dig;
+
+let blocoWhats = '';
+
+if (dig.length === 11) {
+    blocoWhats = `
+<div>
+    <a href="${wa}"
+       style="text-decoration:none;color:#0d6efd;font-weight:bold;">
+        <img src="https://img.icons8.com/color/48/whatsapp--v1.png"
+             width="24"
+             style="vertical-align:middle">
+        ${vis}
+    </a>
+</div>`;
+}
+assinatura.innerHTML=`<table cellpadding="0" cellspacing="0" style="font-family:Segoe UI,Arial;font-size:14px;color:#333;">
+<tr><td style="padding-right:15px"><img src="https://i.imgur.com/OjJclYr.png" width="200"></td>
+<td style="border-left:3px solid #0d6efd;padding-left:15px">
+<div style="font-size:20px;font-weight:bold;color:#0d6efd">${nome}</div>
+<div style="font-size:14px;font-weight:bold;color:#0d6efd">${setor}</div>
+<div style="margin-top:4px;line-height:28px;">
+
+    <div>
+        <img src="https://img.icons8.com/?size=30&id=5XxqJLUsepb2&format=png&color=000000"
+             width="24"
+             style="vertical-align:middle">
+        <span style="font-size:14px;font-weight:bold;color:#0d6efd;">
+            (19) 2222-6220
+        </span>
+    </div>
+
+    ${blocoWhats}
+
+    <div>
+        <a href="https://www.instagram.com/hidrauman.serv?igsh=eG1oNXJocnJ0bHVu"
+           style="text-decoration:none;color:#0d6efd;font-weight:bold;">
+            <img src="https://img.icons8.com/fluency/30/instagram-new.png"
+                 width="24"
+                 style="vertical-align:middle">
+            @hidrauman.serv
+        </a>
+    </div>
+
+</div>
+<div style="margin-top:8px;padding-top:12px;border-top:2px solid #0d6efd">
+<a href="https://maps.google.com/?q=Rua+Pastor+Abílio+Honório+Pedromo,+351,+Hortolândia,+SP,+13187-170" style="text-decoration:none;color:#fc0303;font-size:15px">
+<img src="https://img.icons8.com/color/48/marker.png" width="20" style="vertical-align:middle"> R. Pastor Abílio Honório Pedromo, 351 - Hortolândia/SP
+</a></div>
+<div style="margin-top:8px;font-size:11px;color:#777">Esta mensagem pode conter informações confidenciais destinadas exclusivamente ao destinatário.</div>
+</td></tr></table>`;
+}
+const nomeEl=document.getElementById('nome'),setorEl=document.getElementById('setor'),zapEl=document.getElementById('zap');
+[nomeEl,setorEl,zapEl].forEach(e=>e.oninput=render);render();
+</script></body></html>
