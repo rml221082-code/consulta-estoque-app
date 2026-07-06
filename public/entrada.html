@@ -127,11 +127,15 @@
       overflow: hidden;
     }
 
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
+    .card img{
+    width:100%;
+    height:180px;
+    object-fit:contain;
+    object-position:center;
+    background:#fff;
+    cursor:pointer;
+    display:block;
+}
 
     .card .info {
       padding: 12px;
@@ -155,7 +159,11 @@
       justify-content: center;
       align-items: center;
     }
-
+#modal img{
+    max-width:95vw;
+    max-height:90vh;
+    object-fit:contain;
+}
     #boxCarrinho {
       background: #fff;
       width: 95%;
@@ -309,13 +317,13 @@ function debounceBuscar() {
   // padrão /d/ID/
   let match = url.match(/\/d\/(.*?)\//);
   if (match && match[1]) {
-    return `https://lh3.googleusercontent.com/d/${match[1]}=w500`;
+    return `https://lh3.googleusercontent.com/d/${match[1]}=s2000`;
   }
 
   // padrão id=ID
   match = url.match(/id=(.*?)(?:&|$)/);
   if (match && match[1]) {
-    return `https://lh3.googleusercontent.com/d/${match[1]}=w500`;
+    return `https://lh3.googleusercontent.com/d/${match[1]}=s2000`;
   }
 
   return url;
@@ -461,8 +469,16 @@ function debounceBuscar() {
     <div style="display:flex; align-items:center; gap:10px;">
       
       <img src="${tratarImagem(i.IMAGEM)}"
-           onerror="this.src='https://via.placeholder.com/50'"
-           style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+     onerror="this.src='https://via.placeholder.com/50'"
+     style="
+        width:70px;
+        height:70px;
+        object-fit:contain;
+        object-position:center;
+        background:#fff;
+        border-radius:6px;
+        padding:4px;
+     ">
 
       <div>
         <b>${i.PRODUTO}</b>
@@ -929,10 +945,14 @@ if (imagem) {
     ">✖</span>
 
     <img id="modalImg" style="
-      max-width:160%;
-      max-height:60%;
-      border-radius:10px;
-    ">
+    max-width:95vw;
+    max-height:90vh;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+    object-position:center;
+    border-radius:10px;
+">
 
     <div id="modalDesc" style="
       color:white;

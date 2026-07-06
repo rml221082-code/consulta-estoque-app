@@ -104,7 +104,7 @@
 
         <div class="container">
 
-            <div id="listaClientes"></div>
+            
 
         </div>
 
@@ -151,32 +151,49 @@
     // ======================
     // LOGIN
     // ======================
-    auth.onAuthStateChanged(async user => {
+   auth.onAuthStateChanged(async user => {
 
-        if (!user) {
-            window.location.href = "login.html";
-            return;
-        }
+    if (!user) return;
+
+    console.log("UID AUTH:", user.uid);
+
+    try {
+        const snap = await db.collection("usuarios").doc(user.uid).get();
+        console.log("USER DOC:", snap.exists, snap.data());
+
+        usuarioLogado = snap.data();
 
         await carregarFuncionarios();
         await carregarClientes();
 
-    });
+    } catch (e) {
+        console.error("ERRO USUÁRIO:", e);
+    }
 
+});
     // ======================
     // FUNCIONÁRIOS
     // ======================
-    async function carregarFuncionarios(){
+async function carregarFuncionarios() {
+
+    console.log("Entrou em carregarFuncionarios");
+
+    funcionarios = [];
+
+    try {
 
         const snap = await db.collection("usuarios").get();
 
-        funcionarios = [];
+        console.log("Total usuários:", snap.size);
 
         snap.forEach(doc => {
 
             const u = doc.data();
 
-            if (u.nome && u.whatsapp){
+            console.log(doc.id, u);
+
+            // Apenas quem possui WhatsApp
+            if (u.nome && u.whatsapp) {
 
                 funcionarios.push({
                     nome: u.nome,
@@ -187,8 +204,13 @@
 
         });
 
+        console.log("Funcionários carregados:", funcionarios);
+
+    } catch (e) {
+        console.error("ERRO AO LER USUÁRIOS:", e);
     }
 
+}
     // ======================
     // FORNECEDORES
     // ======================
@@ -205,18 +227,50 @@
     // ======================
     // MOSTRAR
     // ======================
+
     function renderClientes(lista = clientes){
 
-        if(!Array.isArray(lista)){
-            console.error("clientes não é array", lista);
-            return;
+    if(!Array.isArray(lista)){
+        console.error("clientes não é array", lista);
+        return;
+    }
+
+    let html = "";
+
+    lista.forEach(c => {
+
+        let selectHTML = "";
+
+        // Admin e administrativo escolhem qualquer contato
+        if (usuarioLogado.tipo === "admin" || usuarioLogado.tipo === "administrativo") {
+
+            selectHTML = `
+                <select id="func_${c.id}">
+                    <option value="">Enviar para...</option>
+
+                    ${funcionarios.map(f => `
+                        <option value="${f.numero}">
+                            ${f.nome}
+                        </option>
+                    `).join("")}
+
+                </select>
+            `;
+
+        } else {
+
+            // Funcionário envia apenas para ele mesmo
+            selectHTML = `
+                <select id="func_${c.id}">
+                    <option value="${usuarioLogado.whatsapp}">
+                        Meu WhatsApp
+                    </option>
+                </select>
+            `;
+
         }
 
-        let html = "";
-
-        lista.forEach(c => {
-
-            html += `
+        html += `
             <div class="card">
 
                 <div class="cliente">
@@ -230,16 +284,7 @@
                     📍 Ver Endereço
                 </button>
 
-                <select id="func_${c.id}">
-                    <option value="">Enviar para...</option>
-
-                    ${funcionarios.map(f => `
-                        <option value="${f.numero}">
-                            ${f.nome}
-                        </option>
-                    `).join("")}
-
-                </select>
+                ${selectHTML}
 
                 <button
                     class="btn whats"
@@ -248,12 +293,12 @@
                 </button>
 
             </div>
-            `;
-        });
+        `;
+    });
 
-        document.getElementById("listaClientes").innerHTML =
-            html || "<p>Nenhum fornecedor encontrado.</p>";
-    }
+    document.getElementById("listaClientes").innerHTML =
+        html || "<p>Nenhum fornecedor encontrado.</p>";
+}
     function filtrarClientes(){
 
         const texto =

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Lens IA</title>
+
+<link rel="stylesheet" href="lens.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+<div class="logo">
+
+🔍 <span>Lens IA</span>
+
+</div>
+
+<div class="subtitulo">
+
+Reconhecimento Inteligente de Produtos
+
+</div>
+
+</header>
+
+
+<div id="dropArea" class="drop-area">
+
+<div class="icone">
+
+📷
+
+</div>
+
+<h2>
+
+Arraste uma imagem aqui
+
+</h2>
+
+<p>
+
+ou
+
+</p>
+
+<input
+type="file"
+id="imagemInput"
+accept="image/*"
+capture="environment"
+hidden>
+
+<div class="botoes">
+
+<button id="btnEscolher">
+
+🖼 Escolher Imagem
+
+</button>
+
+<button id="btnCamera">
+
+📷 Abrir Câmera
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="preview">
+
+<img
+id="previewImagem">
+
+</div>
+
+
+<div class="acoes">
+
+<button id="btnAnalisar">
+
+🤖 ANALISAR PRODUTO
+
+</button>
+
+</div>
+
+
+<div id="loading">
+
+<div class="loader"></div>
+
+<p>
+
+Analisando imagem...
+
+</p>
+
+</div>
+
+
+<div id="resultado">
+
+<h2>
+
+Resultado
+
+</h2>
+
+<div id="resultadoConteudo">
+
+Nenhuma análise realizada.
+
+</div>
+
+</div>
+
+</div>
+
+<script src="config.js"></script>
+
+<script src="lens.js"></script>
+
+</body>
+</html>

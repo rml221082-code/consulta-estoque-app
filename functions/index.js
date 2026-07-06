@@ -1,3 +1,4 @@
+require("dotenv").config();
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { google } = require("googleapis");
@@ -10,6 +11,12 @@ const SPREADSHEET_ID = "1kKdufdnBwVvNquC4846Tmka5EUInpvMasKBks17cyLM";
 const ABA = "SERVICOS";
 const DRIVE_ROOT_FOLDER_ID = "19tZ8sSV1hxKkIsFhkDz1g24fSL0RIKho";
 
+/* ========= chave api openAI ========= */
+const OpenAI = require("openai");
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 /* ========= AUTH GOOGLE ========= */
 const auth = new google.auth.GoogleAuth({
   scopes: [
