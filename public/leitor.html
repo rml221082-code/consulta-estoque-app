@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Leitor de Código de Barras</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f5f5f5;
+    text-align:center;
+}
+
+header{
+    background:#1565c0;
+    color:white;
+    padding:15px;
+    font-size:24px;
+}
+
+#reader{
+    width:95%;
+    max-width:500px;
+    margin:20px auto;
+}
+
+#resultado{
+    margin:20px;
+    font-size:22px;
+    font-weight:bold;
+    color:#0d47a1;
+    word-break:break-all;
+}
+
+button{
+    padding:12px 25px;
+    margin:10px;
+    font-size:18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#copiar{
+    background:#43a047;
+    color:white;
+}
+
+#reiniciar{
+    background:#ef6c00;
+    color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+📷 Leitor de Código de Barras
+</header>
+
+<div id="reader"></div>
+
+<div id="resultado">
+Aguardando leitura...
+</div>
+
+<button id="copiar">Copiar Código</button>
+<button id="reiniciar">Ler Novamente</button>
+
+<script>
+
+let ultimoCodigo = "";
+
+function iniciarLeitor(){
+
+const html5QrCode = new Html5Qrcode("reader");
+
+html5QrCode.start(
+{
+facingMode:"environment"
+},
+{
+fps:15,
+qrbox:{
+width:250,
+height:250
+}
+},
+(codigo)=>{
+
+ultimoCodigo=codigo;
+
+document.getElementById("resultado").innerHTML=
+"Código:<br><br>"+codigo;
+
+navigator.vibrate?.(200);
+
+html5QrCode.stop();
+
+},
+(err)=>{
+
+}
+);
+
+window.leitor=html5QrCode;
+
+}
+
+iniciarLeitor();
+
+document.getElementById("reiniciar").onclick=function(){
+
+if(window.leitor){
+
+window.leitor.start(
+{
+facingMode:"environment"
+},
+{
+fps:15,
+qrbox:{
+width:250,
+height:250
+}
+},
+(codigo)=>{
+
+ultimoCodigo=codigo;
+
+document.getElementById("resultado").innerHTML=
+"Código:<br><br>"+codigo;
+
+navigator.vibrate?.(200);
+
+window.leitor.stop();
+
+},
+()=>{}
+
+);
+
+}
+
+}
+
+document.getElementById("copiar").onclick=function(){
+
+if(ultimoCodigo=="") return;
+
+navigator.clipboard.writeText(ultimoCodigo);
+
+alert("Código copiado!");
+
+}
+
+</script>
+
+</body>
+</html>
