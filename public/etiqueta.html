@@ -848,119 +848,12 @@
 #fecharCarrinho:hover{
     background:#5c636a;
 }
-/* ESTILO DO BOTÃO ETIQUETA */
-#btnEtiqueta {
-    background:#0066cc;
-    color:white;
-    border:none;
-    padding:10px 18px;
-    border-radius:12px;
-    cursor:pointer;
-    font-weight:bold;
-    box-shadow:0 4px 10px rgba(0,0,0,0.3);
-    white-space: nowrap;
-}
-
-#btnEtiqueta:hover {
-    background:#0052a3;
-    transform: translateY(-1px);
-}
-
-/* MOBILE - Garantir que o botão apareça */
-@media screen and (max-width:600px) {
-    .header-right {
-        width:100%;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        gap:8px;
-        flex-wrap: wrap;
-    }
-
-    #carrinhoBtn,
-    #btnEtiqueta {
-        width: auto;
-        min-width: 140px;
-        height: 45px;
-        font-size: 14px;
-        margin: 4px;
-    }
-
-    #userBox {
-        display: none !important;
-    }
-}
     </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 </head>
 
                 <body>
- <!-- ====================== MODAL ETIQUETA IDENTIFICAÇÃO ====================== -->
-<div id="modalEtiqueta" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center;">
-    <div style="background:#fff; border-radius:12px; width:90%; max-width:520px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
-        
-        <h2 style="margin:0 0 20px 0; text-align:center; color:#121111;">🏷️ Etiqueta de Identificação</h2>
-        
-        <div class="header" style="display:flex; align-items:center; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:20px;">
-            <img src="https://i.imgur.com/u8XfhZF.png" style="width:85px;" alt="HidrauMan">
-            <div style="margin-left:10px; font-size:13px; line-height:1.3;">
-                <strong>HIDRAUMAN SERV HIDRA E PNEU LTDA</strong><br>
-                R PASTOR ABILIO HONORIO PEDROMO 351<br>
-                13187-172 HORTOLANDIA<br>
-                Tel: (19) 22226220
-            </div>
-        </div>
 
-                <label><strong>Cliente:</strong></label>
-        <input list="empresas" id="inputEmpresa" 
-               style="width:100%; padding:10px; margin:8px 0 15px 0; border-radius:6px; border:1px solid #ccc;" 
-               placeholder="Digite ou selecione o cliente...">
-
-        <datalist id="empresas">
-            <option value="BOSCH">
-            <option value="COLUMBIA">
-            <option value="TEADIT">
-            <option value="SEG">
-        </datalist>
-
-       <label><strong>Para:</strong></label>
-<input list="pessoas" id="inputPara" 
-       style="width:100%; padding:10px; margin:8px 0 15px 0; border-radius:6px; border:1px solid #ccc; 
-              text-transform: uppercase;" 
-       placeholder="DIGITE OU SELECIONE O NOME...">
-
-<datalist id="pessoas">
-    <option value="ALEX FLORIANO">
-    <option value="CARLOS SARTORI">
-    <option value="CHRISTIAN MONTEIRO">
-    <option value="FELIPE RISSATTO">
-    <option value="HENRIQUE">
-    <option value="JÚLLIA MAGNO">
-    <option value="MARCELO SILVESTRINI">
-    <option value="MÁRCIO FARIAS">
-    <option value="MICHEL POLLI">
-    <option value="RAFAEL ARAÚJO">
-    <option value="RAFAEL DONEDA">
-    <option value="RICARDO SANTOS">
-</datalist>
-
-        <label><strong>Nf:</strong></label>
-        <input type="text" id="inputNf" 
-               style="width:100%; padding:10px; margin:8px 0 20px 0; border-radius:6px; border:1px solid #ccc;" 
-               placeholder="Digite o número da Nota Fiscal">
-
-        <div style="text-align:center; margin-top:20px;">
-            <button onclick="imprimirEtiquetaIdentificacao()" 
-                    style="background:#198754; color:white; border:none; padding:12px 25px; border-radius:8px; font-size:16px; cursor:pointer;">
-                🖨️ Imprimir Etiqueta
-            </button>
-            <button onclick="fecharModalEtiqueta()" 
-                    style="background:#6c757d; color:white; border:none; padding:12px 20px; border-radius:8px; margin-left:10px;">
-                Cancelar
-            </button>
-        </div>
-    </div>
-</div>
                 <header id="topo">
 
     <div id="alerta" style="
@@ -994,15 +887,9 @@
 
     <div class="header-right">
 
-    <button id="carrinhoBtn" onclick="abrirCarrinho()">
-        🛒 Carrinho (<span id="qtdCarrinho">0</span>)
-    </button>
-
-    <button id="btnEtiqueta" onclick="abrirModalEtiqueta()">
-        🏷️ Etiqueta
-    </button>
-
-</div>
+        <button id="carrinhoBtn" onclick="abrirCarrinho()">
+            🛒 Carrinho (<span id="qtdCarrinho">0</span>)
+        </button>
 
         <div id="userBox">
             <img id="userFoto" src="https://i.imgur.com/6VBx3io.png">
@@ -1145,90 +1032,6 @@
     <script>
     const API_URL = window.CONFIG.API_URL;
     </script>
-    <script>
-// ====================== MODAL ETIQUETA IDENTIFICAÇÃO ======================
-function abrirModalEtiqueta() {
-   
-    document.getElementById("modalEtiqueta").style.display = "flex";
-}
-
-function fecharModalEtiqueta() {
-    document.getElementById("modalEtiqueta").style.display = "none";
-}
-
-function imprimirEtiquetaIdentificacao() {
-    const empresa = document.getElementById("inputEmpresa").value.trim() || "HIDRAUMAN SERV HIDRA E PNEU LTDA";
-    const para = document.getElementById("inputPara").value.trim();
-    const nf = document.getElementById("inputNf").value.trim();
-
-    const etiquetaHTML = `
-    <!DOCTYPE html>
-    <html><head><meta charset="UTF-8">
-    <title>Etiqueta de Identificação</title>
-    <style>
-        @page { size: 100mm 75mm; margin: 0; }
-        body { margin:0; padding:0; font-family: Arial, sans-serif; }
-        .etiqueta {
-            width: 100mm;
-            height: 75mm;
-            padding: 6mm;
-            box-sizing: border-box;
-            border: 2px solid #000;
-            background: white;
-            font-size: 13px;
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-        }
-        .logo { width: 75px; }
-        .conteudo {
-            line-height: 1.8;
-        }
-        .linha {
-            margin: 4px 0;
-        }
-        strong {
-            font-weight: bold;
-        }
-    </style>
-    </head><body>
-        <div class="etiqueta">
-            <div class="header">
-                <img src="https://i.imgur.com/u8XfhZF.png" class="logo" alt="HidrauMan">
-                <div style="margin-left:8px; font-size:11px; line-height:1.3;">
-                    <strong>HIDRAUMAN SERV HIDRA E PNEU LTDA</strong><br>
-                    R PASTOR ABILIO HONORIO PEDROMO 351<br>
-                    13187-172 HORTOLANDIA - SP<br>
-                    Tel: (19) 22226220
-                </div>
-            </div>
-            
-           <h3 <div class="conteudo">
-                <div class="linha"><strong>Empresa:</strong> ${empresa}</div>
-                ${para ? `<div class="linha"><strong>Para:</strong> ${para}</div>` : ''}
-                ${nf ? `<div class="linha"><strong>Nf:</strong> ${nf}</div>` : ''}
-            </div></h3>
-            
-           
-        </div>
-    </body></html>`;
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(etiquetaHTML);
-    printWindow.document.close();
-
-    setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-    }, 800);
-
-    fecharModalEtiqueta();
-}
-</script>
                 <script>
             
                 let paginaAtual = 1;
@@ -2430,7 +2233,7 @@ function imprimirEtiqueta(produto) {
     setTimeout(() => {
         printWindow.focus();
         printWindow.print();
-    }, 2000);
+    }, 1000);
 }
 // ==================== IMPRIMIR TODAS AS ETIQUETAS ====================
 function imprimirTodasEtiquetas() {
@@ -2583,7 +2386,7 @@ function imprimirTodasEtiquetas() {
                 <p>Processando...</p>
             </div>
 
-           
+            
 
                 </body>
                 </html>
